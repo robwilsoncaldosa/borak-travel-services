@@ -1,4 +1,7 @@
-import Image from 'next/image'
+
+import Image from 'next/image';
+import Chatbot from "@/components/ui/chatboot";
+
 export default function Page() {
     return (
         <div className="relative h-screen w-full">
@@ -20,6 +23,10 @@ export default function Page() {
                 <p className='text-2xl mt-6 font-bold tracking-wider italic max-w-2xl text-center capitalize'>
                     Exploring Cebu is an unforgettable adventure.
                 </p>
+            </div>
+            {/* Chatbot component at the lower right */}
+            <div className="fixed bottom-4 right-4 z-50">
+                <Chatbot />
             </div>
         </div>
     );
