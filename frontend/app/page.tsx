@@ -6,7 +6,7 @@ export default function Page() {
     return (
         <div className="relative h-screen w-full">
             <Image 
-                src={'/landing-page.png'} 
+                src={'/Landing.jpg'} 
                 alt='landing-page' 
                 fill
                 className='object-cover z-0'
