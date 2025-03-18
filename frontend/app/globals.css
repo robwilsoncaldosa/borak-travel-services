@@ -129,3 +129,46 @@
     @apply bg-background text-foreground;
   }
 }
+
+
+@theme inline {
+  --animate-move: move 5s linear infinite;
+
+  @keyframes move {
+    0% {
+      transform: translateX(-200px);
+    }
+    100% {
+      transform: translateX(200px);
+    }
+  }
+}
+
+
+/* Custom Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 12px; /* Slightly wider for better visibility */
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--primary); /* Using primary color for better visibility */
+  border-radius: 6px;
+  border: 3px solid var(--background); /* Thicker border for a pill effect */
+  opacity: 0.8; /* Slight transparency for aesthetics */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-foreground); /* More noticeable on hover */
+  opacity: 1;
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--primary) var(--background); /* Using primary color for better visibility */
+}

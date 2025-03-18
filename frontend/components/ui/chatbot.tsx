@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Send, MessageCircle } from "lucide-react";
 
-//Nya ra nako ni ibalhin ang types doo kai not sure pako if unsa imo plan sa placement structure sa frontend, kaw lang ya bahala balhin for good bwahahha, PWEDE rasad ako but mo observe pako sa imong folder structure kai bacn lahi akoa
 interface Message {
   sender: "user" | "bot";
   text: string;
