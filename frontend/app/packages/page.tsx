@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import Packages from '@/components/ui/packages'
+import { BookNowButton } from '../_components/book-now-button';
 
 export default function Page() {
     return (
@@ -23,9 +24,10 @@ export default function Page() {
                     <h1 className="text-7xl font-extrabold tracking-wider drop-shadow-lg text-white [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]">
                         Explore & Packages
                     </h1>
-                    <button className="mt-8 bg-[#2E2E2E] text-white px-8 py-3 rounded-md text-xl font-semibold tracking-wide transition-all duration-300 hover:bg-gray-700 hover:scale-105 shadow-lg hover:shadow-xl">
+                    {/* <button className="mt-8 bg-[#2E2E2E] text-white px-8 py-3 rounded-md text-xl font-semibold tracking-wide transition-all duration-300 hover:bg-gray-700 hover:scale-105 shadow-lg hover:shadow-xl">
                         Book Now
-                    </button>
+                    </button> */}
+                    <BookNowButton />
                 </div>
             </div>
 
