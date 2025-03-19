@@ -292,7 +292,7 @@ const DestinationPage = () => {
       <div className="w-full max-w-4xl flex gap-4 mt-4">
         <div className="w-full flex flex-col gap-4">
           {/* First row: Pickup and Distance */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <div className="flex-1">
               <div className="relative location-input" onClick={() => setIsPickupEditing(true)}>
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-blue-500 rounded-full"></div>
@@ -337,7 +337,7 @@ const DestinationPage = () => {
           </div>
 
           {/* Second row: Destination and Travel Time */}
-          <div className="flex items-center gap-2 mb-20">
+          <div className="flex items-center gap-1 mb-2">
             <div className="flex-1">
               <div className="relative location-input" onClick={() => setIsDestinationEditing(true)}>
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2 w-3 h-3 bg-red-500 rounded-full"></div>
@@ -377,6 +377,21 @@ const DestinationPage = () => {
               </div>
             )}
           </div>
+
+          {/* Add Book Now button */}
+          {pickup && destination && (
+            <div className="flex justify-center mb-5">
+              <button 
+                className="w-[150px] p-3 bg-black text-white py-4 rounded-[5px] hover:bg-gray-800 transition-colors duration-200 text-lg font-medium"
+                onClick={() => {
+                  // Add your booking logic here
+                  console.log("Booking initiated");
+                }}
+              >
+                Book Now
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
