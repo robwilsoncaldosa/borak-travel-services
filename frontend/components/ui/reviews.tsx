@@ -98,7 +98,7 @@ export default function Reviews() {
                                     </div>
                                     
                                     <p className="text-gray-600 text-lg mb-6 italic line-clamp-4">
-                                        "{review.review}"
+                                        &ldquo;{review.review}&ldquo;
                                     </p>
                                     
                                     <div className="flex gap-1 mb-4">

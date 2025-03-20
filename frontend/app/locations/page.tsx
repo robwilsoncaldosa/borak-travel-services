@@ -38,19 +38,23 @@ interface GeoFeature {
   place_type: string[];
   text: string;
   context?: Array<{ id: string; text: string }>;
+  properties?: Record<string, unknown>; // Add properties field to the interface
 }
 
 const DestinationPage = () => {
   // Add new state for map loading
-  const [isMapReady, setIsMapReady] = useState(false);
+  const [, setIsMapReady] = useState(false);
 
   const [pickup, setPickup] = useState<{ lat: number; lng: number } | null>(null);
   const [destination, setDestination] = useState<{ lat: number; lng: number } | null>(null);
   const [route, setRoute] = useState<[number, number][]>([]);
   const [distance, setDistance] = useState<number | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [L, setL] = useState<any>(null);
-  const [icons, setIcons] = useState<{ pickupIcon: any; destinationIcon: any } | null>(null);
+  const [, setL] = useState<unknown>(null);
+  const [icons, setIcons] = useState<{ 
+    pickupIcon: L.Icon; 
+    destinationIcon: L.Icon; 
+  } | null>(null);
   const [searchResults, setSearchResults] = useState<GeoFeature[]>([]);
 
   const [isPickupSearch, setIsPickupSearch] = useState(true);
@@ -99,9 +103,9 @@ const DestinationPage = () => {
 
 
   // Helper function to score places by relevance
-  const getPlaceScore = (feature: any) => {
+  const getPlaceScore = (feature: GeoFeature) => { // Fix type from any to GeoFeature
     const type = feature.place_type?.[0] || '';
-    const properties = feature.properties || {};
+    // const properties = feature.properties || {};
     
     // Score based on place type
     switch (type) {
@@ -113,19 +117,19 @@ const DestinationPage = () => {
     }
   };
 
-  // Update the display of search results
-  const formatPlaceName = (result: any) => {
-    const name = result.text || '';
-    const context = result.context || [];
-    const relevantContext = context
-      .filter((c: any) => c.id.includes('neighborhood') || c.id.includes('locality'))
-      .map((c: any) => c.text)
-      .join(', ');
+//   // Update the display of search results
+//   const formatPlaceName = (result: GeoFeature) => { // Fix type from any to GeoFeature
+//     const name = result.text || '';
+//     const context = result.context || [];
+//     const relevantContext = context
+//       .filter((c) => c.id.includes('neighborhood') || c.id.includes('locality'))
+//       .map((c) => c.text)
+//       .join(', ');
     
-    return `${name}${relevantContext ? ` - ${relevantContext}` : ''}`;
-  };
+//     return `${name}${relevantContext ? ` - ${relevantContext}` : ''}`;
+//   };
 
-  const handleLocationSelect = (feature: any) => {
+  const handleLocationSelect = (feature: GeoFeature) => { // Fix type from any to GeoFeature
     const [lng, lat] = feature.center;
     const address = feature.place_name;
     
@@ -322,7 +326,7 @@ const DestinationPage = () => {
                     >
                       <div className="font-medium">{result.text}</div>
                       <div className="text-sm text-gray-600">
-                        {result.context?.map((ctx: { text: string }) => ctx.text).join(', ')}
+                        {result.context?.map((ctx) => ctx.text).join(', ')}
                       </div>
                     </div>
                   ))}

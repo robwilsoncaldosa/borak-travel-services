@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react';
-import Image from 'next/image';
 import { MdLocationOn, MdPhone, MdEmail, MdAccessTime } from 'react-icons/md';
 
 const ContactPage = () => {
