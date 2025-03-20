@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import "leaflet/dist/leaflet.css";
 
 // Dynamically import react-leaflet components to prevent SSR issues
@@ -143,35 +143,31 @@ const DestinationPage = () => {
     setSearchResults([]);
   };
 
-  const getRoute = async () => {
-    if (!pickup || !destination) return;
-    const apiKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
-    const url = `https://api.maptiler.com/routing/v2/route/driving/${pickup.lng},${pickup.lat};${destination.lng},${destination.lat}?key=${apiKey}`;
-    try {
-      const response = await fetch(url);
-      
-      // Add error handling for non-OK responses
-      if (!response.ok) {
-        console.warn(`Route error: ${response.status} - ${response.statusText}`);
-        // Create a direct line between points if routing fails
+  const getRoute = useCallback(async () => {
+      if (!pickup || !destination) return;
+      const apiKey = process.env.NEXT_PUBLIC_MAPTILER_API_KEY;
+      const url = `https://api.maptiler.com/routing/v2/route/driving/${pickup.lng},${pickup.lat};${destination.lng},${destination.lat}?key=${apiKey}`;
+      try {
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+          console.warn(`Route error: ${response.status} - ${response.statusText}`);
+          setRoute([[pickup.lat, pickup.lng], [destination.lat, destination.lng]]);
+          return;
+        }
+    
+        const data = await response.json();
+        if (data.routes && data.routes.length > 0) {
+          const coordinates = data.routes[0].geometry.coordinates;
+          setRoute(coordinates.map(([lng, lat]: [number, number]) => [lat, lng]));
+        } else {
+          setRoute([[pickup.lat, pickup.lng], [destination.lat, destination.lng]]);
+        }
+      } catch (error) {
+        console.error("Error fetching route:", error);
         setRoute([[pickup.lat, pickup.lng], [destination.lat, destination.lng]]);
-        return;
       }
-
-      const data = await response.json();
-      if (data.routes && data.routes.length > 0) {
-        const coordinates = data.routes[0].geometry.coordinates;
-        setRoute(coordinates.map(([lng, lat]: [number, number]) => [lat, lng]));
-      } else {
-        // Fallback to direct line if no route found
-        setRoute([[pickup.lat, pickup.lng], [destination.lat, destination.lng]]);
-      }
-    } catch (error) {
-      console.error("Error fetching route:", error);
-      // Fallback to direct line if error occurs
-      setRoute([[pickup.lat, pickup.lng], [destination.lat, destination.lng]]);
-    }
-  };
+    }, [pickup, destination]);
 
   useEffect(() => {
     console.log("Pickup:", pickup, "Destination:", destination);
@@ -201,7 +197,7 @@ const DestinationPage = () => {
         );
       }
     }
-  }, [pickup, destination, userLocation]);
+  }, [pickup, destination, userLocation, getRoute]); 
 
   useEffect(() => {
     getCurrentLocation();
