@@ -8,7 +8,10 @@ export async function isAdminPath(): Promise<boolean> {
   try {
     const headersList = await headers();
     const url = headersList.get("x-url") || "";
-    const pathname = new URL(url, "http://localhost").pathname;
+    // Use a relative URL parsing approach
+    const pathname = url.startsWith('http') 
+      ? new URL(url).pathname 
+      : url.split('?')[0]; // Handle relative URLs by extracting path before query params
     return pathname.includes("/admin");
   } catch (error) {
     console.error("Error checking admin path:", error);
@@ -24,7 +27,10 @@ export async function getCurrentPath(): Promise<string> {
   try {
     const headersList = await headers();
     const url = headersList.get("x-url") || "";
-    return new URL(url, "http://localhost").pathname;
+    // Use a relative URL parsing approach
+    return url.startsWith('http') 
+      ? new URL(url).pathname 
+      : url.split('?')[0]; // Handle relative URLs by extracting path before query params
   } catch (error) {
     console.error("Error getting current path:", error);
     return "";
