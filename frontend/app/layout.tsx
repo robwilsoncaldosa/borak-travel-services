@@ -3,7 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Header from "./_components/header";
 import Footer from "./_components/footer";
-
+import { isAdminPath } from "@/lib/path-utils";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,15 +26,31 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Use the non-async version directly
+  const isAdmin = isAdminPath();
+  
+  // Invert the condition since you want to show Header/Footer when NOT on admin pages
+  const showHeaderFooter = !isAdmin;
+
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen grid grid-rows-[1fr_auto]`}
+        suppressHydrationWarning
       >
-        <Header />
-        {children}
-        <Footer />
+        {showHeaderFooter && <Header />}
+
+        <ThemeProvider 
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+          storageKey="borak-theme"
+        >
+          {children}
+        </ThemeProvider>
+        {showHeaderFooter && <Footer />}
       </body>
-    </html> 
+    </html>
   );
 }
