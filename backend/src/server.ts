@@ -5,6 +5,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import http from "http";
 import passport from "passport";
+import userRoutes from './routes/userRoutes';
+import connectDB from './config/db';
 
 dotenv.config();
 
@@ -36,6 +38,9 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+// Routes
+app.use('/api/users', userRoutes);
+
 const PORT: number = parseInt(process.env.PORT || "8081", 10);
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
@@ -44,6 +49,9 @@ server.listen(PORT, () => {
 app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to BORAK CAR RENTAL TRAVEL AND TOURS");
 });
+
+// Add this after dotenv.config()
+connectDB();
 
 export default app;
 

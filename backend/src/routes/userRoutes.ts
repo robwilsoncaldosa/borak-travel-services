@@ -7,11 +7,11 @@ const router: Router = express.Router();
 type RouteHandler = (req: Request, res: Response, next: NextFunction) => Promise<void>;
 
 // Apply type assertion to the controller methods
-router.get('/', userController.getAllUsers as RouteHandler);
-router.get('/:id', userController.getUserById as RouteHandler);
-router.post('/', userController.createUser as RouteHandler);
-router.put('/:id', userController.updateUser as RouteHandler);
-router.delete('/:id', userController.deleteUser as RouteHandler);
+router.get('/getAll', userController.getAllUsers as RouteHandler);
+router.get('/getID:id', userController.getUserById as RouteHandler);
+router.post('/create', userController.createUser as RouteHandler);
+router.put('/update/:id', userController.updateUser as RouteHandler);
+router.delete('/remove/:id', userController.deleteUser as RouteHandler);
 
 export default router;
 
