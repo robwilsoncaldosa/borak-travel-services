@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,79 +30,96 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { DataTable } from "../../_components/data-table";
+import { userApi } from "@/lib/backend_api/user";
+import { toast } from "sonner";
 
+// Update User type to match backend
 export type User = {
-  id: string;
-  name: string;
+  user_id: string;
+  firstname: string;
+  lastname: string;
   email: string;
-  role: "admin" | "user";
+  mobile: string;
+  nationality: string;
+  status: 'active' | 'inactive';
+  role: 'admin' | 'user';
 };
 
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john@example.com",
-      role: "admin",
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      role: "user",
-    },
-    {
-      id: "3",
-      name: "Alice Johnson",
-      email: "alice@example.com",
-      role: "user",
-    },
-    {
-      id: "4",
-      name: "Bob Brown",
-      email: "bob@example.com",
-      role: "user",
-    },
-    {
-      id: "5",
-      name: "Charlie White",
-      email: "charle@example.com",
-      role: "user",
-    },
-  ]);
-
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  // Update initial users state to match User type
+  const [users, setUsers] = useState<User[]>([]);
+  
+  // Update initial currentUser state with all required fields
   const [currentUser, setCurrentUser] = useState<Partial<User>>({
-    name: "",
+    firstname: "",
+    lastname: "",
     email: "",
+    mobile: "",
+    nationality: "",
     role: "user",
+    status: "active"
   });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
 
-  const handleSaveUser = () => {
-    if (currentUser.name && currentUser.email) {
-      if (dialogMode === "add") {
-        const newUser: User = {
-          id: String(users.length + 1),
-          name: currentUser.name,
-          email: currentUser.email,
-          role: currentUser.role || "user",
-        };
-        setUsers([...users, newUser]);
-      } else {
-        // Edit existing user
-        setUsers(
-          users.map((user) =>
-            user.id === currentUser.id
-              ? ({ ...user, ...currentUser } as User)
-              : user
-          )
-        );
+  // Fetch users on component mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await userApi.getAllUsers();
+        // Make sure we're setting the correct data structure
+        setUsers(response || []);
+      } catch (error) {
+        console.error('Fetch error:', error);
+        toast.error('Failed to fetch users');
+        setUsers([]); // Set empty array on error
       }
+    };
+    fetchUsers();
+  }, []);
 
-      setIsDialogOpen(false);
-      setCurrentUser({ name: "", email: "", role: "user" });
+  const handleSaveUser = async () => {
+    if (currentUser.firstname && currentUser.email) {
+      try {
+        if (dialogMode === "add") {
+          const response = await userApi.createUser({
+            firstname: currentUser.firstname,
+            lastname: currentUser.lastname || '',
+            email: currentUser.email,
+            mobile: currentUser.mobile || '',
+            nationality: currentUser.nationality || '',
+            status: 'active',
+            role: currentUser.role || 'user',
+          });
+          setUsers([...users, response]); // Remove .data
+          toast.success('User created successfully');
+        } else {
+          const response = await userApi.updateUser(currentUser.user_id!, {
+            firstname: currentUser.firstname,
+            lastname: currentUser.lastname,
+            email: currentUser.email,
+            role: currentUser.role,
+          });
+          setUsers(users.map((user) => 
+            user.user_id === currentUser.user_id ? response : user // Remove .data
+          ));
+          toast.success('User updated successfully');
+        }
+
+        setIsDialogOpen(false);
+        setCurrentUser({
+          firstname: "",
+          lastname: "",
+          email: "",
+          mobile: "",
+          nationality: "",
+          role: "user",
+          status: "active"
+        });
+      } catch (error) {
+        console.error('Save error:', error);
+        toast.error('Failed to save user');
+      }
     }
   };
 
@@ -146,10 +163,17 @@ export default function UsersPage() {
       enableHiding: false,
     },
     {
-      accessorKey: "name",
-      header: "Name",
+      accessorKey: "firstname",
+      header: "First Name",
       cell: ({ row }) => (
-        <div className="capitalize">{row.getValue("name")}</div>
+        <div className="capitalize">{row.getValue("firstname")}</div>
+      ),
+    },
+    {
+      accessorKey: "lastname",
+      header: "Last Name",
+      cell: ({ row }) => (
+        <div className="capitalize">{row.getValue("lastname")}</div>
       ),
     },
     {
@@ -201,10 +225,13 @@ export default function UsersPage() {
                   <DialogHeader>
                     <DialogTitle>User Details</DialogTitle>
                   </DialogHeader>
+                  // Update view dialog content
                   <div className="grid gap-4 py-4">
-                    <p>Name: {user.name}</p>
+                    <p>Name: {user.firstname} {user.lastname}</p>
                     <p>Email: {user.email}</p>
                     <p>Role: {user.role}</p>
+                    <p>Mobile: {user.mobile}</p>
+                    <p>Nationality: {user.nationality}</p>
                   </div>
                 </DialogContent>
               </Dialog>
@@ -230,9 +257,23 @@ export default function UsersPage() {
       },
     },
   ];
+  // Update form fields to match new User type
+  const handleAddUser = () => {
+    setCurrentUser({
+      firstname: "",
+      lastname: "",
+      email: "",
+      mobile: "",
+      nationality: "",
+      role: "user",
+      status: "active"
+    });
+    setDialogMode("add");
+    setIsDialogOpen(true);
+  };
 
   return (
-    <div >
+    <div>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -242,14 +283,27 @@ export default function UsersPage() {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
-                Name
+              <Label htmlFor="firstname" className="text-right">
+                First Name
               </Label>
               <Input
-                id="name"
-                value={currentUser.name}
+                id="firstname"
+                value={currentUser.firstname}
                 onChange={(e) =>
-                  setCurrentUser({ ...currentUser, name: e.target.value })
+                  setCurrentUser({ ...currentUser, firstname: e.target.value })
+                }
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="lastname" className="text-right">
+                Last Name
+              </Label>
+              <Input
+                id="lastname"
+                value={currentUser.lastname}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, lastname: e.target.value })
                 }
                 className="col-span-3"
               />
@@ -265,6 +319,35 @@ export default function UsersPage() {
                   setCurrentUser({ ...currentUser, email: e.target.value })
                 }
                 className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="mobile" className="text-right">
+                Mobile
+              </Label>
+              <Input
+                id="mobile"
+                value={currentUser.mobile}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, mobile: e.target.value })
+                }
+                className="col-span-3"
+                placeholder="+1234567890"
+              />
+            </div>
+
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="nationality" className="text-right">
+                Nationality
+              </Label>
+              <Input
+                id="nationality"
+                value={currentUser.nationality}
+                onChange={(e) =>
+                  setCurrentUser({ ...currentUser, nationality: e.target.value })
+                }
+                className="col-span-3"
+                placeholder="Enter nationality"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
@@ -301,11 +384,7 @@ export default function UsersPage() {
       <DataTable
         columns={columns}
         data={users}
-        onAdd={() => {
-          setCurrentUser({ name: "", email: "", role: "user" });
-          setDialogMode("add");
-          setIsDialogOpen(true);
-        }}
+        onAdd={handleAddUser}
         onDelete={handleDeleteUsers}
       />
     </div>

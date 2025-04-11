@@ -1,4 +1,4 @@
-import { instance } from '../axios';
+import { instance, instanceUpload } from '../axios';
 
 export interface User {
   user_id: string;
@@ -15,31 +15,31 @@ export interface User {
 export const userApi = {
   // Create new user
   createUser: async (userData: Omit<User, 'user_id' | 'created_at'>) => {
-    const response = await instance.post<User>('/api/users', userData);
+    const response = await instance.post<User>('/api/users/create', userData);
     return response.data;
   },
 
   // Get all users
   getAllUsers: async () => {
-    const response = await instance.get<User[]>('/api/users');
+    const response = await instance.get<User[]>('/api/users/getAll');
     return response.data;
   },
 
   // Get user by ID
   getUserById: async (id: string) => {
-    const response = await instance.get<User>(`/api/users/${id}`);
+    const response = await instance.get<User>(`/api/users/getID/${id}`);
     return response.data;
   },
 
   // Update user
   updateUser: async (id: string, userData: Partial<User>) => {
-    const response = await instance.put<User>(`/api/users/${id}`, userData);
+    const response = await instance.put<User>(`/api/users/update/${id}`, userData);
     return response.data;
   },
 
   // Delete user
   deleteUser: async (id: string) => {
-    const response = await instance.delete(`/api/users/${id}`);
+    const response = await instance.delete(`/api/users/delete/${id}`);
     return response.data;
   },
 

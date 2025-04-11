@@ -1,6 +1,4 @@
-
-
-
+import axios from "axios";
 import io from "socket.io-client";
 
 const socket = io(process.env.NEXT_PUBLIC_SERVER_ENDPOINT);
@@ -56,29 +54,6 @@ instanceUpload.interceptors.request.use((config) => {
   return config;
 });
 
-const submitPaymentAndShipping = async (paymentData: any) => {
-  try {
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/register-bidder`, paymentData, {
-      withCredentials: true,
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error submitting payment and shipping:', error);
-    throw error;
-  }
-};
 
-const verifyUserStatus = async (token: string) => {
-  try {
-    const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_ENDPOINT}/users/activate`, {
-      params: { token },
-      withCredentials: true,
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error verifying user status:', error);
-    throw error;
-  }
-};
 
-export { instance, instanceUpload, submitPaymentAndShipping, verifyUserStatus, socket  };
+export { instance, instanceUpload, socket  };
