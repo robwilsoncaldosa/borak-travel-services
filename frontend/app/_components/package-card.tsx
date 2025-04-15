@@ -30,22 +30,22 @@ export default function PackageCard({
         
         {/* Default content - visible by default, hidden on hover */}
         <div className="text-center w-full transition-all duration-300 transform group-hover/card:opacity-0 group-hover/card:translate-y-4 px-4">
-          <h1 className="font-bold text-xl md:text-3xl text-white relative z-10 drop-shadow-md">
+          <h1 className="font-bold text-lg md:text-3xl text-white relative z-10 drop-shadow-md">
             {title}
           </h1>
-          <p className="font-normal text-sm md:text-base text-white relative z-10 my-4 max-w-xs mx-auto drop-shadow-md">
+          <p className="font-normal text-sm md:text-base text-white relative z-10 my-2 md:my-4 max-w-xs mx-auto drop-shadow-md">
             {description}
           </p>
         </div>
         
         {/* Hover content - hidden by default, visible on hover */}
-        <div className="absolute inset-0 flex flex-col justify-center items-center p-6 transition-all duration-300 transform opacity-0 scale-95 group-hover/card:opacity-100 group-hover/card:scale-100">
-          <p className="font-normal text-sm md:text-base text-white relative z-10 mb-6 text-center max-w-xs drop-shadow-md">
+        <div className="absolute inset-0 flex flex-col justify-center items-center p-4 md:p-6 transition-all duration-300 transform opacity-0 scale-95 group-hover/card:opacity-100 group-hover/card:scale-100">
+          <p className="font-normal text-sm md:text-base text-white relative z-10 mb-4 md:mb-6 text-center max-w-xs drop-shadow-md">
             {hoverContent}
           </p>
           <button 
             onClick={onBookNow}
-            className="relative z-10 bg-white text-black font-medium py-3 px-6 rounded-lg hover:bg-gray-200 transition-all duration-200 transform hover:scale-105 shadow-lg"
+            className="relative z-10 bg-white text-black font-medium py-2 md:py-3 px-4 md:px-6 rounded-lg hover:bg-gray-200 transition-all duration-200 transform hover:scale-105 shadow-lg text-sm md:text-base"
           >
             {buttonText}
           </button>

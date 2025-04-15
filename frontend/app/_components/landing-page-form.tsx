@@ -35,12 +35,15 @@ export default function LandingPageForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      console.log(values);
-      toast(
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(values, null, 2)}</code>
-        </pre>
-      );
+      const bookingId = Math.random().toString(36).substring(7);
+      
+      // Store booking details in localStorage for retrieval on confirmation page
+      localStorage.setItem("bookingLocation", values.Location);
+      localStorage.setItem("bookingTour", values.Tour_Location);
+      localStorage.setItem("bookingPassengers", values.How_Many_Are_You.toString());
+      
+      // Redirect to confirmation page with query parameters
+      window.location.href = `/confirmation/${bookingId}?location=${values.Location}&tour=${values.Tour_Location}&passengers=${values.How_Many_Are_You}`;
     } catch (error) {
       console.error("Form submission error", error);
       toast.error("Failed to submit the form. Please try again.");
@@ -51,10 +54,10 @@ export default function LandingPageForm() {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="space-y-8  mx-auto py-10"
+        className="space-y-4 md:space-y-8 mx-auto py-6 md:py-10"
       >
-        <div className="grid grid-cols-12 gap-4">
-          <div className="col-span-3">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <div className="col-span-1 md:col-span-3">
             <FormField
               control={form.control}
               name="Location"
@@ -65,7 +68,7 @@ export default function LandingPageForm() {
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger className="flex items-center w-full">
+                      <SelectTrigger className="flex items-center w-full text-sm md:text-base">
                         <MapPin className="mr-2 h-4 w-4 shrink-0" />
                         <SelectValue placeholder="Where are you located?" />
                       </SelectTrigger>
@@ -88,7 +91,7 @@ export default function LandingPageForm() {
             />
           </div>
 
-          <div className="col-span-3">
+          <div className="col-span-1 md:col-span-3">
             <FormField
               control={form.control}
               name="Tour_Location"
@@ -125,7 +128,7 @@ export default function LandingPageForm() {
             />
           </div>
 
-          <div className="col-span-3">
+          <div className="col-span-1 md:col-span-3">
             <FormField
               control={form.control}
               name="How_Many_Are_You"
@@ -148,11 +151,11 @@ export default function LandingPageForm() {
             />
           </div>
 
-          <div className="col-span-3">
+          <div className="col-span-1 md:col-span-3">
             <FormItem>
               <Button
                 type="submit"
-                className="w-full flex items-center justify-center"
+                className="w-full flex items-center justify-center py-2 md:py-3 text-sm md:text-base"
               >
                 <Search className="mr-2 h-4 w-4" />
                 Search

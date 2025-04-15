@@ -4,7 +4,7 @@ import PackageCard from "@/app/_components/package-card";
 
 export default function PackageCardsSection() {
   return (
-    <div className="flex flex-col md:flex-row gap-6 w-full justify-evenly px-4 md:px-0">
+    <div className="flex flex-col md:flex-row gap-6 w-full justify-evenly px-4 md:px-0 py-4 md:py-0">
       <PackageCard
         backgroundImage="https://images.unsplash.com/photo-1551966775-a4ddc8df052b?q=80&w=1470&auto=format&fit=crop"
         title="Cebu Island Hopping"
