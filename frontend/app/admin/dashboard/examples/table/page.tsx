@@ -41,6 +41,7 @@ export type User = {
   email: string;
   mobile: string;
   nationality: string;
+  password?: string; 
   status: 'active' | 'inactive';
   role: 'admin' | 'user';
 };
@@ -54,6 +55,7 @@ export default function UsersPage() {
     firstname: "",
     lastname: "",
     email: "",
+    password: "",
     mobile: "",
     nationality: "",
     role: "user",
@@ -78,14 +80,54 @@ export default function UsersPage() {
     fetchUsers();
   }, []);
 
+  // Add this function near your other handlers
+  const generatePassword = () => {
+    const length = 12;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    }
+    setCurrentUser({ ...currentUser, password: password });
+  };
+
+  // Add this in your dialog form, after the nationality input
+  <div className="grid grid-cols-4 items-center gap-4">
+    <Label htmlFor="password" className="text-right">
+      Password
+    </Label>
+    <div className="col-span-3 flex gap-2">
+      <Input
+        id="password"
+        type="text"
+        value={currentUser.password || ''}
+        onChange={(e) =>
+          setCurrentUser({ ...currentUser, password: e.target.value })
+        }
+        className="flex-1"
+        placeholder="Enter password"
+      />
+      <Button
+        type="button"
+        variant="outline"
+        onClick={generatePassword}
+      >
+        Generate
+      </Button>
+    </div>
+  </div>
+
+  // Update the handleSaveUser function to include password
   const handleSaveUser = async () => {
-    if (currentUser.firstname && currentUser.email) {
+    if (currentUser.firstname && currentUser.email && currentUser.password) {
       try {
         if (dialogMode === "add") {
           const response = await userApi.createUser({
+            ...currentUser,
             firstname: currentUser.firstname,
             lastname: currentUser.lastname || '',
             email: currentUser.email,
+            ...(currentUser.password && { password: currentUser.password }), // Only include password if it exists
             mobile: currentUser.mobile || '',
             nationality: currentUser.nationality || '',
             status: 'active',
@@ -125,12 +167,12 @@ export default function UsersPage() {
 
   const handleDeleteUsers = (rowsToDelete: User[]) => {
     setUsers(
-      users.filter((user) => !rowsToDelete.some((row) => row.id === user.id))
+      users.filter((user) => !rowsToDelete.some((row) => row.user_id === user.user_id))
     );
   };
 
   const handleDeleteSingleUser = (userId: string) => {
-    setUsers(users.filter((user) => user.id !== userId));
+    setUsers(users.filter((user) => user.user_id !== userId));
   };
 
   const openEditDialog = (user: User) => {
@@ -246,7 +288,7 @@ export default function UsersPage() {
               <DropdownMenuItem
                 onSelect={(e) => {
                   e.preventDefault();
-                  handleDeleteSingleUser(user.id);
+                  handleDeleteSingleUser(user.user_id);
                 }}
               >
                 <Trash2 className="mr-2 h-4 w-4" /> Delete
@@ -349,6 +391,30 @@ export default function UsersPage() {
                 className="col-span-3"
                 placeholder="Enter nationality"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="password" className="text-right">
+                Password
+              </Label>
+              <div className="col-span-3 flex gap-2">
+                <Input
+                  id="password"
+                  type="text"
+                  value={currentUser.password || ''}
+                  onChange={(e) =>
+                    setCurrentUser({ ...currentUser, password: e.target.value })
+                  }
+                  className="flex-1"
+                  placeholder="Enter password"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={generatePassword}
+                >
+                  Generate
+                </Button>
+              </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="role" className="text-right">
