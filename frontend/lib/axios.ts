@@ -1,6 +1,7 @@
 import axios from "axios";
 import io from "socket.io-client";
 
+
 const socket = io(process.env.NEXT_PUBLIC_SERVER_ENDPOINT);
 
 
@@ -29,6 +30,7 @@ const instanceUpload = axios.create({
   },
 });
 
+
 // Axios configuration
 instance.interceptors.request.use((config) => {
   const token = getToken();
@@ -38,6 +40,7 @@ instance.interceptors.request.use((config) => {
   return config;
 });
 
+
 // Interceptor to update Authorization header with the latest token before each request
 instance.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
@@ -45,6 +48,7 @@ instance.interceptors.request.use((config) => {
   }
   return config;
 });
+
 
 // Interceptor to update Authorization header with the latest token before each request
 instanceUpload.interceptors.request.use((config) => {
@@ -55,5 +59,5 @@ instanceUpload.interceptors.request.use((config) => {
 });
 
 
-
 export { instance, instanceUpload, socket  };
+
