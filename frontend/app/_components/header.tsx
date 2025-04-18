@@ -2,14 +2,14 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react';
-import { FaCompass, FaMapMarkedAlt, FaPlane, FaPhone, FaHome } from 'react-icons/fa';
+import { FaCompass, FaMapMarkedAlt, FaPhone, FaHome, FaShuttleVan } from 'react-icons/fa';
 import { NavLink } from './components/nav-link';
 import { Logo } from './components/logo';
 import { HeaderProps, NavLinkProps } from './types/header.types';
 
 const navLinks: NavLinkProps[] = [
   { href: '/', icon: FaHome, label: 'Home' },
-  { href: '/fleet', icon: FaPlane, label: 'Our Fleet' },
+  { href: '/van-rentals', icon: FaShuttleVan, label: 'Van Rentals' },
   { href: '/packages', icon: FaCompass, label: 'Packages' },
   { href: '/locations', icon: FaMapMarkedAlt, label: 'Destinations' },
   { href: '/contact', icon: FaPhone, label: 'Contact' },

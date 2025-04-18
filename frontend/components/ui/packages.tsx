@@ -1,4 +1,5 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface Package {
     id: number;
@@ -88,9 +89,9 @@ export default function PackageCards() {
                                         <span className="text-sm text-gray-500">Starting from</span>
                                         <p className="text-2xl font-bold text-[#2E2E2E]">{pkg.price}</p>
                                     </div>
-                                    <button className="bg-[#2E2E2E] text-white px-6 py-2.5 rounded-md font-semibold tracking-wide transition-all duration-300 hover:bg-gray-700 hover:scale-105">
-                                        Book Now
-                                    </button>
+                                    <Link href={`/packages/${pkg.id}`} className="bg-[#2E2E2E] text-white px-6 py-2.5 rounded-md font-semibold tracking-wide transition-all duration-300 hover:bg-gray-700 hover:scale-105 inline-block">
+                                        View More Details
+                                    </Link>
                                 </div>
                             </div>
                         </div>
