@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "./_components/header";
 import Footer from "./_components/footer";
 import { isAdminPath } from "@/lib/path-utils";
+import Chatbot from "@/components/ui/chatbot";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,8 +26,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isAdmin = await isAdminPath();
-  const showHeaderFooter = !isAdmin;
+  const isAdminDashboard = await isAdminPath();
+  const showCustomerInterface = !isAdminDashboard;
 
   return (
     <html lang="en" suppressHydrationWarning>
@@ -34,10 +35,10 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen grid grid-rows-[1fr_auto]`}
         suppressHydrationWarning
       >
-
-          {showHeaderFooter && <Header />}
+          {showCustomerInterface && <Header />}
           {children}
-          {showHeaderFooter && <Footer />}
+          {showCustomerInterface && <Chatbot />}
+          {showCustomerInterface && <Footer />}
       </body>
     </html>
   );

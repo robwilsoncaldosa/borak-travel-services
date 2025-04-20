@@ -3,10 +3,41 @@
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, MapPin, Users, Share2, Heart, CheckCircle2, Star } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, MapPin, Users, Share2, Heart, CheckCircle2, Star, User, Phone } from 'lucide-react';
 import Reviews from '@/components/ui/reviews';
 import Link from 'next/link';
-import { FaStar } from 'react-icons/fa';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { toast } from 'sonner';
+import { FaStar, } from 'react-icons/fa';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 // This would typically come from an API or database
 const packages = [
@@ -49,11 +80,33 @@ const packages = [
   },
 ];
 
+// Form schema for booking
+const bookingFormSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  contact: z.string().min(6, { message: "Please enter a valid contact number" }),
+  dateRange: z.object({
+    from: z.date(),
+    to: z.date().optional(),
+  }).optional(),
+  guests: z.string().min(1, { message: "Please select number of guests" }),
+});
+
 export default function PackageDetail() {
   const params = useParams();
   const router = useRouter();
   const [packageData, setPackageData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  
+  // Initialize form
+  const form = useForm<z.infer<typeof bookingFormSchema>>({  
+    resolver: zodResolver(bookingFormSchema),
+    defaultValues: {
+      name: "",
+      contact: "",
+      dateRange: { from: new Date() },
+      guests: "",
+    },
+  });
 
   useEffect(() => {
     // In a real app, you would fetch this data from an API
@@ -66,13 +119,26 @@ export default function PackageDetail() {
     setLoading(false);
   }, [params.id]);
 
-  const handleBookNow = () => {
-    if (packageData) {
-      // Generate a unique booking ID (in a real app, this would come from the backend)
-      const bookingId = `BKG-${Date.now().toString().slice(-6)}`;
-
-      // Navigate to confirmation page with booking details
-      router.push(`/confirmation/${bookingId}?tour=${packageData.title.toLowerCase().replace(/ /g, '_')}`);
+  const handleBookNow = (values: z.infer<typeof bookingFormSchema>) => {
+    try {
+      if (packageData) {
+        // Generate a unique booking ID (in a real app, this would come from the backend)
+        const bookingId = `BKG-${Date.now().toString().slice(-6)}`;
+        
+        // Store booking details in localStorage for retrieval on confirmation page
+        localStorage.setItem("bookingName", values.name);
+        localStorage.setItem("bookingContact", values.contact);
+        localStorage.setItem("bookingDateFrom", values.dateRange?.from ? values.dateRange.from.toISOString() : "");
+        localStorage.setItem("bookingDateTo", values.dateRange?.to ? values.dateRange.to.toISOString() : "");
+        localStorage.setItem("bookingGuests", values.guests);
+        localStorage.setItem("bookingTour", packageData.title);
+        
+        // Navigate to confirmation page with booking details
+        router.push(`/confirmation/${bookingId}?tour=${packageData.title.toLowerCase().replace(/ /g, '_')}&guests=${values.guests}`);
+      }
+    } catch (error) {
+      console.error("Booking submission error", error);
+      toast.error("Failed to submit the booking. Please try again.");
     }
   };
 
@@ -304,52 +370,179 @@ export default function PackageDetail() {
 
           {/* Right Column - Booking Card */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl shadow-lg p-6 sticky top-28">
-              <div className="mb-6">
+            <div className="bg-white rounded-xl shadow-lg p-5 sticky top-28">
+              <div className="mb-4">
                 <span className="text-sm text-gray-500">Price</span>
                 <p className="text-3xl font-bold text-[#2E2E2E]">Contact for Price</p>
                 <span className="text-sm text-gray-500">Negotiable rates available</span>
               </div>
 
-              <div className="space-y-4 mb-6">
+              <div className="mb-6">
                 <h3 className="font-semibold text-gray-700 mb-3">Package Inclusions:</h3>
-                {packageData.inclusions.map((inclusion: string, index: number) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span className="text-gray-600">{inclusion}</span>
-                  </div>
-                ))}
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="inclusions">
+                    <AccordionTrigger className="text-left font-medium text-gray-700">View All Inclusions</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="space-y-3 pt-2">
+                        {packageData.inclusions.map((inclusion: string, index: number) => (
+                          <div key={index} className="flex items-start gap-3">
+                            <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span className="text-gray-600">{inclusion}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                </Accordion>
               </div>
 
-              <div className="space-y-4 mb-6">
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Calendar className="text-gray-500 h-5 w-5" />
-                  <div>
-                    <p className="text-sm text-gray-500">Select Date</p>
-                    <p className="font-medium">Available daily</p>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleBookNow)} className="space-y-4 mb-6">
+                  {/* Name Field */}
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Full Name</FormLabel>
+                        <FormDescription>Please enter your full name as it appears on your ID</FormDescription>
+                        <FormControl>
+                          <div className="flex items-center relative">
+                            <User className="absolute left-3 h-4 w-4 text-gray-500" />
+                            <Input
+                              placeholder="Your Name"
+                              className="pl-10"
+                              {...field}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Contact Field */}
+                  <FormField
+                    control={form.control}
+                    name="contact"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Contact Number</FormLabel>
+                        <FormDescription>Your phone number for booking confirmation</FormDescription>
+                        <FormControl>
+                          <div className="flex items-center relative">
+                            <Phone className="absolute left-3 h-4 w-4 text-gray-500" />
+                            <Input
+                              placeholder="Contact Number"
+                              className="pl-10"
+                              {...field}
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Date Range Field */}
+                  <FormField
+                    control={form.control}
+                    name="dateRange"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Travel Dates</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal flex items-center justify-start",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                                {field.value?.from ? (
+                                  field.value.to ? (
+                                    <>
+                                      {format(field.value.from, "LLL dd, y")} - {format(field.value.to, "LLL dd, y")}
+                                    </>
+                                  ) : (
+                                    format(field.value.from, "MMM dd, yyyy")
+                                  )
+                                ) : (
+                                  <span>Select date range</span>
+                                )}
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              initialFocus
+                              mode="range"
+                              defaultMonth={new Date()}
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              numberOfMonths={2}
+                              disabled={(date) => date < new Date()}
+                              classNames={{
+                                day_range_start: "day-range-start bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                                day_range_end: "day-range-end bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+                                day_range_middle: "day-range-middle bg-accent/50 text-accent-foreground"
+                              }}
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormDescription>Select your travel date range</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  {/* Guests Field */}
+                  <FormField
+                    control={form.control}
+                    name="guests"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Number of Guests</FormLabel>
+                        <FormDescription>Select how many people will join this tour</FormDescription>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger className="flex items-center w-full ">
+                              <Users className="mr-2 h-4 w-4 shrink-0" />
+                              <SelectValue placeholder="Number of Guests" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {[...Array(packageData?.maxGuests || 10)].map((_, i) => (
+                              <SelectItem key={i} value={(i + 1).toString()}>{i + 1} {i === 0 ? 'Guest' : 'Guests'}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="pt-4">
+                    <Link href="/contact" className="w-full bg-[#2E2E2E] text-white py-3 rounded-md font-semibold tracking-wide transition-all duration-300 hover:bg-gray-700 hover:scale-105 text-center block mb-3">
+                      Contact for Pricing
+                    </Link>
+                    <Button
+                      type="submit"
+                      className="w-full border-2 border-[#2E2E2E] text-[#2E2E2E] py-6 rounded-md font-semibold tracking-wide transition-all duration-300 hover:bg-gray-100 hover:scale-105 text-center bg-transparent"
+                    >
+                      Book Now
+                    </Button>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <Users className="text-gray-500 h-5 w-5" />
-                  <div>
-                    <p className="text-sm text-gray-500">Guests</p>
-                    <p className="font-medium">Up to {packageData.maxGuests} people</p>
-                  </div>
-                </div>
-              </div>
-
-              <Link href="/contact" className="w-full bg-[#2E2E2E] text-white py-3 rounded-md font-semibold tracking-wide transition-all duration-300 hover:bg-gray-700 hover:scale-105 text-center block mb-3">
-                Contact for Pricing
-              </Link>
-              <button
-                onClick={handleBookNow}
-                className="w-full border-2 border-[#2E2E2E] text-[#2E2E2E] py-3 rounded-md font-semibold tracking-wide transition-all duration-300 hover:bg-gray-100 hover:scale-105 text-center"
-              >
-                Book Now
-              </button>
+                </form>
+              </Form>
             </div>
           </div>
         </div>
