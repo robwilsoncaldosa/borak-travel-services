@@ -10,8 +10,8 @@ type RouteHandler = (req: Request, res: Response, next: NextFunction) => Promise
 router.get('/getAll', userController.getAllUsers as RouteHandler);
 router.get('/getID:id', userController.getUserById as RouteHandler);
 router.post('/create', userController.createUser as RouteHandler);
-router.put('/update/:id', userController.updateUser as RouteHandler);
-router.delete('/remove/:id', userController.deleteUser as RouteHandler);
+// router.put('/update/:id', userController.updateUser as RouteHandler);
+// router.delete('/remove/:id', userController.deleteUser as RouteHandler);
 
 export default router;
 
