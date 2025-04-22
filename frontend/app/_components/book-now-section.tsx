@@ -25,25 +25,13 @@ import {
   Input
 } from "@/components/ui/input"
 import {
-  PhoneInput
-} from "@/components/ui/phone-input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from "@/components/ui/select"
-import {
   Textarea
 } from "@/components/ui/textarea"
 
 const formSchema = z.object({
   "first-name": z.string().min(1),
   "last-name": z.string().min(1),
-  name_6807074546: z.string(),
   email: z.string(),
-  nationality: z.string(),
   message: z.string()
 });
 
@@ -67,18 +55,18 @@ export default function BookNowSection() {
   }
 
   return (
-    <div className="w-full py-16 bg-white">
-      <div className="container mx-auto px-4">
+    <div className="relative w-full py-16 bg-[url('/contactbg.jpg')] bg-cover bg-center bg-no-repeat">
+      <div className="absolute inset-0 bg-black/60" />
+      <div className="container relative mx-auto px-4">
         <div className="text-center mb-10">
-          <p className="text-neutral-600 dark:text-neutral-300 text-lg">Contact Us</p>
-          <h2 className="text-4xl font-bold text-neutral-900 dark:text-white mt-2">Book Now</h2>
-          <p className="text-lg text-neutral-600 dark:text-neutral-300 mt-4 max-w-2xl mx-auto">
+          <h2 className="text-4xl font-bold text-white mt-2">Contact Us</h2>
+          <p className="text-lg text-white/80 mt-4 max-w-2xl mx-auto">
             Ready to explore Cebu? Fill out the form below to book your van rental and experience the beauty of the Philippines with our professional service.
           </p>
         </div>
         
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10  dark:bg-gray-900 rounded-xl p-8 ">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 max-w-3xl mx-auto py-10 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-xl p-8 shadow-xl">
             
             <div className="grid grid-cols-12 gap-4">
               
@@ -128,28 +116,6 @@ export default function BookNowSection() {
               
             </div>
             
-              <FormField
-                control={form.control}
-                name="name_6807074546"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col items-start">
-                  <FormLabel className="text-base">Phone Number (Choose Your Country Code)</FormLabel>
-                    <FormControl className="w-full">
-                      <PhoneInput
-                        placeholder="Enter your phone number"
-                        className="h-12 text-base"
-                        {...field}
-                        defaultCountry="PH"
-                        international
-                      />
-                    </FormControl>
-                  <FormDescription className="text-sm">Enter your phone number with country code.</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-                
-            
             <FormField
               control={form.control}
               name="email"
@@ -164,33 +130,6 @@ export default function BookNowSection() {
                     {...field} />
                   </FormControl>
                   
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="nationality"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-base">Nationality</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="h-12 text-base">
-                        <SelectValue placeholder="Select your nationality" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Filipino">Filipino</SelectItem>
-                      <SelectItem value="American">American</SelectItem>
-                      <SelectItem value="Chinese">Chinese</SelectItem>
-                      <SelectItem value="Japanese">Japanese</SelectItem>
-                      <SelectItem value="Korean">Korean</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                    
                   <FormMessage />
                 </FormItem>
               )}
@@ -215,14 +154,14 @@ export default function BookNowSection() {
               )}
             />
             <div className="flex justify-center">
-              <Button type="submit" className="px-10 py-7 text-lg font-medium">Book Now</Button>
+              <Button type="submit" className="px-8 py-6 text-lg font-semibold bg-primary hover:bg-primary/90 transition-colors duration-200">Submit</Button>
             </div>
           </form>
         </Form>
         
         <div className="mt-12 text-center">
-          <p className="text-neutral-600 dark:text-neutral-300">
-            Need help with your booking? Call us at <span className="font-semibold">+63 912 345 6789</span> or email <span className="font-semibold">bookings@borakvanrentals.com</span>
+          <p className="text-white/80">
+            Need help with your booking? Call us at <span className="font-semibold text-white">+63 912 345 6789</span> or email <span className="font-semibold text-white">bookings@borakvanrentals.com</span>
           </p>
         </div>
       </div>

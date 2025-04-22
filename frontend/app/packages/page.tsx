@@ -1,6 +1,45 @@
 import Image from 'next/image';
-import Packages from '@/components/ui/packages'
-import { BookNowButton } from '../_components/book-now-button';
+import PackageCards, { Package } from '@/components/ui/packages';
+
+// Package data moved to the page component
+const packageData: Package[] = [
+    {
+        id: 1,
+        title: "Cebu City Tour",
+        image: "/contactbg.jpg",
+        description: "Explore the historic and cultural landmarks of Cebu City. Visit famous sites like Magellan's Cross, Basilica del Santo Niño, and Temple of Leah. Perfect for history enthusiasts and first-time visitors.",
+        inclusions: [
+            "10 Hours Duration",
+            "Fuel & Toll Fees",
+            "Pickup & Drop-off Service"
+        ],
+        price: "₱4,500"
+    },
+    {
+        id: 2,
+        title: "South Cebu Adventure",
+        image: "/contactbg.jpg",
+        description: "Experience the natural wonders of South Cebu. Chase waterfalls at Kawasan, swim with whale sharks in Oslob, and enjoy the white sand beaches of Moalboal. Perfect for adventure seekers.",
+        inclusions: [
+            "12 Hours Duration",
+            "Fuel & Toll Fees",
+            "Pickup & Drop-off Service"
+        ],
+        price: "₱5,500"
+    },
+    {
+        id: 3,
+        title: "North Cebu Expedition",
+        image: "/contactbg.jpg",
+        description: "Discover the hidden gems of North Cebu. Visit the pristine beaches of Bantayan Island, explore the cultural sites of Malapascua, and enjoy local delicacies. Perfect for beach lovers.",
+        inclusions: [
+            "12 Hours Duration",
+            "Fuel & Toll Fees",
+            "Pickup & Drop-off Service"
+        ],
+        price: "₱5,500"
+    }
+];
 
 export default function Page() {
     return (
@@ -24,19 +63,15 @@ export default function Page() {
                     <h1 className="text-7xl font-extrabold tracking-wider drop-shadow-lg text-white [text-shadow:_-1px_-1px_0_#000,_1px_-1px_0_#000,_-1px_1px_0_#000,_1px_1px_0_#000]">
                         Explore & Packages
                     </h1>
-                    {/* <button className="mt-8 bg-[#2E2E2E] text-white px-8 py-3 rounded-md text-xl font-semibold tracking-wide transition-all duration-300 hover:bg-gray-700 hover:scale-105 shadow-lg hover:shadow-xl">
-                        Book Now
-                    </button> */}
-                    <BookNowButton />
+                
                 </div>
             </div>
 
             <div className="pt-10 flex flex-col items-center justify-center bg-white">
                 <h1 className="text-4xl font-bold mb-8 text-[#2E2E2E]">We offer Van rental with Packages</h1>
-                {/* Add your packages content here */}
             </div>
             <div>
-                <Packages />
+                <PackageCards packages={packageData} />
             </div>
         </>
     );

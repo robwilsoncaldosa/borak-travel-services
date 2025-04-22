@@ -1,6 +1,7 @@
 import Image from 'next/image';
+import Link from 'next/link';
 
-interface Package {
+export interface Package {
     id: number;
     title: string;
     image: string;
@@ -9,46 +10,7 @@ interface Package {
     price: string;
 }
 
-const packages: Package[] = [
-    {
-        id: 1,
-        title: "Cebu City Tour",
-        image: "/contactbg.jpg",
-        description: "Explore the historic and cultural landmarks of Cebu City. Visit famous sites like Magellan's Cross, Basilica del Santo Niño, and Temple of Leah. Perfect for history enthusiasts and first-time visitors.",
-        inclusions: [
-            "10 Hours Duration",
-            "Fuel & Toll Fees",
-            "Pickup & Drop-off Service"
-        ],
-        price: "₱4,500"
-    },
-    {
-        id: 2,
-        title: "South Cebu Adventure",
-        image: "/contactbg.jpg",
-        description: "Experience the natural wonders of South Cebu. Chase waterfalls at Kawasan, swim with whale sharks in Oslob, and enjoy the white sand beaches of Moalboal. Perfect for adventure seekers.",
-        inclusions: [
-            "12 Hours Duration",
-            "Fuel & Toll Fees",
-            "Pickup & Drop-off Service"
-        ],
-        price: "₱5,500"
-    },
-    {
-        id: 3,
-        title: "North Cebu Expedition",
-        image: "/contactbg.jpg",
-        description: "Discover the hidden gems of North Cebu. Visit the pristine beaches of Bantayan Island, explore the cultural sites of Malapascua, and enjoy local delicacies. Perfect for beach lovers.",
-        inclusions: [
-            "12 Hours Duration",
-            "Fuel & Toll Fees",
-            "Pickup & Drop-off Service"
-        ],
-        price: "₱5,500"
-    }
-];
-
-export default function PackageCards() {
+export default function PackageCards({ packages }: { packages: Package[] }) {
     return (
         <div className="py-5">
             <div className="max-w-[1400px] mx-auto">              
@@ -84,13 +46,13 @@ export default function PackageCards() {
                                 </div>
 
                                 <div className="flex items-center justify-between mt-8 pt-6 border-t border-gray-100">
-                                    <div>
-                                        <span className="text-sm text-gray-500">Starting from</span>
-                                        <p className="text-2xl font-bold text-[#2E2E2E]">{pkg.price}</p>
+                                    <div className="flex flex-col">
+                                        <span className="text-sm text-gray-500">For pricing details</span>
+                                        <p className="text-lg font-semibold text-[#2E2E2E]">Contact Us</p>
                                     </div>
-                                    <button className="bg-[#2E2E2E] text-white px-6 py-2.5 rounded-md font-semibold tracking-wide transition-all duration-300 hover:bg-gray-700 hover:scale-105">
-                                        Book Now
-                                    </button>
+                                    <Link href={`/packages/${pkg.id}`} className="bg-[#2E2E2E] text-white px-6 py-2.5 rounded-md font-semibold tracking-wide transition-all duration-300 hover:bg-gray-700 hover:scale-105 inline-block">
+                                        View More Details
+                                    </Link>
                                 </div>
                             </div>
                         </div>
