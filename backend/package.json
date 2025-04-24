@@ -11,19 +11,28 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
+<<<<<<< HEAD
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.12.1",
+    "passport": "^0.7.0",
+=======
     "mongoose": "^8.12.1",
     "passport": "^0.7.0",
     "safe-buffer": "^5.2.1",
+>>>>>>> 4eab3abbc1dc457f470aae4595b661629482e08e
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/express-session": "^1.18.1",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/mongoose": "^5.11.96",
     "@types/node": "^22.13.10",
     "@types/passport": "^1.0.17",
