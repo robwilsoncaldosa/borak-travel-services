@@ -48,6 +48,11 @@ const navItems: NavItem[] = [
     href: "/admin/dashboard/examples/calendar",
     icon: Calendar1,
   },
+  {
+    title: "Packages",
+    href: "/admin/dashboard/packages",
+    icon: Github,
+  },
 ];
 
 export default function MainLayout({
