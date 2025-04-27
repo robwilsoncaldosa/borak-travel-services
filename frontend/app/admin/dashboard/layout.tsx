@@ -1,4 +1,5 @@
 "use client";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import {
   Calendar1,
   Github,
@@ -6,6 +7,7 @@ import {
   LayoutDashboard,
   LucideIcon,
   Table2,
+  Inbox
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import * as React from "react";
@@ -25,6 +27,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ThemeProvider } from "@/components/theme-provider";
+import Chatbot  from "@/components/ui/chatbot";
+import { ChatProvider } from "@/components/providers/chat-provider";
 
 interface NavItem {
   title: string;
@@ -37,6 +41,11 @@ const navItems: NavItem[] = [
     title: "Dashboard",
     href: "/admin/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    title: "Inbox",
+    href: "/admin/dashboard/inbox",
+    icon: Inbox,
   },
   {
     title: "Table View",
@@ -58,55 +67,65 @@ export default function MainLayout({
   const pathname = usePathname();
 
   return (
-    <ThemeProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-      storageKey="borak-theme"
-    >
-      <SidebarProvider>
-        <div className="flex h-screen overflow-hidden w-full">
-          <Sidebar>
-            <SidebarHeader className="px-6 py-4">
-              <a href="/" className="flex items-center space-x-2">
-                <Home className="h-6 w-6" />
-                <span className="text-xl font-semibold">Logo</span>
-              </a>
-            </SidebarHeader>
-            <SidebarContent className="p-4">
-              <SidebarMenu>
-                {navItems.map((item) => (
-                  <SidebarMenuItem key={item.href} className="mt-2">
-                    <SidebarMenuButton
-                      asChild
-                      isActive={pathname === item.href}
-                      tooltip={item.title}
-                    >
-                      <a href={item.href}>
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </a>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarContent>
-            <SidebarFooter className="flex items-center flex-row gap-2"></SidebarFooter>
-          </Sidebar>
-          <SidebarInset>
-            <div className="flex h-full flex-col">
-              <header className="flex h-14 items-center gap-4 border-b bg-background px-6">
-                <SidebarTrigger />
-                <div className="flex-1 flex items-center justify-end gap-4">
-                  <ThemeToggle />{" "}
+    <ProtectedRoute allowedRoles={['admin']}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+        storageKey="borak-theme"
+      >
+        <ChatProvider>
+          <SidebarProvider>
+            <div className="flex h-screen overflow-hidden w-full">
+              <Sidebar>
+                <SidebarHeader className="px-6 py-4">
+                  <a href="/" className="flex items-center space-x-2">
+                    <Home className="h-6 w-6" />
+                    <span className="text-xl font-semibold">Logo</span>
+                  </a>
+                </SidebarHeader>
+                <SidebarContent className="p-4">
+                  <SidebarMenu>
+                    {navItems.map((item) => (
+                      <SidebarMenuItem key={item.href} className="mt-2">
+                        <SidebarMenuButton
+                          asChild
+                          isActive={pathname === item.href}
+                          tooltip={item.title}
+                        >
+                          <a href={item.href}>
+                            <item.icon className="h-4 w-4" />
+                            <span>{item.title}</span>
+                          </a>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </SidebarContent>
+                <SidebarFooter className="flex items-center flex-row gap-2"></SidebarFooter>
+              </Sidebar>
+              <SidebarInset>
+                <div className="flex h-full flex-col">
+                  <header className="flex h-14 items-center gap-4 border-b bg-background px-6">
+                    <SidebarTrigger />
+                    <div className="flex-1 flex items-center justify-end gap-4">
+                      <ThemeToggle />
+                    </div>
+                  </header>
+                  <main className="flex-1 overflow-auto p-6 relative">
+                    {children}
+                    {/* Add ChatBot component */}
+                    <div className="fixed bottom-4 right-4 z-50">
+                   
+                    </div>
+                  </main>
                 </div>
-              </header>
-              <main className="flex-1 overflow-auto p-6">{children}</main>
+              </SidebarInset>
             </div>
-          </SidebarInset>
-        </div>
-      </SidebarProvider>
-    </ThemeProvider>
+          </SidebarProvider>
+        </ChatProvider>
+      </ThemeProvider>
+    </ProtectedRoute>
   );
 }

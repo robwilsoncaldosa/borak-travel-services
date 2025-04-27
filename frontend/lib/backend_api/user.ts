@@ -12,7 +12,43 @@ export interface User {
   created_at: Date;
 }
 
+interface LoginResponse {
+  success: boolean;
+  token: string;
+  user: {
+    id: string;
+    firstname: string;
+    lastname: string;
+    email: string;
+    role: string;
+  };
+}
+
 export const userApi = {
+  // Login user
+  login: async (credentials: { email: string; password: string }) => {
+    try {
+      // Validate credentials before sending
+      if (!credentials.email || !credentials.password) {
+        throw new Error('Email and password are required');
+      }
+
+      // Ensure data is properly formatted
+      const loginData = {
+        email: credentials.email.trim().toLowerCase(),
+        password: credentials.password
+      };
+
+      console.log('Sending login request:', loginData); // Debug log
+      const response = await instance.post<LoginResponse>('/api/users/login', loginData);
+      console.log('Login response:', response.data); // Debug log
+      return response.data;
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error;
+    }
+  },
+
   // Create new user
   createUser: async (userData: Omit<User, 'user_id' | 'created_at'>) => {
     const response = await instance.post<User>('/api/users/create', userData);

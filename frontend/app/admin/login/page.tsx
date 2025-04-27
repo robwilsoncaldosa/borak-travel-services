@@ -5,12 +5,24 @@ import { LoginForm } from "@/app/admin/login/_components/login-form"
 import { RegisterForm } from "@/app/admin/login/_components/register-form"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/hooks/useAuth"
+import { toast } from "sonner"
 
 export default function LoginPage() {
   const [showLogin, setShowLogin] = useState(true)
+  const { login, loading, error } = useAuth()
 
   const toggleForm = () => {
     setShowLogin(!showLogin)
+  }
+
+  const handleLogin = async (email: string, password: string) => {
+    const result = await login(email, password)
+    if (result) {
+      toast.success('Login successful!')
+    } else {
+      toast.error(error || 'Login failed')
+    }
   }
 
   return (
@@ -22,7 +34,12 @@ export default function LoginPage() {
             "transition-all duration-500 ease-in-out",
             showLogin ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
           )}>
-            <LoginForm onRegisterClick={toggleForm} hideImage />
+            <LoginForm 
+              onRegisterClick={toggleForm} 
+              hideImage 
+              onSubmit={handleLogin}
+              isLoading={loading}
+            />
           </div>
           
           {/* Register Form */}

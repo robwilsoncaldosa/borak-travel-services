@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import User from '../models/userModel';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
-// Add these new functions to userController
+import { generateToken } from '../lib/users';
+
 export const userController = {
   getAllUsers: async (req: Request, res: Response) => {
     try {
@@ -28,9 +29,14 @@ export const userController = {
   login: async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
+      
+      if (!email || !password) {
+        return res.status(400).json({ message: 'Email and password are required' });
+      }
 
       const user = await User.findOne({ email });
       if (!user) {
+        console.log('User not found'); // Debug log
         return res.status(401).json({ message: 'Invalid email or password' });
       }
 
@@ -39,13 +45,10 @@ export const userController = {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
 
-      const token = jwt.sign(
-        { id: user._id, email: user.email, role: user.role },
-        process.env.JWT_SECRET || 'your-secret-key',
-        { expiresIn: '24h' }
-      );
+      const token = generateToken(user._id.toString());
 
       res.status(200).json({
+        success: true,
         token,
         user: {
           id: user._id,
@@ -56,6 +59,7 @@ export const userController = {
         }
       });
     } catch (error) {
+      console.error('Login error:', error);
       res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
     }
   },
