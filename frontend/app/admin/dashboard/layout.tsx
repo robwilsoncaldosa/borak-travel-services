@@ -5,7 +5,9 @@ import {
   Home,
   LayoutDashboard,
   LucideIcon,
+  Package,
   Table2,
+  Users,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import * as React from "react";
@@ -39,9 +41,9 @@ const navItems: NavItem[] = [
     icon: LayoutDashboard,
   },
   {
-    title: "Table View",
+    title: "Users",
     href: "/admin/dashboard/examples/table",
-    icon: Table2,
+    icon: Users,
   },
   {
     title: "Calendar View",
@@ -51,7 +53,7 @@ const navItems: NavItem[] = [
   {
     title: "Packages",
     href: "/admin/dashboard/packages",
-    icon: Github,
+    icon: Package,
   },
 ];
 
