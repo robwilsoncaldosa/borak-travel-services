@@ -29,7 +29,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { DataTable } from "../../_components/data-table";
+import { DataTable } from "../_components/data-table";
 import { userApi } from "@/lib/backend_api/user";
 import { toast } from "sonner";
 
@@ -232,11 +232,7 @@ export default function UsersPage() {
         const role = row.getValue("role");
         return (
           <Badge
-            className={`${
-              role === "admin"
-                ? "bg-green-200 text-gray-600 dark:bg-green-400/20 shadow-none px-4 rounded-full dark:text-white"
-                : "bg-blue-200 text-gray-600 dark:bg-blue-400/20 shadow-none px-4 rounded-full dark:text-white"
-            }`}
+          variant={role === "admin" ? "default" : "secondary"}
           >
             {role as string}
           </Badge>

@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   LucideIcon,
   Package,
+  Star,
   Table2,
   Users,
 } from "lucide-react";
@@ -42,7 +43,7 @@ const navItems: NavItem[] = [
   },
   {
     title: "Users",
-    href: "/admin/dashboard/examples/table",
+    href: "/admin/dashboard/users",
     icon: Users,
   },
   {
@@ -55,6 +56,16 @@ const navItems: NavItem[] = [
     href: "/admin/dashboard/packages",
     icon: Package,
   },
+  {
+    title: "Reviews",
+    href: "/admin/dashboard/reviews",
+    icon: Star
+  },
+  {
+    title: "Bookings",
+    href: "/admin/dashboard/bookings",
+    icon: Table2
+  }
 ];
 
 export default function MainLayout({
