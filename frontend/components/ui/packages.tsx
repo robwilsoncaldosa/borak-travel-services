@@ -1,8 +1,12 @@
+'use client';
+
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-export interface Package {
-    id: number;
+// This interface matches the transformed data structure we'll use for display
+export interface PackageCardProps {
+    id: string;
     title: string;
     image: string;
     description: string;
@@ -10,7 +14,7 @@ export interface Package {
     price: string;
 }
 
-export default function PackageCards({ packages }: { packages: Package[] }) {
+export default function PackageCards({ packages }: { packages: PackageCardProps[] }) {
     return (
         <div className="py-5">
             <div className="max-w-[1400px] mx-auto">              
@@ -23,10 +27,15 @@ export default function PackageCards({ packages }: { packages: Package[] }) {
                                     alt={pkg.title}
                                     fill
                                     className="object-cover"
+                                    priority
+                                    onError={(e) => {
+                                        // @ts-ignore - TypeScript doesn't know about currentTarget.src
+                                        e.currentTarget.src = '/Landing.jpg';
+                                    }}
                                 />
                             </div>
                             
-                            <div className="p-8">
+                            <div className="p-4">
                                 <h2 className="text-2xl font-bold text-[#2E2E2E] mb-3">{pkg.title}</h2>
                                 
                                 <p className="text-gray-600 mb-6 line-clamp-3">

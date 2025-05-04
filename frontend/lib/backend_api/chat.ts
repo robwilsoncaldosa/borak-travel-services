@@ -11,14 +11,11 @@ export interface ChatMessage {
   isAdmin?: boolean;
   userId?: string;
   username?: string;
- 
+  guestUsername?: string; // Add this line to your ChatMessage interface
 }
 
-export interface GuestCreateDto {
-  userId: string;
-  username: string;
-  emailOrPhone: string; 
-}
+
+
 
 export const chatApi = {
   // User & Admin: Get messages by user ID
@@ -40,9 +37,9 @@ export const chatApi = {
     try {
       // Transform the message format to match backend requirements
       const messagePayload = {
-        message: message.text, // Use the text field as the message content
-        userId: message.userId,
-        username: message.username || (message.sender === 'bot' ? 'Bot' : 'Guest'),
+        message: message.message || message.text, // Use message field first, fallback to text
+        userId: message.userId,  // Using guest's ID
+        username: message.username || (message.sender === 'bot' ? 'Bot' : 'Guest'), // Using guest's username
         isAdmin: message.sender === 'bot',
         isRead: message.sender === 'bot',
         isSpecialOffer: message.isSpecialOffer || false,
@@ -94,7 +91,5 @@ export const chatApi = {
     }
   },
 
-  createGuest: async (guest: GuestCreateDto): Promise<void> => {
-    await instance.post("/guests", guest);
-  }
+
 };

@@ -1,18 +1,27 @@
+import { useState } from 'react';
 import { userApi } from '@/lib/backend_api/user';
 
 export const useAuth = () => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const login = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
     try {
       const response = await userApi.login({ email, password });
-      
+
       // Store token and user data
       localStorage.setItem('token', response.token);
       localStorage.setItem('user', JSON.stringify(response.user));
-      
+
       return response;
-    } catch (error) {
-      console.error('Login failed:', error);
-      throw error;
+    } catch (err: any) {
+      console.error('Login failed:', err);
+      setError(err.message || 'Login failed');
+      throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -21,5 +30,5 @@ export const useAuth = () => {
     localStorage.removeItem('user');
   };
 
-  return { login, logout };
+  return { login, logout, loading, error };
 };

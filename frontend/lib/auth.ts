@@ -5,21 +5,18 @@ export const isAuthenticated = (): boolean => {
   const user = localStorage.getItem('user');
   
   if (!token || !user) {
-    redirectToLogin(); // Immediate redirect if no auth data
     return false;
   }
   
   try {
     const parsed = JSON.parse(user);
     if (!parsed || !parsed.role) {
-      redirectToLogin(); // Immediate redirect if invalid data
       return false;
     }
     return true;
   } catch {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    redirectToLogin(); // Immediate redirect on error
     return false;
   }
 };
@@ -40,7 +37,7 @@ export const redirectToLogin = () => {
   if (typeof window !== 'undefined') {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    window.location.replace('/admin/login'); // Use replace instead of href
+    window.location.replace('/admin/login'); 
   }
 };
 

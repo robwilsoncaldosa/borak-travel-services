@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import http from "http";
 import passport from "passport";
 import userRoutes from './routes/userRoutes';
+import packageRoutes from './routes/packageRoutes';
 import bookingRoutes from './routes/bookingRoutes';
 import messageRoutes from './routes/messageRoutes';
 import guestRoutes from './routes/guestRoutes';
@@ -47,8 +48,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/guests', guestRoutes);
+app.use('/create/guests', guestRoutes);
 
 const PORT: number = parseInt(process.env.PORT || "8081", 10);
 server.listen(PORT, () => {

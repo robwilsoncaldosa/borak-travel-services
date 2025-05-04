@@ -27,8 +27,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ThemeProvider } from "@/components/theme-provider";
-import Chatbot  from "@/components/ui/chatbot";
-import { ChatProvider } from "@/components/providers/chat-provider";
 
 interface NavItem {
   title: string;
@@ -57,6 +55,11 @@ const navItems: NavItem[] = [
     href: "/admin/dashboard/examples/calendar",
     icon: Calendar1,
   },
+  {
+    title: "Packages",
+    href: "/admin/dashboard/packages",
+    icon: Github,
+  },
 ];
 
 export default function MainLayout({
@@ -75,7 +78,7 @@ export default function MainLayout({
         disableTransitionOnChange
         storageKey="borak-theme"
       >
-        <ChatProvider>
+   
           <SidebarProvider>
             <div className="flex h-screen overflow-hidden w-full">
               <Sidebar>
@@ -124,7 +127,7 @@ export default function MainLayout({
               </SidebarInset>
             </div>
           </SidebarProvider>
-        </ChatProvider>
+     
       </ThemeProvider>
     </ProtectedRoute>
   );

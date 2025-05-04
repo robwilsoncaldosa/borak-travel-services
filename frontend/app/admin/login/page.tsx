@@ -1,25 +1,35 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect} from "react"
 import { LoginForm } from "@/app/admin/login/_components/login-form"
 import { RegisterForm } from "@/app/admin/login/_components/register-form"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/useAuth"
 import { toast } from "sonner"
+import { useRouter } from "next/navigation"
+
+import { isAuthenticated } from "@/lib/auth"; // Make sure this exists
+
 
 export default function LoginPage() {
   const [showLogin, setShowLogin] = useState(true)
   const { login, loading, error } = useAuth()
+  const router = useRouter()
 
+
+ 
+  
+  
   const toggleForm = () => {
     setShowLogin(!showLogin)
   }
 
   const handleLogin = async (email: string, password: string) => {
     const result = await login(email, password)
-    if (result) {
+    if (result && isAuthenticated()) {
       toast.success('Login successful!')
+      router.push('/admin/dashboard')
     } else {
       toast.error(error || 'Login failed')
     }
