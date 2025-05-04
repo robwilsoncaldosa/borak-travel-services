@@ -6,8 +6,11 @@ import {
   Home,
   LayoutDashboard,
   LucideIcon,
+  Package,
+  Star,
   Table2,
-  Inbox
+  Inbox,
+  Users,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import * as React from "react";
@@ -46,9 +49,12 @@ const navItems: NavItem[] = [
     icon: Inbox,
   },
   {
-    title: "Table View",
-    href: "/admin/dashboard/examples/table",
-    icon: Table2,
+    // title: "Table View",
+    // href: "/admin/dashboard/examples/table",
+    // icon: Table2,
+    title: "Users",
+    href: "/admin/dashboard/users",
+    icon: Users,
   },
   {
     title: "Calendar View",
@@ -58,8 +64,18 @@ const navItems: NavItem[] = [
   {
     title: "Packages",
     href: "/admin/dashboard/packages",
-    icon: Github,
+    icon: Package,
   },
+  {
+    title: "Reviews",
+    href: "/admin/dashboard/reviews",
+    icon: Star
+  },
+  {
+    title: "Bookings",
+    href: "/admin/dashboard/bookings",
+    icon: Table2
+  }
 ];
 
 export default function MainLayout({

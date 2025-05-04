@@ -9,7 +9,7 @@ import { HeaderProps, NavLinkProps } from './types/header.types';
 
 const navLinks: NavLinkProps[] = [
   { href: '/', icon: FaHome, label: 'Home' },
-  { href: '/van-rentals', icon: FaShuttleVan, label: 'Van Rentals' },
+  // { href: '/van-rentals', icon: FaShuttleVan, label: 'Van Rentals' },
   { href: '/packages', icon: FaCompass, label: 'Packages' },
   { href: '/locations', icon: FaMapMarkedAlt, label: 'Destinations' },
   { href: '/contact', icon: FaPhone, label: 'Contact' },
