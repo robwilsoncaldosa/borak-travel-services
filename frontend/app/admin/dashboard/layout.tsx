@@ -81,7 +81,7 @@ export default function MainLayout({
   const pathname = usePathname();
 
   return (
-    // <ProtectedRoute allowedRoles={['admin']}>
+    <ProtectedRoute allowedRoles={['admin']}>
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
@@ -132,6 +132,6 @@ export default function MainLayout({
         </div>
       </SidebarProvider>
     </ThemeProvider>
-    // </ProtectedRoute>
+     </ProtectedRoute>
   );
 }
