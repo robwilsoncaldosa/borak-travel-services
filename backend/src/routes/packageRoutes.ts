@@ -6,6 +6,7 @@ import {
   updatePackage,
   deletePackage,
 } from '../controllers/packageController';
+import { getPackageReviews } from '../controllers/reviewController';
 
 const router = express.Router();
 
@@ -17,6 +18,9 @@ router.get('/', getAllPackages);
 
 // Get a single package by ID
 router.get('/:id', getPackageById);
+
+// Get reviews for a specific package
+router.get('/:id/reviews', getPackageReviews);
 
 // Update a package
 router.put('/:id', updatePackage);

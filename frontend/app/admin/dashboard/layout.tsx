@@ -27,6 +27,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ThemeProvider } from "@/components/theme-provider";
+import { ta } from "date-fns/locale";
 
 interface NavItem {
   title: string;
@@ -54,7 +55,12 @@ const navItems: NavItem[] = [
     title: "Packages",
     href: "/admin/dashboard/packages",
     icon: Package,
+  },{
+    title: "Reviews",
+    href: "/admin/dashboard/reviews",
+    icon: Table2,
   },
+
 ];
 
 export default function MainLayout({

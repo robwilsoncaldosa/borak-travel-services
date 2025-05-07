@@ -60,24 +60,19 @@ export default function PackageDetail() {
         }
     };
 
-    //   useEffect(() => {
-    //     // In a real app, you would fetch this data from an API
-    //     const packageId = typeof params.id === 'string' ? parseInt(params.id) : Array.isArray(params.id) ? parseInt(params.id[0]) : 0;
-    //     const foundPackage = packages.find(p => p.id === packageId);
+    const nextImage = () => {
+        if (packageData?.images) {
+            setCurrentImageIndex((prev) => 
+                prev === packageData.images.length - 1 ? 0 : prev + 1
+            );
+        }
+    };
 
-    //     if (foundPackage) {
-    //       setPackageData(foundPackage);
-    //     }
-    //     setLoading(false);
-    //   }, [params.id]);
-
-    const handleBookNow = () => {
-        if (packageData) {
-            // Generate a unique booking ID (in a real app, this would come from the backend)
-            const bookingId = `BKG-${Date.now().toString().slice(-6)}`;
-
-            // Navigate to confirmation page with booking details
-            router.push(`/confirmation/${bookingId}?tour=${packageData.title.toLowerCase().replace(/ /g, '_')}`);
+    const previousImage = () => {
+        if (packageData?.images) {
+            setCurrentImageIndex((prev) => 
+                prev === 0 ? packageData.images.length - 1 : prev - 1
+            );
         }
     };
 

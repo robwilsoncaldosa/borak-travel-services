@@ -1,62 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { Package } from '@/lib/backend_api/package';
+import { reviewApi } from '@/lib/backend_api/review';
+import { Review } from '@/app/admin/dashboard/types/review.types';
 
 export interface ReviewSectionProps {
     packageData: Package;
 }
 
-interface Review {
-    id: string;
-    userName: string;
-    userImage: string;
-    rating: number;
-    date: string;
-    country: string;
-    text: string;
-}
-
-// Dummy reviews data for now
-const dummyReviews: Review[] = [
-    {
-        id: '1',
-        userName: 'Matthew',
-        userImage: '/avatar-1.jpg',
-        rating: 5,
-        date: 'April 2023',
-        country: 'United Kingdom',
-        text: 'Amazing experience! The canyoneering adventure down the Matutinao River was incredible. Our guide was knowledgeable and made sure we were safe throughout the journey. The lunch provided was delicious too!'
-    },
-    {
-        id: '2',
-        userName: 'Stephanie',
-        userImage: '/avatar-2.jpg',
-        rating: 5,
-        date: 'April 2023',
-        country: 'United Kingdom',
-        text: 'One of the best experiences of our trip! The waterfalls were breathtaking and jumping into the crystal clear water was exhilarating. Highly recommend this tour for adventure seekers.'
-    },
-    {
-        id: '3',
-        userName: 'Richard',
-        userImage: '/avatar-3.jpg',
-        rating: 5,
-        date: 'April 2023',
-        country: 'United Kingdom',
-        text: 'Fantastic day out! The canyoneering was so much fun and the scenery was stunning. Our guide was friendly and professional. The transport was comfortable and on time.'
-    },
-    {
-        id: '4',
-        userName: 'Barbara',
-        userImage: '/avatar-4.jpg',
-        rating: 5,
-        date: 'April 2023',
-        country: 'United Kingdom',
-        text: 'Great adventure for the whole family! My teenagers loved the cliff jumping and swimming through the canyons. The Filipino lunch was a nice authentic touch to end the day.'
-    }
-];
-
 export const ReviewSection = ({ packageData }: ReviewSectionProps) => {
+    const [reviews, setReviews] = useState<Review[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const packageReviews = await reviewApi.getPackageReviews(packageData._id);
+                // Filter only accepted reviews
+                const acceptedReviews = packageReviews.filter(review => review.status === 'accepted');
+                setReviews(acceptedReviews);
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchReviews();
+    }, [packageData._id]);
+
     // Render star rating
     const renderStars = (rating: number) => {
         return (
@@ -75,23 +47,45 @@ export const ReviewSection = ({ packageData }: ReviewSectionProps) => {
         );
     };
 
+    if (isLoading) {
+        return (
+            <div className="rounded-lg p-6 mb-8">
+                <h2 className="text-2xl font-bold mb-6">Loading reviews...</h2>
+            </div>
+        );
+    }
+
+    if (reviews.length === 0) {
+        return (
+            <div className="rounded-lg p-6 mb-8">
+                <h2 className="text-2xl font-bold mb-6">No reviews yet</h2>
+                {/* <p className="text-gray-600">Be the first to review this package!</p> */}
+            </div>
+        );
+    }
+
     return (
-        <div className=" rounded-lg  p-6 mb-8">
+        <div className="rounded-lg p-6 mb-8">
             <h2 className="text-2xl font-bold mb-6">Highlighted reviews from other travelers</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {dummyReviews.map((review) => (
-                    <div key={review.id} className="border bg-background rounded-lg p-4 shadow-sm">
+                {reviews.map((review) => (
+                    <div key={review._id} className="border bg-background rounded-lg p-4 shadow-sm">
                         <div className="flex items-center mb-3">
                             <div className="w-10 h-10 relative rounded-full overflow-hidden mr-3">
                                 {/* Fallback avatar if image is not available */}
                                 <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                                    <span className="text-gray-500 text-lg">{review.userName.charAt(0)}</span>
+                                    <span className="text-gray-500 text-lg">{review.guest_id.charAt(0)}</span>
                                 </div>
                             </div>
                             <div>
-                                <div className="font-medium">{review.userName}</div>
-                                <div className="text-sm text-gray-500">{review.country} · {review.date}</div>
+                                <div className="font-medium">{review.guest_id}</div>
+                                <div className="text-sm text-gray-500">
+                                    {new Date(review.created_at).toLocaleDateString('en-US', {
+                                        month: 'long',
+                                        year: 'numeric'
+                                    })}
+                                </div>
                             </div>
                         </div>
                         
@@ -99,16 +93,18 @@ export const ReviewSection = ({ packageData }: ReviewSectionProps) => {
                             {renderStars(review.rating)}
                         </div>
                         
-                        <p className="text-gray-700 text-sm">{review.text}</p>
+                        <p className="text-gray-700 text-sm">{review.review}</p>
                     </div>
                 ))}
             </div>
             
-            <div className="mt-6 text-center">
-                <button className="text-blue-600 hover:text-blue-800 font-medium">
-                    See more reviews
-                </button>
-            </div>
+            {reviews.length > 4 && (
+                <div className="mt-6 text-center">
+                    <button className="text-blue-600 hover:text-blue-800 font-medium">
+                        See more reviews
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
