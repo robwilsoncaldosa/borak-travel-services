@@ -23,7 +23,6 @@ export const PackageHeader = ({ packageData, isWishlisted, toggleWishlist, handl
 
         {/* Ratings */}
         <div className="flex items-center mb-6">
-            <span className="bg-gray-800 text-white text-xs px-2 py-1 rounded mr-3">Top rated</span>
             <div className="flex items-center">
                 {[1, 2, 3, 4, 5].map((star) => (
                     <svg key={star} className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -33,30 +32,7 @@ export const PackageHeader = ({ packageData, isWishlisted, toggleWishlist, handl
                 <span className="ml-2 text-gray-700 font-medium">4.9</span>
                 <span className="ml-2 text-gray-500">208 reviews</span>
             </div>
-            <div className="ml-auto flex items-center space-x-4">
-                <button 
-                    onClick={toggleWishlist}
-                    className="flex items-center text-gray-700 hover:text-red-600"
-                    aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
-                >
-                    <svg className={`w-5 h-5 ${isWishlisted ? 'text-red-600 fill-current' : 'text-gray-400'}`} 
-                        stroke="currentColor" 
-                        fill={isWishlisted ? "currentColor" : "none"} 
-                        viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                    </svg>
-                    <span className="ml-1">Add to wishlist</span>
-                </button>
-                <button 
-                    onClick={handleShare}
-                    className="flex items-center text-gray-700 hover:text-blue-600"
-                    aria-label="Share"
-                >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                    </svg>
-                </button>
-            </div>
+           
         </div>
     </>
 );

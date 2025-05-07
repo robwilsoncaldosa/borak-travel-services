@@ -3,97 +3,342 @@ import { useState, useEffect, useRef } from "react";
 import { Send, MessageCircle, X, User, Bot, MapPin, Plane, PalmtreeIcon, SunIcon, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+
+import { chatApi, ChatMessage } from "@/lib/backend_api/chat";
+import { guestApi, GuestCreateDto } from "@/lib/backend_api/guest";
+import { io, Socket } from "socket.io-client";
+
+
+let socket: Socket;
+
+
 interface Message {
+  id?: string;
   sender: "user" | "bot";
   text: string;
   timestamp: Date;
   isSpecialOffer?: boolean;
+  userId?: string;
+  username?: string;
+  isAdmin?: boolean; 
 }
+
 
 const Chatbot = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [guestReady, setGuestReady] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [userId, setUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  
-  // Auto-scroll to bottom when messages change
+
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
-  
-  useEffect(() => {
-    if (isOpen) {
-      scrollToBottom();
+
+
+   useEffect(() => {
+    const storedUserId = localStorage.getItem("guestUserId");
+    const storedUsername = localStorage.getItem("guestUsername");
+
+
+    if (storedUserId && storedUsername) {
+      setUserId(storedUserId);
+      setUsername(storedUsername);
+      setGuestReady(true);
     }
-  }, [messages, isOpen]);
+
+
+    console.log("Guest User ID:", storedUserId, "Guest Username:", storedUsername);
+    return () => {
+      localStorage.removeItem("guestUserId");
+      localStorage.removeItem("guestUsername");
+    };
+  }, []);
+
+
+  // useEffect(() => {
+  //   const storedUserId = localStorage.getItem("guestUserId");
+  //   const storedUsername = localStorage.getItem("guestUsername");
+
+
+  //   if (storedUserId && storedUsername) {
+  //     setUserId(storedUserId);
+  //     setUsername(storedUsername);
+  //     setGuestReady(true);
+  //   }
+
+
+  //   console.log("Guest User ID:", storedUserId, "Guest Username:", storedUsername);
+  // }, []);
+ 
+
+ useEffect(() => {
+  if (!isOpen || !guestReady || !userId) return;
+
+
+  socket = io(process.env.NEXT_PUBLIC_SERVER_ENDPOINT || "http://localhost:8081");
+
+  socket.on("message", handleIncomingMessage);
+
+  loadMessages();
+
+  return () => {
+    socket?.disconnect();
+  };
+}, [isOpen, guestReady, userId]);
+
+
+
+
+const handleIncomingMessage = (message: ChatMessage) => {
+  const isFromBot = message.isAdmin ?? message.username === "Bot"; // fallback
+
+
+  setMessages(prev => {
+   
+    if (prev.some(m => m.id === message.id)) return prev;
+    return [
+      ...prev,
+      {
+        id: message.id,
+        sender: isFromBot ? "bot" : "user",
+        text: message.message || "",
+        timestamp: new Date(message.timestamp),
+        isSpecialOffer: message.isSpecialOffer,
+        userId: message.userId,
+        username: message.username,
+        isAdmin: message.isAdmin
+      }
+    ];
+  });
+};
+
+
+const loadMessages = async () => {
+  try {
+    const data = await chatApi.getMessagesByUserId(userId || '');
+    setMessages(data.map(formatMessage));
+  } catch (error) {
+    console.error("Failed to load messages:", error);
+  }
+};
+
+
+const formatMessage = (msg: ChatMessage): Message => ({
+  id: msg.id,
+  sender: msg.isAdmin ? "bot" : "user",
+  text: msg.message || "",
+  timestamp: new Date(msg.timestamp),
+  isSpecialOffer: msg.isSpecialOffer,
+  userId: msg.userId,
+  username: msg.username,
+  isAdmin: msg.isAdmin
+});
+
+
+
+
+  const createGuest = async () => {
+    if (!username.trim() || !email.trim()) return;
+
+
+    try {
+    
+      if (!email.includes('@')) {
+        console.error('Only email is supported at the moment');
+        return;
+      }
+
+
+      const payload: GuestCreateDto = {
+        username,
+        email: email
+      };
+
+
+      const created = await guestApi.createGuest(payload);
+      localStorage.setItem("guestUserId", created.id);
+      localStorage.setItem("guestUsername", created.username);
+      setUserId(created.id);
+      setGuestReady(true);
+    } catch (error) {
+      console.error("Failed to create guest:", error);
+    }
+  };
+
 
   const handleSend = async () => {
-    if (!input.trim()) return;
-    
-    const userMessage: Message = { 
-      sender: "user", 
-      text: input,
-      timestamp: new Date() 
+    if (!input.trim() || !userId) return;
+   
+    const userMessage: ChatMessage = {
+      sender: "user",
+      message: input,
+      timestamp: new Date(),
+      userId,
+      username,
     };
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
-    
-    // Show typing indicator
-    setIsTyping(true);
-    
-    // Simulate bot response with typing delay
-    setTimeout(() => {
-      setIsTyping(false);
+
+
+    try {
       
-      // Simulate different responses based on user input
-      let responseText = "Hello! How can I help you plan your perfect travel experience?";
-      let isSpecialOffer = false;
-      
-      const lowerInput = input.toLowerCase();
-      if (lowerInput.includes("package") || lowerInput.includes("tour") || lowerInput.includes("offer")) {
-        responseText = "We have several exciting tour packages available in Cebu! Would you like to explore our Oslob Whale Shark Watching or Kawasan Falls adventures?";
-        isSpecialOffer = true;
-      } else if (lowerInput.includes("price") || lowerInput.includes("cost") || lowerInput.includes("how much")) {
-        responseText = "Our tour packages start from ₱1,500 per person, depending on the destination and inclusions. May I know which specific destination you're interested in?";
-      } else if (lowerInput.includes("book") || lowerInput.includes("reserve")) {
-        responseText = "Great! To book a tour, we'll need your preferred date, number of travelers, and pickup location. When are you planning to visit?";
+      const createdMessage = await chatApi.createMessage(userMessage);
+     
+      // Update local state with the created message
+      setMessages((prev) => [...prev, {
+        ...userMessage,
+        id: createdMessage.id,
+        text: userMessage.message
+      } as Message]);
+     
+      if (socket) {
+        socket.emit("sendMessage", createdMessage);
       }
-      
-      const botMessage: Message = { 
-        sender: "bot", 
-        text: responseText,
-        timestamp: new Date(),
-        isSpecialOffer
-      };
-      setMessages((prev) => [...prev, botMessage]);
-    }, 1500);
-  };
+      setInput("");
+      setIsTyping(true);
+     
+      // Handle bot response
+      setTimeout(async () => {
+        setIsTyping(false);
+       
+        let responseText = "Hello! How can I help you plan your perfect travel experience?";
+        let isSpecialOffer = false;
+        const lowerInput = input.toLowerCase();
+
+
+        if (lowerInput.includes("package") || lowerInput.includes("tour") || lowerInput.includes("offer")) {
+          responseText = "We have several exciting tour packages available in Cebu! Would you like to explore our Oslob Whale Shark Watching or Kawasan Falls adventures?";
+          isSpecialOffer = true;
+        } else if (lowerInput.includes("price") || lowerInput.includes("cost") || lowerInput.includes("how much")) {
+          responseText = "Our tour packages start from ₱1,500 per person. May I know which destination you're interested in?";
+        } else if (lowerInput.includes("book") || lowerInput.includes("reserve")) {
+          responseText = "Great! To book a tour, we'll need your preferred date, number of travelers, and pickup location. When are you planning to visit?";
+        }
+       
+        const botMessage: ChatMessage = {
+          sender: "bot",
+          message: responseText,
+          timestamp: new Date(),
+          isSpecialOffer,
+          userId,
+          username: "Bot",
+          isAdmin: true // <-- Ensure this is set!
+        };
+
+
+        try {
+          // Optimistically add the bot message with isAdmin: true
+          setMessages((prev) => [...prev, {
+            ...botMessage,
+            text: botMessage.message,
+            isAdmin: true
+          } as Message]);
+
+
+          const createdBotMessage = await chatApi.createMessage(botMessage);
+
+
+          // No need to update state again; socket will handle it
+
+
+        } catch (error) {
+          console.error("Failed to send bot message:", error);
+        }
+      }, 1500);
+     
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+};
+
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      if (!guestReady) {
+        createGuest();
+      } else {
       handleSend();
     }
+    }
   };
+
+
+  const renderGuestForm = () => (
+    <motion.div
+      key="guestForm"
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      exit={{ y: 20, opacity: 0 }}
+      className="w-80 sm:w-96 bg-white shadow-2xl rounded-2xl p-6"
+    >
+      <h2 className="text-xl font-semibold mb-4 text-[#2E2E2E]">Welcome 👋</h2>
+      <p className="text-sm mb-4 text-gray-600">Please enter your name and email/phone to start chatting.</p>
+      <input
+        type="text"
+        placeholder="Your name"
+        value={username}
+        onChange={(e) => setUsername(e.target.value)}
+        className="w-full mb-3 px-3 py-2 border rounded-lg text-sm focus:outline-none"
+      />
+      <input
+        type="text"
+        placeholder="Email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full mb-4 px-3 py-2 border rounded-lg text-sm focus:outline-none"
+      />
+      <button
+        onClick={createGuest}
+        className="w-full py-2 bg-gradient-to-r from-[#2E2E2E] to-[#444444] text-white rounded-lg text-sm font-medium hover:shadow-md"
+      >
+        Start Chat
+      </button>
+    </motion.div>
+  );
+
+
+
+
+  const handleClose = () => {
+    setIsOpen(false);
+    // Clear guest credentials when closing chat
+    localStorage.removeItem("guestUserId");
+    localStorage.removeItem("guestUsername");
+    setUserId(null);
+    setUsername("");
+    setEmail("");
+    setGuestReady(false);
+    setMessages([]);
+  };
+
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
       <AnimatePresence mode="wait">
         {!isOpen ? (
-          <motion.button 
+          <motion.button
             initial={{ scale: 0.8, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsOpen(true)} 
+            onClick={() => setIsOpen(true)}
             className="p-4 bg-gradient-to-r from-[#2E2E2E] to-[#444444] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
             aria-label="Open chat"
           >
             <MessageCircle size={24} />
           </motion.button>
-        ) : (
-          <motion.div 
+        ) :guestReady? (
+          <motion.div
             key="chatbox"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -113,17 +358,17 @@ const Chatbot = () => {
                 <Bot size={20} />
                 <span className="text-lg">Travel Assistant</span>
               </div>
-              <motion.button 
-                whileHover={{ scale: 1.1 }} 
+              <motion.button
+                whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={() => setIsOpen(false)} 
+                onClick={handleClose}
                 className="text-white rounded-full p-1 hover:bg-[#444444] transition-colors z-50"
                 aria-label="Close chat"
               >
                 <X size={18} />
               </motion.button>
             </div>
-            
+           
             {/* Messages area */}
             <div className="flex-1 p-4 overflow-y-auto bg-gradient-to-b from-gray-50 to-gray-100 space-y-3 bg-opacity-80">
               {messages.length === 0 && (
@@ -149,29 +394,50 @@ const Chatbot = () => {
                   </div>
                 </div>
               )}
-              
-              {messages.map((msg, index) => (
-                <motion.div 
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * (index % 3) }}
-                  className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-                >
-                  <div className={`flex max-w-[80%] ${msg.sender === "user" ? "flex-row-reverse" : "flex-row"}`}>
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.sender === "user" ? "ml-2 bg-gray-200" : "mr-2 bg-[#2E2E2E]"}`}>
-                      {msg.sender === "user" ? <User size={16} className="text-[#2E2E2E]" /> : <Bot size={16} className="text-white" />}
-                    </div>
-                    <div className={`p-3 rounded-2xl shadow-sm ${msg.sender === "user" ? "bg-gradient-to-r from-[#2E2E2E] to-[#444444] text-white" : msg.isSpecialOffer ? "bg-gradient-to-r from-gray-50 to-gray-100 border border-gray-200" : "bg-white border border-gray-200"}`}>
-                      <p className="text-sm">{msg.text}</p>
-                      <p className="text-[10px] mt-1 opacity-70 text-right">
-                        {msg.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-              
+             
+              {(() => {
+                const renderedIds = new Set();
+                return messages.map((msg) => {
+                  if (msg.id && renderedIds.has(msg.id)) {
+                    // Skip rendering duplicates entirely
+                    return null;
+                  }
+                  if (msg.id) renderedIds.add(msg.id);
+                  return (
+                    <motion.div
+                      key={msg.id || `${msg.sender}-${msg.timestamp.getTime()}`}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 }}
+                      className={`flex ${msg.isAdmin ? 'justify-start' : 'justify-end'}`}
+                    >
+                      <div className={`flex max-w-[80%] ${msg.isAdmin ? 'flex-row' : 'flex-row-reverse'}`}>
+                        {msg.isAdmin ? (
+                          <>
+                            <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mr-2 bg-[#2E2E2E]">
+                              <Bot size={16} className="text-white" />
+                            </div>
+                            <div className="p-3 rounded-2xl shadow-sm bg-white border border-gray-200">
+                              <p className="text-sm">{msg.text}</p>
+                              <p className="text-[10px] mt-1 opacity-70 text-right">
+                                {msg.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                              </p>
+                            </div>
+                          </>
+                        ) : (
+                          <div className="p-3 rounded-2xl shadow-sm bg-gradient-to-r from-[#2E2E2E] to-[#444444] text-white">
+                            <p className="text-sm">{msg.text}</p>
+                            <p className="text-[10px] mt-1 opacity-70 text-right">
+                              {msg.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                });
+              })()}
+             
               {/* Typing indicator */}
               {isTyping && (
                 <div className="flex justify-start">
@@ -189,10 +455,11 @@ const Chatbot = () => {
                   </div>
                 </div>
               )}
-              
+             
               <div ref={messagesEndRef} />
             </div>
-            
+           
+           
             {/* Input area */}
             <div className="p-3 bg-white border-t border-gray-200 bg-opacity-90">
               <div className="flex items-center bg-gray-100 rounded-full px-4 py-1 border border-gray-200 shadow-inner">
@@ -204,10 +471,10 @@ const Chatbot = () => {
                   className="flex-1 bg-transparent py-2 px-1 focus:outline-none text-gray-800 placeholder-gray-400"
                   aria-label="Type a message"
                 />
-                <motion.button 
-                  whileHover={{ scale: 1.05 }} 
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={handleSend} 
+                  onClick={handleSend}
                   disabled={!input.trim()}
                   className={`ml-2 p-2 rounded-full ${input.trim() ? 'bg-gradient-to-r from-[#2E2E2E] to-[#444444] text-white shadow-sm' : 'bg-gray-300 text-gray-500'} transition-all duration-200`}
                   aria-label="Send message"
@@ -217,10 +484,15 @@ const Chatbot = () => {
               </div>
             </div>
           </motion.div>
+       
+      ) : (
+        renderGuestForm()
         )}
       </AnimatePresence>
     </div>
   );
 };
 
+
 export default Chatbot;
+

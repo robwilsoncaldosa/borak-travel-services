@@ -8,15 +8,23 @@ import passport from "passport";
 import userRoutes from './routes/userRoutes';
 import packageRoutes from './routes/packageRoutes';
 import bookingRoutes from './routes/bookingRoutes';
+<<<<<<< HEAD
 import reviewRoutes from './routes/reviewRoutes';
+=======
+import messageRoutes from './routes/messageRoutes';
+import guestRoutes from './routes/guestRoutes';
+>>>>>>> 06aca87b9193a0e04246468a493100e83db99073
 import connectDB from './config/db';
+import { initializeSocket } from './config/socket';
+import { isLoggedIn } from './lib/users';
 
 dotenv.config();
 
 const app = express();
-
-// socket.io
 const server = http.createServer(app);
+
+// Initialize Socket.IO
+const io = initializeSocket(server);
 
 // Configure CORS options
 const corsOptions: cors.CorsOptions = {
@@ -42,10 +50,15 @@ app.use(passport.session());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
+app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes);
+<<<<<<< HEAD
 app.use('/api/reviews', reviewRoutes);
+=======
+app.use('/create/guests', guestRoutes);
+>>>>>>> 06aca87b9193a0e04246468a493100e83db99073
 
 const PORT: number = parseInt(process.env.PORT || "8081", 10);
 server.listen(PORT, () => {
@@ -56,8 +69,20 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to BORAK CAR RENTAL TRAVEL AND TOURS");
 });
 
-// Add this after dotenv.config()
 connectDB();
+
+// Make io available throughout the application
+declare global {
+  namespace Express {
+    interface Request {
+      io: typeof io;
+    }
+  }
+}
+app.use((req, _, next) => {
+  req.io = io;
+  next();
+});
 
 export default app;
 

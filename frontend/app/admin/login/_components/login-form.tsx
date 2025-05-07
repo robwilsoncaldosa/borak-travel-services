@@ -4,22 +4,30 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
-interface LoginFormProps extends React.ComponentProps<"div"> {
-  onRegisterClick?: () => void
-  hideImage?: boolean
+interface LoginFormProps {
+  onRegisterClick: () => void;
+  hideImage?: boolean;
+  onSubmit: (email: string, password: string) => Promise<void>;
+  isLoading?: boolean;
 }
 
-export function LoginForm({
-  className,
-  onRegisterClick,
-  hideImage = false,
-  ...props
-}: LoginFormProps) {
+export function LoginForm({ onRegisterClick, hideImage, onSubmit, isLoading }: LoginFormProps) {
+  // Add form handling logic here
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    // Add name attributes to form inputs
+    await onSubmit(email, password);
+  };
+
   return (
-    <div className={cn("flex flex-col", className)} {...props}>
+    <div className="flex flex-col">
       <Card className="overflow-hidden p-0 border-0 shadow-none bg-transparent">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8">
+          <form onSubmit={handleSubmit} className="p-6 md:p-8">
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
                 <h1 className="text-2xl font-bold">Welcome back</h1>
@@ -33,6 +41,7 @@ export function LoginForm({
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
+                  name="email" // Add name attribute
                   type="email"
                   placeholder="m@example.com"
                   required
@@ -41,14 +50,16 @@ export function LoginForm({
               <div className="grid gap-3">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <a
-                    href="#"
-                    className="ml-auto text-sm underline-offset-2 hover:underline"
-                  >
+                  <a href="#" className="ml-auto text-sm underline-offset-2 hover:underline">
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" type="password" required />
+                <Input 
+                  id="password"
+                  name="password" // Add name attribute
+                  type="password" 
+                  required 
+                />
               </div>
               <Button type="submit" className="w-full">
                 Login
