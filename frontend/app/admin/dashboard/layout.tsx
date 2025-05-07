@@ -1,4 +1,5 @@
 "use client";
+import { ProtectedRoute } from "@/components/auth/protected-route";
 import {
   Calendar1,
   Github,
@@ -8,6 +9,7 @@ import {
   Package,
   Table2,
   Users,
+  Inbox,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import * as React from "react";
@@ -46,6 +48,13 @@ const navItems: NavItem[] = [
     href: "/admin/dashboard/examples/table",
     icon: Users,
   },
+
+  {
+    title: "Inbox",
+    href: "/admin/dashboard/inbox",
+    icon: Inbox,
+  },
+  
   {
     title: "Calendar View",
     href: "/admin/dashboard/examples/calendar",
@@ -72,6 +81,7 @@ export default function MainLayout({
   const pathname = usePathname();
 
   return (
+    // <ProtectedRoute allowedRoles={['admin']}>
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
@@ -122,5 +132,6 @@ export default function MainLayout({
         </div>
       </SidebarProvider>
     </ThemeProvider>
+    // </ProtectedRoute>
   );
 }
