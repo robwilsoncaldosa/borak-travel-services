@@ -8,12 +8,9 @@ import passport from "passport";
 import userRoutes from './routes/userRoutes';
 import packageRoutes from './routes/packageRoutes';
 import bookingRoutes from './routes/bookingRoutes';
-<<<<<<< HEAD
 import reviewRoutes from './routes/reviewRoutes';
-=======
 import messageRoutes from './routes/messageRoutes';
 import guestRoutes from './routes/guestRoutes';
->>>>>>> 06aca87b9193a0e04246468a493100e83db99073
 import connectDB from './config/db';
 import { initializeSocket } from './config/socket';
 import { isLoggedIn } from './lib/users';
@@ -54,11 +51,8 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes);
-<<<<<<< HEAD
 app.use('/api/reviews', reviewRoutes);
-=======
 app.use('/create/guests', guestRoutes);
->>>>>>> 06aca87b9193a0e04246468a493100e83db99073
 
 const PORT: number = parseInt(process.env.PORT || "8081", 10);
 server.listen(PORT, () => {
