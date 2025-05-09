@@ -44,8 +44,8 @@ export const userApi = {
       console.log('Login response:', response.data); // Debug log
       return response.data;
     } catch (error) {
-      console.error('Login error:', error);
-      throw error;
+      console.log('Login error:', error);
+      // throw error;
     }
   },
 

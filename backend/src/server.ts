@@ -8,7 +8,6 @@ import passport from "passport";
 import userRoutes from './routes/userRoutes';
 import packageRoutes from './routes/packageRoutes';
 import bookingRoutes from './routes/bookingRoutes';
-import reviewRoutes from './routes/reviewRoutes';
 import messageRoutes from './routes/messageRoutes';
 import guestRoutes from './routes/guestRoutes';
 import connectDB from './config/db';
@@ -51,8 +50,8 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes);
-app.use('/api/reviews', reviewRoutes);
 app.use('/create/guests', guestRoutes);
+app.use('/api/bookings', bookingRoutes);
 
 const PORT: number = parseInt(process.env.PORT || "8081", 10);
 server.listen(PORT, () => {
@@ -73,10 +72,11 @@ declare global {
     }
   }
 }
+
+// Attach the io instance to the request object
 app.use((req, _, next) => {
-  req.io = io;
-  next();
+  req.io = io; // Attach io to req
+  next(); // Continue to next middleware/route
 });
 
 export default app;
-

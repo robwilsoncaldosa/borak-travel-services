@@ -11,7 +11,7 @@ import {
   Users,
   Inbox,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 
 import {
@@ -45,7 +45,7 @@ const navItems: NavItem[] = [
   },
   {
     title: "Users",
-    href: "/admin/dashboard/examples/table",
+    href: "/admin/dashboard/users",
     icon: Users,
   },
 
@@ -79,6 +79,16 @@ export default function MainLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  // Logout handler
+  const handleLogout = () => {
+    // Remove token from localStorage (or cookies if you use cookies)
+    localStorage.removeItem("token");
+    // Optionally clear user info, etc.
+    // Redirect to login page
+    router.push("/admin/login");
+  };
 
   return (
     <ProtectedRoute allowedRoles={['admin']}>
@@ -116,7 +126,15 @@ export default function MainLayout({
                 ))}
               </SidebarMenu>
             </SidebarContent>
-            <SidebarFooter className="flex items-center flex-row gap-2"></SidebarFooter>
+            <SidebarFooter className="flex items-center flex-row gap-2">
+              <Button
+                variant="destructive"
+                className="w-full mt-4"
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            </SidebarFooter>
           </Sidebar>
           <SidebarInset>
             <div className="flex h-full flex-col">

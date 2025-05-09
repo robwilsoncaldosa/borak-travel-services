@@ -8,35 +8,46 @@ import { cn } from "@/lib/utils"
 import { useAuth } from "@/hooks/useAuth"
 import { toast } from "sonner"
 import { useRouter } from "next/navigation"
+import { CustomAlert } from "@/components/ui/CustomAlert";
 
-import { isAuthenticated } from "@/lib/auth"; // Make sure this exists
+import { isAuthenticated } from "@/lib/auth"; 
 
 
 export default function LoginPage() {
   const [showLogin, setShowLogin] = useState(true)
   const { login, loading, error } = useAuth()
   const router = useRouter()
+  const [alertOpen, setAlertOpen] = useState(false)
+  const [alertMessage, setAlertMessage] = useState("")
 
-
- 
-  
-  
   const toggleForm = () => {
     setShowLogin(!showLogin)
   }
 
   const handleLogin = async (email: string, password: string) => {
-    const result = await login(email, password)
-    if (result && isAuthenticated()) {
-      toast.success('Login successful!')
-      router.push('/admin/dashboard')
-    } else {
-      toast.error(error || 'Login failed')
+    try {
+      const result = await login(email, password)
+      if (result && isAuthenticated()) {
+        toast.success('Login successful!')
+        router.push('/admin/dashboard')
+      } else {
+        setAlertMessage(error || 'Login failed')
+        setAlertOpen(true)
+      }
+    } catch (err: any) {
+    
+      setAlertMessage(
+        err?.response?.data?.message ||
+        err?.message ||
+        'Login failed'
+      )
+      setAlertOpen(true)
     }
   }
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
+      <CustomAlert open={alertOpen} message={alertMessage} onClose={() => setAlertOpen(false)} />
       <div className="w-full max-w-sm md:max-w-3xl relative overflow-hidden rounded-lg border shadow-lg bg-background">
         <div className="grid md:grid-cols-1 relative">
           {/* Login Form */}

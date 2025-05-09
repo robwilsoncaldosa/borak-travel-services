@@ -14,12 +14,6 @@ export function ProtectedRoute({ children, allowedRoles = [] }: ProtectedRoutePr
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Immediate client-side check
-  if (typeof window !== 'undefined' && !isAuthenticated()) {
-    router.replace('/admin/login');
-    return null;
-  }
-
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -36,7 +30,7 @@ export function ProtectedRoute({ children, allowedRoles = [] }: ProtectedRoutePr
 
         setIsAuthorized(true);
       } catch (error) {
-        console.error('Auth check failed:', error);
+        console.log('Auth check failed:', error);
         router.replace('/admin/login');
       } finally {
         setIsLoading(false);

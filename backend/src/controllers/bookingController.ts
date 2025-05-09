@@ -1,72 +1,62 @@
-import { Request, Response, RequestHandler } from 'express';
-import Booking from '../models/bookingModel';
+import { Request, Response } from 'express';
+import Booking, { IBooking } from '../models/bookingModel';
 
 export const bookingController = {
-  getAllBookings: (async (req: Request, res: Response) => {
+  getAllBookings: async (_req: Request, res: Response): Promise<void> => {
     try {
       const bookings = await Booking.find();
       res.status(200).json(bookings);
     } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+      res.status(500).json({ message: 'Failed to fetch bookings' });
     }
-  }) as RequestHandler,
+  },
 
-  getBookingById: (async (req: Request, res: Response) => {
+  getBookingById: async (req: Request, res: Response): Promise<void> => {
     try {
       const booking = await Booking.findById(req.params.id);
       if (!booking) {
-        return res.status(404).json({ message: 'Booking not found' });
+        res.status(404).json({ message: 'Booking not found' });
+        return;
       }
       res.status(200).json(booking);
     } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+      res.status(500).json({ message: 'Failed to fetch booking' });
     }
-  }) as RequestHandler,
+  },
 
-  getUserBookings: (async (req: Request, res: Response) => {
-    try {
-      const bookings = await Booking.find({ user_id: req.params.userId });
-      res.status(200).json(bookings);
-    } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
-    }
-  }) as RequestHandler,
-
-  createBooking: (async (req: Request, res: Response) => {
+  createBooking: async (req: Request, res: Response): Promise<void> => {
     try {
       const booking = new Booking(req.body);
-      const newBooking = await booking.save();
-      res.status(201).json(newBooking);
+      const saved = await booking.save();
+      res.status(201).json(saved);
     } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+      res.status(400).json({ message: 'Failed to create booking' });
     }
-  }) as RequestHandler,
+  },
 
-  updateBooking: (async (req: Request, res: Response) => {
+  updateBooking: async (req: Request, res: Response): Promise<void> => {
     try {
-      const booking = await Booking.findByIdAndUpdate(
-        req.params.id,
-        req.body,
-        { new: true }
-      );
-      if (!booking) {
-        return res.status(404).json({ message: 'Booking not found' });
+      const updated = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      if (!updated) {
+        res.status(404).json({ message: 'Booking not found' });
+        return;
       }
-      res.status(200).json(booking);
+      res.status(200).json(updated);
     } catch (error) {
-      res.status(400).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+      res.status(400).json({ message: 'Failed to update booking' });
     }
-  }) as RequestHandler,
+  },
 
-  deleteBooking: (async (req: Request, res: Response) => {
+  deleteBooking: async (req: Request, res: Response): Promise<void> => {
     try {
-      const booking = await Booking.findByIdAndDelete(req.params.id);
-      if (!booking) {
-        return res.status(404).json({ message: 'Booking not found' });
+      const deleted = await Booking.findByIdAndDelete(req.params.id);
+      if (!deleted) {
+        res.status(404).json({ message: 'Booking not found' });
+        return;
       }
-      res.status(200).json({ message: 'Booking deleted successfully' });
+      res.status(200).json({ message: 'Booking deleted' });
     } catch (error) {
-      res.status(500).json({ message: error instanceof Error ? error.message : 'An unknown error occurred' });
+      res.status(400).json({ message: 'Failed to delete booking' });
     }
-  }) as RequestHandler
+  }
 };
