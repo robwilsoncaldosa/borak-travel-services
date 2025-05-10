@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import React, { useState, useEffect } from 'react';
-import { FaCompass, FaMapMarkedAlt, FaPhone, FaHome, FaShuttleVan } from 'react-icons/fa';
+import { FaCompass, FaMapMarkedAlt, FaPhone, FaHome } from 'react-icons/fa';
 import { NavLink } from './components/nav-link';
 import { Logo } from './components/logo';
 import { HeaderProps, NavLinkProps } from './types/header.types';

@@ -1,18 +1,17 @@
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { cn } from "@/lib/utils"
+import Image from "next/image"
 
 interface RegisterFormProps extends React.ComponentProps<"div"> {
   onLoginClick?: () => void
-  hideImage?: boolean
 }
 
 export function RegisterForm({
   className,
   onLoginClick,
-  hideImage = false,
   ...props
 }: RegisterFormProps) {
   return (
@@ -21,7 +20,7 @@ export function RegisterForm({
         <CardContent className="grid p-0 md:grid-cols-2">
           {/* First column - Image */}
           <div className="bg-muted relative hidden md:block">
-            <img
+            <Image
               src="https://images.unsplash.com/photo-1682687982501-1e58ab814714"
               alt="Borak Travel Services Registration"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"

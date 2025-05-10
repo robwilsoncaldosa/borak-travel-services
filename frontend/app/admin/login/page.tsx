@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useEffect} from "react"
 import { LoginForm } from "@/app/admin/login/_components/login-form"
 import { RegisterForm } from "@/app/admin/login/_components/register-form"
-import { motion } from "framer-motion"
-import { cn } from "@/lib/utils"
+import { CustomAlert } from "@/components/ui/CustomAlert"
 import { useAuth } from "@/hooks/useAuth"
-import { toast } from "sonner"
+import { cn } from "@/lib/utils"
+import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
-import { CustomAlert } from "@/components/ui/CustomAlert";
+import { useState } from "react"
+import { toast } from "sonner"
 
-import { isAuthenticated } from "@/lib/auth"; 
+import { isAuthenticated } from "@/lib/auth"
+import Image from "next/image"
 
 
 export default function LoginPage() {
@@ -34,14 +35,18 @@ export default function LoginPage() {
         setAlertMessage(error || 'Login failed')
         setAlertOpen(true)
       }
-    } catch (err: any) {
-    
-      setAlertMessage(
-        err?.response?.data?.message ||
-        err?.message ||
-        'Login failed'
-      )
-      setAlertOpen(true)
+    } 
+
+    catch (error: unknown) {
+      let errorMessage = 'Login failed';
+      if (error && typeof error === 'object' && 'response' in error) {
+        const err = error as { response?: { data?: { message?: string } } };
+        errorMessage = err.response?.data?.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+      setAlertMessage(errorMessage);
+      setAlertOpen(true);
     }
   }
 
@@ -68,7 +73,7 @@ export default function LoginPage() {
             "absolute inset-0 transition-all duration-500 ease-in-out",
             !showLogin ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
           )}>
-            <RegisterForm onLoginClick={toggleForm} hideImage />
+            <RegisterForm onLoginClick={toggleForm} />
           </div>
           
           {/* Sliding Image Panel */}
@@ -81,7 +86,9 @@ export default function LoginPage() {
             }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
           >
-            <img
+            <Image
+            width={1000}
+            height={1000}
               src="https://images.unsplash.com/photo-1540339832862-474599807836?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1200&q=80"
               alt="Person with feet up in airport lounge with airplane visible through window"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"

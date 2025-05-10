@@ -1,35 +1,34 @@
 "use client";
 import { ProtectedRoute } from "@/components/auth/protected-route";
 import {
-  Calendar1,
-  Github,
-  Home,
-  LayoutDashboard,
-  LucideIcon,
-  Package,
-  Table2,
-  Users,
-  Inbox,
+    Calendar1,
+    Home,
+    Inbox,
+    LayoutDashboard,
+    LucideIcon,
+    Package,
+    Table2,
+    Users
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarInset,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { ThemeProvider } from "@/components/theme-provider";
-import { ta } from "date-fns/locale";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import {
+    Sidebar,
+    SidebarContent,
+    SidebarFooter,
+    SidebarHeader,
+    SidebarInset,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+    SidebarProvider,
+    SidebarTrigger,
+} from "@/components/ui/sidebar";
+import Link from "next/link";
 
 interface NavItem {
   title: string;
@@ -103,10 +102,10 @@ export default function MainLayout({
         <div className="flex h-screen overflow-hidden w-full">
           <Sidebar>
             <SidebarHeader className="px-6 py-4">
-              <a href="/" className="flex items-center space-x-2">
+              <Link href="/" className="flex items-center space-x-2">
                 <Home className="h-6 w-6" />
                 <span className="text-xl font-semibold">Logo</span>
-              </a>
+              </Link>
             </SidebarHeader>
             <SidebarContent className="p-4">
               <SidebarMenu>

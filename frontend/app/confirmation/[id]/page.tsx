@@ -1,16 +1,14 @@
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { ChevronLeft, CreditCard } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { MapPin, Clock, Users, Car, ArrowRight, CreditCard, ChevronLeft } from "lucide-react";
-import Image from "next/image";
 
 export default function ConfirmationPage() {
-  const params = useParams();
   const searchParams = useSearchParams();
-  const bookingId = params.id;
+//   const bookingId = params.id;
   
   const [bookingDetails, setBookingDetails] = useState({
     pickupLocation: "",

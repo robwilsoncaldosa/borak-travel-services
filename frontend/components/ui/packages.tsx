@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -29,7 +28,6 @@ export default function PackageCards({ packages }: { packages: PackageCardProps[
                                     className="object-cover"
                                     priority
                                     onError={(e) => {
-                                        // @ts-ignore - TypeScript doesn't know about currentTarget.src
                                         e.currentTarget.src = '/Landing.jpg';
                                     }}
                                 />

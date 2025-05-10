@@ -23,15 +23,15 @@ export const chatApi = {
     try {
       const { data } = await instance.get<ChatMessage[]>(`/api/messages/${userId}`);
       return data;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
+    } catch (error) {
+      // Type guard to check if error is an AxiosError
+      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 404) {
         return []; // Return empty array for new users
       }
       console.error('Failed to fetch messages:', error);
       throw error;
     }
   },
-
   // User & Admin: Create new message
   createMessage: async (message: Omit<ChatMessage, 'id'>) => {
     try {

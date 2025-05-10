@@ -1,6 +1,6 @@
 'use client';
 
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Package, packageApi } from '@/lib/backend_api/package';
@@ -12,15 +12,12 @@ import {
   PackageDescription,
   BookingCard,
   ReviewSection,
-  getValidImageUrl
 } from './components';
 
 export default function PackageDetail() {
     const params = useParams();
-    const router = useRouter();
     const [packageData, setPackageData] = useState<Package | null>(null);
     const [loading, setLoading] = useState(true);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isWishlisted, setIsWishlisted] = useState(false);
 
     useEffect(() => {
@@ -60,21 +57,8 @@ export default function PackageDetail() {
         }
     };
 
-    const nextImage = () => {
-        if (packageData?.images) {
-            setCurrentImageIndex((prev) => 
-                prev === packageData.images.length - 1 ? 0 : prev + 1
-            );
-        }
-    };
+ 
 
-    const previousImage = () => {
-        if (packageData?.images) {
-            setCurrentImageIndex((prev) => 
-                prev === 0 ? packageData.images.length - 1 : prev - 1
-            );
-        }
-    };
 
     if (loading) {
         return <LoadingSpinner />;

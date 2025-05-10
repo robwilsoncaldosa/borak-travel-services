@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Bot, Send } from "lucide-react";
 import { chatApi, ChatMessage } from "@/lib/backend_api/chat";
 
@@ -108,12 +108,14 @@ export default function InboxPage() {
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
 
-  const selectedChatMessages = selectedChat
-  ? messages
-      .filter(m => m.userId === selectedChat)
-      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-  : [];
-
+const selectedChatMessages = useMemo(() => 
+  selectedChat
+    ? messages
+        .filter(m => m.userId === selectedChat)
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+    : [],
+  [selectedChat, messages]
+);
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;

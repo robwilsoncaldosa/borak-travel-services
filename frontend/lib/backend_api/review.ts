@@ -1,4 +1,4 @@
-import { instance, instanceUpload } from '../axios';
+import { instance } from '../axios';
 
 export interface Review {
     _id: string;

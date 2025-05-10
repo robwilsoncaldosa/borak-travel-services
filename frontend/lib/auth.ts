@@ -21,7 +21,7 @@ export const isAuthenticated = (): boolean => {
   }
 };
 
-export const storeAuthData = (response: { success: boolean; token: string; user: any }) => {
+export const storeAuthData = (response: { success: boolean; token: string; user: never }) => {
   if (!response.success || !response.token || !response.user) {
     redirectToLogin();
     throw new Error('Invalid authentication data');

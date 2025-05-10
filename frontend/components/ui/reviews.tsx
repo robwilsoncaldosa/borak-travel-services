@@ -1,6 +1,6 @@
 'use client'
 import Image from 'next/image';
-import { FaQuoteLeft, FaStar } from 'react-icons/fa';
+import { FaStar } from 'react-icons/fa';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 
 // Review data

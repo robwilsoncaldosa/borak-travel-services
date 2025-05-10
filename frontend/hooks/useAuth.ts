@@ -12,8 +12,8 @@ export const useAuth = () => {
       const response = await userApi.login({ email, password });
 
       // Store token and user data
-      localStorage.setItem('token', response.token);
-      localStorage.setItem('user', JSON.stringify(response.user));
+      localStorage.setItem('token', response?.token || '');
+      localStorage.setItem('user', JSON.stringify(response?.user || {}));
 
       return response;
     } catch (err: any) {

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Package } from '@/lib/backend_api/package';
 
 export interface PackageHeaderProps {
@@ -8,7 +7,7 @@ export interface PackageHeaderProps {
     handleShare: () => void;
 }
 
-export const PackageHeader = ({ packageData, isWishlisted, toggleWishlist, handleShare }: PackageHeaderProps) => (
+export const PackageHeader = ({ packageData}: PackageHeaderProps) => (
     <>
         {/* Location and Title */}
         <div className="mb-6">

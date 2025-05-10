@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import Image from 'next/image';
 import { Package } from '@/lib/backend_api/package';
 import { reviewApi } from '@/lib/backend_api/review';
 import { Review } from '@/app/admin/dashboard/types/review.types';

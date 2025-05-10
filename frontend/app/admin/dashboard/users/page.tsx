@@ -263,7 +263,6 @@ export default function UsersPage() {
                   <DialogHeader>
                     <DialogTitle>User Details</DialogTitle>
                   </DialogHeader>
-                  // Update view dialog content
                   <div className="grid gap-4 py-4">
                     <p>Name: {user.firstname} {user.lastname}</p>
                     <p>Email: {user.email}</p>

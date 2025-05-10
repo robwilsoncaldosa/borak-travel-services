@@ -1,8 +1,8 @@
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import Image from "next/image";
 
 interface LoginFormProps {
   onRegisterClick: () => void;
@@ -11,7 +11,7 @@ interface LoginFormProps {
   isLoading?: boolean;
 }
 
-export function LoginForm({ onRegisterClick, hideImage, onSubmit, isLoading }: LoginFormProps) {
+export function LoginForm({ hideImage, onSubmit, }: LoginFormProps) {
   // Add form handling logic here
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,7 +37,7 @@ export function LoginForm({ onRegisterClick, hideImage, onSubmit, isLoading }: L
               </div>
               
               {/* Rest of the form remains the same */}
-              <div className="grid gap-3">
+              <div className="grid gap-3 ">
                 <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
@@ -77,26 +77,16 @@ export function LoginForm({ onRegisterClick, hideImage, onSubmit, isLoading }: L
                 </div>
               </div>
               
-              <div className="text-center text-sm">
-                Don&apos;t have an account?{" "}
-                <a 
-                  href="#" 
-                  className="underline underline-offset-4"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    onRegisterClick?.()
-                  }}
-                >
-                  Sign up
-                </a>
-              </div>
+             
             </div>
           </form>
           
           {/* Image is now handled by the parent component */}
           {!hideImage && (
             <div className="bg-muted relative hidden md:block">
-              <img
+              <Image
+              width={1000}
+              height={1000}
                 src="/placeholder.svg"
                 alt="Image"
                 className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"

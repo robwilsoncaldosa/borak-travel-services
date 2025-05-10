@@ -1,31 +1,29 @@
 "use client"
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon, Users } from "lucide-react";
-import { Package } from '@/lib/backend_api/package';
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger
-} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import {
-  Input
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormMessage,
+} from "@/components/ui/form";
+import {
+    Input
 } from "@/components/ui/input";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger
+} from "@/components/ui/popover";
+import { Package } from '@/lib/backend_api/package';
+import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
 const formSchema = z.object({
   dateRange: z.object({
@@ -181,8 +179,9 @@ export const BookingCard = ({ packageData }: BookingCardProps) => {
         
         {/* No charge yet note */}
         <div className="text-center text-sm text-gray-500 mt-4">
-            You won't be charged yet
+            You won&apos;t be charged yet
         </div>
+
         
         {/* Package highlights */}
         <div className="mt-6 pt-6 border-t border-gray-200">

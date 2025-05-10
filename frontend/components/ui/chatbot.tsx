@@ -1,6 +1,6 @@
 "use client"
-import { useState, useEffect, useRef } from "react";
-import { Send, MessageCircle, X, User, Bot, MapPin, Plane, PalmtreeIcon, SunIcon, Globe } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Send, MessageCircle, X, Bot, MapPin, Plane, PalmtreeIcon, SunIcon, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 
@@ -80,7 +80,14 @@ const Chatbot = () => {
 
   //   console.log("Guest User ID:", storedUserId, "Guest Username:", storedUsername);
   // }, []);
- 
+const loadMessages = useCallback(async () => {
+    try {
+      const data = await chatApi.getMessagesByUserId(userId || '');
+      setMessages(data.map(formatMessage));
+    } catch (error) {
+      console.error("Failed to load messages:", error);
+    }
+  }, [userId]);
 
  useEffect(() => {
   if (!isOpen || !guestReady || !userId) return;
@@ -95,7 +102,7 @@ const Chatbot = () => {
   return () => {
     socket?.disconnect();
   };
-}, [isOpen, guestReady, userId]);
+}, [isOpen, guestReady, userId,loadMessages]);
 
 
 
@@ -123,15 +130,6 @@ const handleIncomingMessage = (message: ChatMessage) => {
   });
 };
 
-
-const loadMessages = async () => {
-  try {
-    const data = await chatApi.getMessagesByUserId(userId || '');
-    setMessages(data.map(formatMessage));
-  } catch (error) {
-    console.error("Failed to load messages:", error);
-  }
-};
 
 
 const formatMessage = (msg: ChatMessage): Message => ({
@@ -244,7 +242,7 @@ const formatMessage = (msg: ChatMessage): Message => ({
           } as Message]);
 
 
-          const createdBotMessage = await chatApi.createMessage(botMessage);
+        //   const createdBotMessage = await chatApi.createMessage(botMessage);
 
 
           // No need to update state again; socket will handle it
