@@ -34,6 +34,8 @@ const Chatbot = () => {
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+ 
+
 
 
   useEffect(() => {
@@ -66,20 +68,6 @@ const Chatbot = () => {
   }, []);
 
 
-  // useEffect(() => {
-  //   const storedUserId = localStorage.getItem("guestUserId");
-  //   const storedUsername = localStorage.getItem("guestUsername");
-
-
-  //   if (storedUserId && storedUsername) {
-  //     setUserId(storedUserId);
-  //     setUsername(storedUsername);
-  //     setGuestReady(true);
-  //   }
-
-
-  //   console.log("Guest User ID:", storedUserId, "Guest Username:", storedUsername);
-  // }, []);
 const loadMessages = useCallback(async () => {
     try {
       const data = await chatApi.getMessagesByUserId(userId || '');
@@ -97,14 +85,20 @@ const loadMessages = useCallback(async () => {
 
   socket.on("message", handleIncomingMessage);
 
-  loadMessages();
+  // loadMessages();
+  const interval = setInterval(() => {
+    if (userId) loadMessages();
+  }, 1000);
 
   return () => {
-    socket?.disconnect();
+    socket?.off("message", handleIncomingMessage);
+    clearInterval(interval);
   };
 }, [isOpen, guestReady, userId,loadMessages]);
 
 
+const [unreadCount, setUnreadCount] = useState(0);
+const isFirstConnection = useRef(true);
 
 
 const handleIncomingMessage = (message: ChatMessage) => {
@@ -128,8 +122,12 @@ const handleIncomingMessage = (message: ChatMessage) => {
       }
     ];
   });
+  if (!isOpen) setUnreadCount(count => count + 1);
 };
 
+useEffect(() => {
+  if (isOpen) setUnreadCount(0);
+}, [isOpen]);
 
 
 const formatMessage = (msg: ChatMessage): Message => ({
@@ -234,20 +232,22 @@ const formatMessage = (msg: ChatMessage): Message => ({
 
 
         try {
-          // Optimistically add the bot message with isAdmin: true
+         
+          // Persist the bot message to backend
+          const createdBotMessage = await chatApi.createMessage(botMessage);
+
+          // Update local state with the created bot message
           setMessages((prev) => [...prev, {
             ...botMessage,
+            id: createdBotMessage.id,
             text: botMessage.message,
             isAdmin: true
           } as Message]);
 
-
-        //   const createdBotMessage = await chatApi.createMessage(botMessage);
-
-
-          // No need to update state again; socket will handle it
-
-
+          // Emit the bot message through socket for real-time update
+          if (socket) {
+            socket.emit("sendMessage", createdBotMessage);
+          }
         } catch (error) {
           console.error("Failed to send bot message:", error);
         }
@@ -269,7 +269,7 @@ const formatMessage = (msg: ChatMessage): Message => ({
     }
   };
 
-
+ 
   const renderGuestForm = () => (
     <motion.div
       key="guestForm"
@@ -334,6 +334,11 @@ const formatMessage = (msg: ChatMessage): Message => ({
             aria-label="Open chat"
           >
             <MessageCircle size={24} />
+            {unreadCount > 0 && (
+              <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
+                {unreadCount}
+              </span>
+            )}
           </motion.button>
         ) :guestReady? (
           <motion.div

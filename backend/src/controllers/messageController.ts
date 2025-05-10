@@ -30,7 +30,7 @@ export const messageController = {
         username: finalUsername,
         message,
         timestamp: new Date(),
-        isRead: isAdmin, // Bot/admin messages are marked as read
+        isRead: isAdmin, 
         isAdmin,
       });
 

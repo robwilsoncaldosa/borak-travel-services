@@ -20,7 +20,7 @@ export default function InboxPage() {
 
 
   useEffect(() => {
-    socket = io(process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8081');
+    socket = io(process.env.NEXT_PUBLIC_SERVER_ENDPOINT || 'http://localhost:8081');
     const loadMessages = async () => {
       try {
         const data = await chatApi.getAllMessages();
