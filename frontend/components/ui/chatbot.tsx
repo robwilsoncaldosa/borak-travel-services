@@ -98,11 +98,11 @@ const loadMessages = useCallback(async () => {
 
 
 const [unreadCount, setUnreadCount] = useState(0);
-const isFirstConnection = useRef(true);
-
 
 const handleIncomingMessage = (message: ChatMessage) => {
-  const isFromBot = message.isAdmin ?? message.username === "Bot"; // fallback
+
+  //this is for the bot
+  const isFromBot = message.isAdmin ?? message.username === "Bot"; 
 
 
   setMessages(prev => {
