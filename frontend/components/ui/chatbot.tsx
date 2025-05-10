@@ -33,6 +33,7 @@ const Chatbot = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState<string | null>(null);
+  const [adminHasReplied, setAdminHasReplied] = useState(false); // New state
   const messagesEndRef = useRef<HTMLDivElement>(null);
  
 
@@ -101,8 +102,14 @@ const [unreadCount, setUnreadCount] = useState(0);
 
 const handleIncomingMessage = (message: ChatMessage) => {
 
+  // Check if the incoming message is from a human admin
+  const isFromHumanAdmin = message.isAdmin && message.username !== "Bot";
+  if (isFromHumanAdmin) {
+    setAdminHasReplied(true);
+  }
+
   //this is for the bot
-  const isFromBot = message.isAdmin ?? message.username === "Bot"; 
+  const isFromBotOrAdmin = message.isAdmin || message.username === "Bot"; 
 
 
   setMessages(prev => {
@@ -112,13 +119,13 @@ const handleIncomingMessage = (message: ChatMessage) => {
       ...prev,
       {
         id: message.id,
-        sender: isFromBot ? "bot" : "user",
+        sender: isFromBotOrAdmin ? "bot" : "user", // Determines UI alignment
         text: message.message || "",
         timestamp: new Date(message.timestamp),
         isSpecialOffer: message.isSpecialOffer,
         userId: message.userId,
-        username: message.username,
-        isAdmin: message.isAdmin
+        username: message.username, // Store original username
+        isAdmin: message.isAdmin    // Store original isAdmin flag
       }
     ];
   });
@@ -132,7 +139,7 @@ useEffect(() => {
 
 const formatMessage = (msg: ChatMessage): Message => ({
   id: msg.id,
-  sender: msg.isAdmin ? "bot" : "user",
+  sender: msg.isAdmin || msg.username === "Bot" ? "bot" : "user", // Consistent sender logic
   text: msg.message || "",
   timestamp: new Date(msg.timestamp),
   isSpecialOffer: msg.isSpecialOffer,
@@ -176,6 +183,10 @@ const formatMessage = (msg: ChatMessage): Message => ({
   const handleSend = async () => {
     if (!input.trim() || !userId) return;
    
+    const shouldSuppressBotReply = adminHasReplied;
+    // When user sends a message, allow bot to reply next time unless admin intervenes again
+    setAdminHasReplied(false);
+
     const userMessage: ChatMessage = {
       sender: "user",
       message: input,
@@ -199,64 +210,83 @@ const formatMessage = (msg: ChatMessage): Message => ({
       if (socket) {
         socket.emit("sendMessage", createdMessage);
       }
+      const currentInput = input; // Store input before clearing
       setInput("");
       setIsTyping(true);
      
-      // Handle bot response
-      setTimeout(async () => {
-        setIsTyping(false);
-       
-        let responseText = "Hello! How can I help you plan your perfect travel experience?";
-        let isSpecialOffer = false;
-        const lowerInput = input.toLowerCase();
-
-
-        if (lowerInput.includes("package") || lowerInput.includes("tour") || lowerInput.includes("offer")) {
-          responseText = "We have several exciting tour packages available in Cebu! Would you like to explore our Oslob Whale Shark Watching or Kawasan Falls adventures?";
-          isSpecialOffer = true;
-        } else if (lowerInput.includes("price") || lowerInput.includes("cost") || lowerInput.includes("how much")) {
-          responseText = "Our tour packages start from ₱1,500 per person. May I know which destination you're interested in?";
-        } else if (lowerInput.includes("book") || lowerInput.includes("reserve")) {
-          responseText = "Great! To book a tour, we'll need your preferred date, number of travelers, and pickup location. When are you planning to visit?";
-        }
-       
-        const botMessage: ChatMessage = {
-          sender: "bot",
-          message: responseText,
-          timestamp: new Date(),
-          isSpecialOffer,
-          userId,
-          username: "Bot",
-          isAdmin: true // <-- Ensure this is set!
-        };
-
-
-        try {
+      // Handle bot response only if admin has not recently replied
+      if (!shouldSuppressBotReply) {
+        setTimeout(async () => {
+          setIsTyping(false);
          
-          // Persist the bot message to backend
-          const createdBotMessage = await chatApi.createMessage(botMessage);
+          let responseText = ""; // Initialize responseText
+          let isSpecialOffer = false;
+          const lowerInput = currentInput.toLowerCase(); // Use stored input
 
-          // Update local state with the created bot message
-          setMessages((prev) => [...prev, {
-            ...botMessage,
-            id: createdBotMessage.id,
-            text: botMessage.message,
-            isAdmin: true
-          } as Message]);
-
-          // Emit the bot message through socket for real-time update
-          if (socket) {
-            socket.emit("sendMessage", createdBotMessage);
+          if (lowerInput.includes("hello") || lowerInput.includes("hi") || lowerInput.includes("hey")) {
+            responseText = `Hi ${username}! How can I assist you with your travel plans today?`;
+          } else if (lowerInput.includes("package") || lowerInput.includes("tour") || lowerInput.includes("offer")) {
+            responseText = "We have several exciting tour packages available in Cebu! Would you like to explore our Oslob Whale Shark Watching or Kawasan Falls adventures?";
+            isSpecialOffer = true;
+          } else if (lowerInput.includes("price") || lowerInput.includes("cost") || lowerInput.includes("how much")) {
+            responseText = "Our tour packages start from ₱1,500 per person. May I know which destination you're interested in for a more specific quote?";
+          } else if (lowerInput.includes("book") || lowerInput.includes("reserve")) {
+            responseText = "Great! To book a tour, we'll need your preferred date, number of travelers, and pickup location. When are you planning to visit?";
+          } else if (lowerInput.includes("oslob")) {
+            responseText = "Our Oslob Whale Shark Watching tour is very popular! It includes snorkeling with the gentle giants. Would you like more details or pricing?";
+            isSpecialOffer = true;
+          } else if (lowerInput.includes("kawasan")) {
+            responseText = "Kawasan Falls offers a breathtaking canyoneering adventure! It's perfect for thrill-seekers. Interested in learning more?";
+            isSpecialOffer = true;
+          } else if (lowerInput.includes("payment") || lowerInput.includes("pay")) {
+            responseText = "We accept various payment methods including online bank transfer, GCash, and credit/debit cards through a secure payment link. Which method do you prefer?";
+          } else if (lowerInput.includes("contact") || lowerInput.includes("number") || lowerInput.includes("call")) {
+            responseText = "You can reach us at contact@boraktravel.com or call us at +63 917 123 4567 for urgent concerns. How else can I help?";
+          } else if (lowerInput.includes("thank") || lowerInput.includes("thanks")) {
+            responseText = "You're very welcome! Is there anything else I can help you with?";
+          } else if (lowerInput.includes("bye") || lowerInput.includes("goodbye")) {
+            responseText = "Goodbye! Have a great day and feel free to reach out if you need assistance in the future.";
+          } else {
+            // Default fallback if no specific keywords match
+            responseText = "I'm here to help with your travel plans. Could you please specify what you're looking for? You can ask about tours, pricing, or how to book.";
           }
-        } catch (error) {
-          console.error("Failed to send bot message:", error);
-        }
-      }, 1500);
-     
+         
+          const botMessage: ChatMessage = {
+            sender: "bot",
+            message: responseText,
+            timestamp: new Date(),
+            isSpecialOffer,
+            userId,
+            username: "Bot",
+            isAdmin: true // <-- Ensure this is set!
+          };
+
+          try {
+            // Persist the bot message to backend
+            const createdBotMessage = await chatApi.createMessage(botMessage);
+
+            // Update local state with the created bot message
+            setMessages((prev) => [...prev, {
+              ...botMessage,
+              id: createdBotMessage.id,
+              text: botMessage.message,
+              isAdmin: true // Bot messages are marked as admin for styling
+            } as Message]);
+
+            // Emit the bot message through socket for real-time update
+            if (socket) {
+              socket.emit("sendMessage", createdBotMessage);
+            }
+          } catch (error) {
+            console.error("Failed to send bot message:", error);
+          }
+        }, 1500);
+      }
     } catch (error) {
       console.error("Failed to send message:", error);
+      setIsTyping(false); // Ensure typing indicator is off on error
     }
-};
+  };
 
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -315,6 +345,7 @@ const formatMessage = (msg: ChatMessage): Message => ({
     setUsername("");
     setEmail("");
     setGuestReady(false);
+    setAdminHasReplied(false); // Reset admin replied state
     setMessages([]);
   };
 
@@ -412,10 +443,10 @@ const formatMessage = (msg: ChatMessage): Message => ({
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
-                      className={`flex ${msg.isAdmin ? 'justify-start' : 'justify-end'}`}
+                      className={`flex ${msg.sender === 'bot' ? 'justify-start' : 'justify-end'}`} // Use msg.sender for alignment
                     >
-                      <div className={`flex max-w-[80%] ${msg.isAdmin ? 'flex-row' : 'flex-row-reverse'}`}>
-                        {msg.isAdmin ? (
+                      <div className={`flex max-w-[80%] ${msg.sender === 'bot' ? 'flex-row' : 'flex-row-reverse'}`}>
+                        {msg.sender === 'bot' ? ( // Use msg.sender for styling
                           <>
                             <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mr-2 bg-[#2E2E2E]">
                               <Bot size={16} className="text-white" />
