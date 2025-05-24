@@ -5,7 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef, useMemo } from "react";
-import { Bot, Send } from "lucide-react";
+import { Bot, Send, User } from "lucide-react";
 import { chatApi, ChatMessage } from "@/lib/backend_api/chat";
 
 import { io, Socket } from "socket.io-client";
@@ -16,8 +16,7 @@ export default function InboxPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [replyMessage, setReplyMessage] = useState('');
-
-
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     socket = io(process.env.NEXT_PUBLIC_SERVER_ENDPOINT || 'http://localhost:8081');
@@ -48,9 +47,8 @@ export default function InboxPage() {
     };
 
     loadMessages();
-    const interval = setInterval(loadMessages, 1000); 
+    const interval = setInterval(loadMessages, 5000); // Reduced polling frequency
     return () => clearInterval(interval);
-
   }, []);
 
   useEffect(() => {
@@ -58,7 +56,7 @@ export default function InboxPage() {
       setMessages(prevMessages => {
         const updatedMessages = [...prevMessages, newMessage];
         return updatedMessages.sort(
-          (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
       });
     });
@@ -67,9 +65,6 @@ export default function InboxPage() {
       socket.off('message');
     };
   }, []);
-
-
-  
   
   const handleSendReply = async () => {
     if (!replyMessage.trim() || !selectedChat) return;
@@ -99,198 +94,225 @@ export default function InboxPage() {
       socket.emit('sendMessage', adminMessage);
 
       setReplyMessage('');
+      
+      // Scroll to bottom after sending a message
+      setTimeout(() => scrollToBottom(), 100);
     } catch (error) {
       console.error('Failed to send reply:', error);
     }
   };
 
-
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-
-
-const selectedChatMessages = useMemo(() => 
-  selectedChat
-    ? messages
-        .filter(m => m.userId === selectedChat)
-        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
-    : [],
-  [selectedChat, messages]
-);
+  const selectedChatMessages = useMemo(() => 
+    selectedChat
+      ? messages
+          .filter(m => m.userId === selectedChat)
+          .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+      : [],
+    [selectedChat, messages]
+  );
+  
+  // Scroll to bottom whenever selected chat messages change
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    scrollToBottom();
   }, [selectedChatMessages]);
 
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   const latestMessagesByUser: { [userId: string]: ChatMessage } = {};
-messages.forEach((msg) => {
-  if (!msg.userId) return; // Skip messages without a userId
-  if (
-    !latestMessagesByUser[msg.userId] ||
-    new Date(msg.timestamp) > new Date(latestMessagesByUser[msg.userId].timestamp)
-  ) {
-    latestMessagesByUser[msg.userId] = msg;
-  }
-});
+  messages.forEach((msg) => {
+    if (!msg.userId) return; // Skip messages without a userId
+    if (
+      !latestMessagesByUser[msg.userId] ||
+      new Date(msg.timestamp) > new Date(latestMessagesByUser[msg.userId].timestamp)
+    ) {
+      latestMessagesByUser[msg.userId] = msg;
+    }
+  });
 
+  const latestMessages = Object.values(latestMessagesByUser).sort(
+    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+  );
 
-const latestMessages = Object.values(latestMessagesByUser).sort(
-  (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-);
-
-// const messagesEndRef = useRef<HTMLDivElement>(null);
-
-
-// useEffect(() => {
-//   scrollToBottom();
-// }, [messages]);
-
-
-// const scrollToBottom = () => {
-//   messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-// };
-
+  // Get unread message count for notification badge
+  const unreadCount = latestMessages.filter(msg => !msg.isRead && !msg.isAdmin).length;
 
   return (
     <div className="h-[calc(100vh-8rem)] flex gap-4 overflow-hidden">
       {/* Chat List */}
-      <Card className="w-1/3 flex flex-col min-h-0">
-        <div className="p-4 flex-shrink-0">
-          <h2 className="text-xl font-semibold">Messages</h2>
-        </div>
-        <div className="flex-1 min-h-0">
-        <ScrollArea className="h-full max-h-full">
-        {latestMessages.map((chat, index) => {
- const recipientUsername =messages.find(m => m.userId === chat.userId && !m.isAdmin)?.username || 'Guest';
-// This is correct now
-  const isLastMessageFromAdmin = chat.isAdmin;
-
-  return (
-    <div
-      key={chat.id || `chat-${index}-${chat.timestamp}`}
-      className={`p-4 cursor-pointer rounded-lg mb-2 ${
-        selectedChat === chat.userId
-          ? 'bg-primary/10'
-          : 'hover:bg-muted'
-      } ${!chat.isRead ? 'border-l-4 border-primary' : ''} ${
-        isLastMessageFromAdmin ? 'bg-blue-50' : 'bg-green-50'
-      }`}
-      onClick={() => setSelectedChat(chat.userId ?? null)}
-    >
-      <div className="flex justify-between items-start">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3
-              className={`font-medium ${
-                chat.isRead ? 'text-gray-600' : 'text-gray-900'
-              }`}
-            >
-              {chat.isAdmin
-                ? `You to ${recipientUsername || 'Guest'}`
-                : `${recipientUsername || 'Guest'} to You`}
-            </h3>
-            {!chat.isRead && (
-              <span className="bg-primary text-white text-xs px-2 py-0.5 rounded-full">
-                New
+      <Card className="w-1/3 flex flex-col min-h-0 shadow-md border-0">
+        <div className="p-4 flex-shrink-0 bg-gradient-to-r from-primary/10 to-primary/5 border-b">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Messages</h2>
+            {unreadCount > 0 && (
+              <span className="bg-primary text-white text-xs px-2 py-1 rounded-full">
+                {unreadCount} new
               </span>
             )}
           </div>
-
-          <span className="text-xs text-muted-foreground">
-            {new Date(chat.timestamp).toLocaleString()}
-          </span>
-          <p className="text-sm text-muted-foreground truncate">
-            {chat.message || chat.text || 'No message content'}
-          </p>
         </div>
-      </div>
-    </div>
-  );
-})}
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full max-h-full">
+            <div className="p-2">
+              {latestMessages.map((chat, index) => {
+                const recipientUsername = messages.find(m => m.userId === chat.userId && !m.isAdmin)?.username || 'Guest';
+                const isLastMessageFromAdmin = chat.isAdmin;
+                const messagePreview = (chat.message || chat.text || '').substring(0, 50) + 
+                  ((chat.message || chat.text || '').length > 50 ? '...' : '');
+                const messageTime = new Date(chat.timestamp);
+                const isToday = new Date().toDateString() === messageTime.toDateString();
+                const timeString = isToday 
+                  ? messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                  : messageTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
 
-
-        </ScrollArea>
+                return (
+                  <div
+                    key={chat.id || `chat-${index}-${chat.timestamp}`}
+                    className={`p-3 cursor-pointer rounded-lg mb-2 transition-all duration-200 hover:shadow-md ${
+                      selectedChat === chat.userId
+                        ? 'bg-primary/15 shadow-sm'
+                        : 'hover:bg-gray-50'
+                    } ${!chat.isRead && !chat.isAdmin ? 'border-l-4 border-primary' : 'border-l-4 border-transparent'}`}
+                    onClick={() => setSelectedChat(chat.userId ?? null)}
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            isLastMessageFromAdmin ? 'bg-primary text-white' : 'bg-gray-100'
+                          }`}>
+                            {isLastMessageFromAdmin ? <User size={16} /> : <Bot size={16} />}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className={`font-medium truncate ${
+                              !chat.isRead && !chat.isAdmin ? 'text-gray-900' : 'text-gray-700'
+                            }`}>
+                              {isLastMessageFromAdmin
+                                ? `${recipientUsername}`
+                                : `${recipientUsername}`}
+                            </h3>
+                            <p className="text-sm text-muted-foreground truncate">
+                              {messagePreview}
+                            </p>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-xs text-muted-foreground whitespace-nowrap">
+                              {timeString}
+                            </span>
+                            {!chat.isRead && !chat.isAdmin && (
+                              <span className="bg-primary text-white text-xs px-1.5 py-0.5 rounded-full mt-1">
+                                New
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {latestMessages.length === 0 && (
+                <div className="p-4 text-center text-muted-foreground">
+                  No messages yet
+                </div>
+              )}
+            </div>
+          </ScrollArea>
         </div>
       </Card>
 
       {/* Chat Details with Reply */}
-      <Card className="flex-1 flex flex-col min-h-0">
-  {selectedChat ? (
-    <>
-      {/* Header */}
-      <div className="p-4 border-b">
-      <h2 className="text-xl font-semibold">
-  Chat with {messages.find(m => m.userId === selectedChat)?.guestUsername || 'Guest'}
-</h2>
+      <Card className="flex-1 flex flex-col min-h-0 shadow-md border-0">
+        {selectedChat ? (
+          <>
+            {/* Header */}
+            <div className="p-4 border-b bg-gradient-to-r from-primary/10 to-primary/5">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100">
+                  <Bot size={16} />
+                </div>
+                Chat with {messages.find(m => m.userId === selectedChat)?.guestUsername || 'Guest'}
+              </h2>
+            </div>
 
-
-      </div>
-
-      {/* Chat Scrollable Body */}
-      <div className="flex-1 min-h-0 overflow-hidden">
-        <ScrollArea className="h-full" ref={scrollRef}>
-        <div className="flex flex-col gap-4 p-4">
-
-            {selectedChatMessages.map((message, index) => (
-              <div
-                key={message.id || `message-${index}-${new Date(message.timestamp).getTime()}`}
-                className={`flex ${message.isAdmin ? 'justify-end' : 'justify-start'}`}
-              >
-                {!message.isAdmin ? (
-                  <div className="flex items-start gap-2">
-                    <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#2E2E2E] text-white">
-                      <Bot size={16} />
+            {/* Chat Scrollable Body */}
+            <div className="flex-1 min-h-0 overflow-hidden bg-gray-50">
+              <ScrollArea className="h-full">
+                <div className="flex flex-col gap-4 p-4">
+                  {selectedChatMessages.map((message, index) => (
+                    <div
+                      key={message.id || `message-${index}-${new Date(message.timestamp).getTime()}`}
+                      className={`flex ${message.isAdmin ? 'justify-end' : 'justify-start'}`}
+                    >
+                      {!message.isAdmin ? (
+                        <div className="flex items-start gap-2 max-w-[80%]">
+                          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-[#2E2E2E] text-white">
+                            <Bot size={16} />
+                          </div>
+                          <div className="rounded-xl p-3 text-sm bg-white border shadow-sm rounded-tl-none">
+                            <p className="break-words">{message.message || message.text}</p>
+                            <div className="text-[10px] mt-1 text-gray-500 text-right">
+                              {new Date(message.timestamp).toLocaleTimeString([], {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="max-w-[80%] rounded-xl p-3 text-sm bg-primary text-white shadow-sm rounded-br-none">
+                          <p className="break-words">{message.message || message.text}</p>
+                          <div className="text-[10px] mt-1 text-white/70 text-right">
+                            {new Date(message.timestamp).toLocaleTimeString([], {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="max-w-xs md:max-w-sm rounded-xl p-3 text-sm bg-white border shadow-sm">
-                      <p className="break-words">{message.message || message.text}</p>
-                      <div className="text-[10px] mt-1 text-gray-500 text-right">
-                        {new Date(message.timestamp).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="max-w-xs md:max-w-sm rounded-xl p-3 text-sm bg-primary text-white shadow-sm rounded-bl-none">
-                    <p className="break-words">{message.message || message.text}</p>
-                    <div className="text-[10px] mt-1 text-white/70 text-right">
-                      {new Date(message.timestamp).toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </div>
-                  </div>
-                )}
+                  ))}
+                  {/* This empty div is used as a reference for scrolling to the bottom */}
+                  <div ref={messagesEndRef} />
+                </div>
+              </ScrollArea>
+            </div>
+
+            {/* Reply input */}
+            <div className="p-4 border-t bg-white">
+              <div className="flex gap-2">
+                <Input
+                  className="shadow-sm focus-visible:ring-primary"
+                  placeholder="Type your reply..."
+                  value={replyMessage}
+                  onChange={(e) => setReplyMessage(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendReply()}
+                />
+                <Button 
+                  onClick={handleSendReply}
+                  className="shadow-sm hover:shadow-md transition-all"
+                >
+                  <Send className="h-4 w-4 mr-1" />
+                  Send
+                </Button>
               </div>
-            ))}
+            </div>
+          </>
+        ) : (
+          <div className="h-full flex flex-col items-center justify-center text-muted-foreground p-6">
+            <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+              <Bot size={32} className="text-gray-400" />
+            </div>
+            <h3 className="text-xl font-medium text-gray-700 mb-2">No conversation selected</h3>
+            <p className="text-center max-w-md">
+              Select a conversation from the list to view messages and reply to your guests.
+            </p>
           </div>
-        </ScrollArea>
-      </div>
-
-      {/* Reply input */}
-      <div className="p-4 border-t">
-        <div className="flex gap-2">
-          <Input
-            placeholder="Type your reply..."
-            value={replyMessage}
-            onChange={(e) => setReplyMessage(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSendReply()}
-          />
-          <Button onClick={handleSendReply}>
-            <Send className="h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </>
-  ) : (
-    <div className="h-full flex items-center justify-center text-muted-foreground">
-      Select a conversation to view messages
-    </div>
-  )}
-</Card>
-
+        )}
+      </Card>
     </div>
   );
 }

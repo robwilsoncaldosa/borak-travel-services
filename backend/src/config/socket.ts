@@ -6,7 +6,7 @@ import { Server as HttpServer } from 'http';
 export const initializeSocket = (server: HttpServer) => {
   const io = new SocketServer(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+      origin: [process.env.FRONTEND_URL || '', process.env.FRONTEND_URL_2 || '', 'http://localhost:3000'].filter(Boolean),
       methods: ['GET', 'POST'],
       credentials: true,
     },
