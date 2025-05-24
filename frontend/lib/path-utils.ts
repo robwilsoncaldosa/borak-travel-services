@@ -1,4 +1,4 @@
-import { headers } from "next/headers";
+// Remove the import { headers } from "next/headers";
 
 /**
  * Checks if the current path is an admin path
@@ -6,13 +6,14 @@ import { headers } from "next/headers";
  */
 export async function isAdminPath(): Promise<boolean> {
   try {
-    const headersList = await headers();
-    const url = headersList.get("x-url") || "";
-    // Use a relative URL parsing approach
-    const pathname = url.startsWith('http') 
-      ? new URL(url).pathname 
-      : url.split('?')[0]; // Handle relative URLs by extracting path before query params
-    return pathname.includes("/admin");
+    // Use window.location in client components
+    if (typeof window !== 'undefined') {
+      return window.location.pathname.includes('/admin');
+    }
+    
+    // For server components, use a different approach that doesn't rely on headers()
+    // This could be based on the context or props passed to the component
+    return false;
   } catch (error) {
     console.error("Error checking admin path:", error);
     return false;
@@ -20,17 +21,15 @@ export async function isAdminPath(): Promise<boolean> {
 }
 
 /**
- * Gets the current pathname from server headers
+ * Gets the current pathname from client-side
  * @returns string representing the current path
  */
 export async function getCurrentPath(): Promise<string> {
   try {
-    const headersList = await headers();
-    const url = headersList.get("x-url") || "";
-    // Use a relative URL parsing approach
-    return url.startsWith('http') 
-      ? new URL(url).pathname 
-      : url.split('?')[0]; // Handle relative URLs by extracting path before query params
+    if (typeof window !== 'undefined') {
+      return window.location.pathname;
+    }
+    return "";
   } catch (error) {
     console.error("Error getting current path:", error);
     return "";

@@ -24,7 +24,7 @@ const io = initializeSocket(server);
 
 // Configure CORS options
 const corsOptions: cors.CorsOptions = {
-  origin: [process.env.FRONTEND_URL || '', process.env.FRONTEND_URL_2 || ''],
+  origin: [process.env.FRONTEND_URL || '', process.env.FRONTEND_URL_2 || '','http://localhost:3000'],
   methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE"],
   credentials: true,
   allowedHeaders: ["Content-Type", "Authorization"],

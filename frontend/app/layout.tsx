@@ -1,10 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "./_components/header";
-import Footer from "./_components/footer";
-import { isAdminPath } from "@/lib/path-utils";
-import Chatbot from "@/components/ui/chatbot";
+import ClientLayout from "./ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,24 +18,18 @@ export const metadata: Metadata = {
   description: "This is great naman",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const isAdminDashboard = await isAdminPath();
-  const showCustomerInterface = !isAdminDashboard;
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen grid grid-rows-[1fr_auto]`}
         suppressHydrationWarning
       >
-          {showCustomerInterface && <Header />}
-          {children}
-          {showCustomerInterface && <Chatbot />}
-          {showCustomerInterface && <Footer />}
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );
