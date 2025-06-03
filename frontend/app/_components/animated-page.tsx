@@ -1,9 +1,9 @@
 "use client";
 
+// import { Card, CardContent } from "@/components/ui/card";
+// import LandingPageForm from "./landing-page-form";
 import Image from "next/image";
 import { BookNowButton } from "../_components/book-now-button";
-import { Card, CardContent } from "@/components/ui/card";
-import LandingPageForm from "./landing-page-form";
 import { H1 } from "@/components/ui/typography";
 import PackageCardsSection from "../_components/package-cards-section";
 import CebuTourismSection from "../_components/cebu-tourism-section";
