@@ -86,7 +86,12 @@ export default function Page() {
             <div className="min-h-[400px]">
                 {isLoading ? (
                     <div className="flex justify-center items-center py-20">
-                        <div className="text-xl text-gray-600">Loading packages...</div>
+                        <div className="animate-pulse flex flex-col items-center gap-4">
+                            <div className="w-12 h-12 border-4 border-gray-300 border-t-[#2E2E2E] rounded-full animate-spin" />
+                            <div className="text-xl text-gray-600 font-medium">
+                                Loading amazing packages for you...
+                            </div>
+                        </div>
                     </div>
                 ) : packages.length === 0 ? (
                     <div className="flex justify-center items-center py-20">
