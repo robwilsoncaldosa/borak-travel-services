@@ -6,7 +6,7 @@ export function BookNowButton() {
   const router = useRouter();
   
   return (
-    <div className="my-22 flex items-center justify-center">
+    <div className="flex items-center justify-center mt-50">
       <button
         onClick={() => router.push('/packages')}
         className="bg-[#2e2e2e] rounded-full px- py-5 dark:bg-white dark:text-black text-white flex justify-center group/modal-btn relative overflow-hidden"
