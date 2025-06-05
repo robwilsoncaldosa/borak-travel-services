@@ -22,15 +22,22 @@ export const chatApi = {
   // User & Admin: Get messages by user ID
   getMessagesByUserId: async (userId: string) => {
     try {
+      if (!userId) {
+        console.error('No userId provided');
+        return [];
+      }
+
       const { data } = await instance.get<ChatMessage[]>(`/api/messages/${userId}`);
-      return data;
+      
+      // Ensure we return an array even if data is null/undefined
+      return Array.isArray(data) ? data : [];
     } catch (error) {
       // Type guard to check if error is an AxiosError
       if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 404) {
         return []; // Return empty array for new users
       }
       console.error('Failed to fetch messages:', error);
-      throw error;
+      return []; // Return empty array on error
     }
   },
   // User & Admin: Create new message
@@ -68,12 +75,13 @@ export const chatApi = {
   },
 
   // Admin: Send reply
-  sendReply: async (userId: string, message: string) => {
+  sendReply: async (userId: string, message: string, imageUrls?: string[]) => {
     try {
       const { data } = await instance.post<ChatMessage>('/api/messages/reply', {
         userId,
         message,
-        isAdmin: true
+        isAdmin: true,
+        imageUrls: imageUrls || []
       });
       return data;
     } catch (error) {

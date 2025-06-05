@@ -4,22 +4,109 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect, useRef, useMemo } from "react";
-import { Bot, Send, User } from "lucide-react";
+import { useState, useEffect, useRef, useMemo, memo } from "react";
+import { Bot, Send, User, X, ZoomIn } from "lucide-react";
 import { chatApi, ChatMessage } from "@/lib/backend_api/chat";
+import { ChatImageUpload, ChatImageUploadRef } from "@/components/cloudinary/ChatImageUpload";
+import Image from "next/image";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { io, Socket } from "socket.io-client";
 
 let socket: Socket;
 
+// Move ImageModal outside of InboxPage component and memoize it
+const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const imgRef = useRef<HTMLImageElement>(null);
+  const hasLoadedRef = useRef(false);
+
+  useEffect(() => {
+    if (hasLoadedRef.current) return;
+    
+    const img = new window.Image();
+    img.src = imageUrl;
+    
+    img.onload = () => {
+      hasLoadedRef.current = true;
+      setIsLoading(false);
+    };
+
+    return () => {
+      hasLoadedRef.current = false;
+    };
+  }, [imageUrl]);
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden flex items-center justify-center w-full h-[calc(100%-1rem)] max-h-full"
+      onClick={onClose}
+    >
+      <div className="relative p-4 w-full max-w-4xl max-h-full">
+        <div className="relative bg-white rounded-lg shadow-sm">
+          {/* Modal header */}
+          <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
+            <h3 className="text-xl font-semibold text-gray-900">
+              Image Preview
+            </h3>
+            <button 
+              type="button" 
+              className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
+              onClick={onClose}
+            >
+              <X className="w-5 h-5" />
+              <span className="sr-only">Close modal</span>
+            </button>
+          </div>
+          
+          {/* Modal body */}
+          <div className="p-4 space-y-4">
+            <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
+              {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-4 border-gray-300 border-t-gray-600" />
+                </div>
+              )}
+              <Image
+                ref={imgRef}
+                src={imageUrl}
+                alt="Expanded image"
+                fill
+                className={`object-contain transition-opacity duration-300 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
+                priority
+                sizes="(max-width: 80vw) 80vw, 80vw"
+                quality={100}
+                onLoad={() => {
+                  if (!hasLoadedRef.current) {
+                    hasLoadedRef.current = true;
+                    setIsLoading(false);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+ImageModal.displayName = 'ImageModal';
+
 export default function InboxPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [selectedChat, setSelectedChat] = useState<string | null>(null);
   const [replyMessage, setReplyMessage] = useState('');
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const imageUploadRef = useRef<ChatImageUploadRef>(null);
+  const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
-    socket = io(process.env.NEXT_PUBLIC_SERVER_ENDPOINT || 'http://localhost:8081');
+    // Initialize socket connection
+    socketRef.current = io(process.env.NEXT_PUBLIC_SERVER_ENDPOINT || 'http://localhost:8081');
+
     const loadMessages = async () => {
       try {
         const data = await chatApi.getAllMessages();
@@ -48,11 +135,20 @@ export default function InboxPage() {
 
     loadMessages();
     const interval = setInterval(loadMessages, 5000); // Reduced polling frequency
-    return () => clearInterval(interval);
+
+    // Cleanup function
+    return () => {
+      clearInterval(interval);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
   }, []);
 
   useEffect(() => {
-    socket.on('message', (newMessage: ChatMessage) => {
+    if (!socketRef.current) return;
+
+    socketRef.current.on('message', (newMessage: ChatMessage) => {
       setMessages(prevMessages => {
         const updatedMessages = [...prevMessages, newMessage];
         return updatedMessages.sort(
@@ -62,15 +158,17 @@ export default function InboxPage() {
     });
 
     return () => {
-      socket.off('message');
+      if (socketRef.current) {
+        socketRef.current.off('message');
+      }
     };
   }, []);
   
   const handleSendReply = async () => {
-    if (!replyMessage.trim() || !selectedChat) return;
+    if ((!replyMessage.trim() && imageUrls.length === 0) || !selectedChat) return;
 
     try {
-      const newMessage = await chatApi.sendReply(selectedChat, replyMessage);
+      const newMessage = await chatApi.sendReply(selectedChat, replyMessage, imageUrls);
 
       const adminMessage: ChatMessage = {
         ...newMessage,
@@ -81,7 +179,8 @@ export default function InboxPage() {
         timestamp: new Date(),
         username: 'Admin',
         sender: 'bot',
-        isRead: true
+        isRead: true,
+        imageUrls: imageUrls.length > 0 ? imageUrls : undefined
       };
 
       setMessages(prevMessages =>
@@ -91,9 +190,13 @@ export default function InboxPage() {
       );
 
       // Emit the new admin message to all clients (real-time)
-      socket.emit('sendMessage', adminMessage);
+      if (socketRef.current) {
+        socketRef.current.emit('sendMessage', adminMessage);
+      }
 
       setReplyMessage('');
+      setImageUrls([]);
+      imageUploadRef.current?.clearPreviews();
       
       // Scroll to bottom after sending a message
       setTimeout(() => scrollToBottom(), 100);
@@ -142,6 +245,16 @@ export default function InboxPage() {
 
   return (
     <div className="h-[calc(100vh-8rem)] flex gap-4 overflow-hidden">
+      <AnimatePresence mode="wait">
+        {selectedImage && (
+          <ImageModal
+            key={selectedImage}
+            imageUrl={selectedImage}
+            onClose={() => setSelectedImage(null)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Chat List */}
       <Card className="w-1/3 flex flex-col min-h-0 shadow-md border-0">
         <div className="p-4 flex-shrink-0 bg-gradient-to-r from-primary/10 to-primary/5 border-b">
@@ -253,6 +366,31 @@ export default function InboxPage() {
                             <Bot size={16} />
                           </div>
                           <div className="rounded-xl p-3 text-sm bg-white border shadow-sm rounded-tl-none">
+                            {message.imageUrls && message.imageUrls.length > 0 && (
+                              <div className={`mb-2 ${message.imageUrls.length === 1 ? 'w-full' : 'grid grid-cols-2 gap-2'}`}>
+                                {message.imageUrls.map((url, index) => {
+                                  const isSingleImage = message.imageUrls?.length === 1;
+                                  return (
+                                    <div 
+                                      key={url} 
+                                      className={`relative ${isSingleImage ? 'w-full aspect-[4/3]' : 'w-30 h-30'} rounded-lg overflow-hidden group cursor-pointer`}
+                                      onClick={() => setSelectedImage(url)}
+                                    >
+                                      <Image
+                                        src={url}
+                                        alt={`Message attachment ${index + 1}`}
+                                        fill
+                                        className="object-cover transition-transform group-hover:scale-105"
+                                        sizes={isSingleImage ? "(max-width: 768px) 100vw, 80vw" : "(max-width: 768px) 50vw, 25vw"}
+                                      />
+                                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                        <ZoomIn className="h-6 w-6 text-white" />
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                             <p className="break-words">{message.message || message.text}</p>
                             <div className="text-[10px] mt-1 text-gray-500 text-right">
                               {new Date(message.timestamp).toLocaleTimeString([], {
@@ -264,6 +402,31 @@ export default function InboxPage() {
                         </div>
                       ) : (
                         <div className="max-w-[80%] rounded-xl p-3 text-sm bg-primary text-white shadow-sm rounded-br-none">
+                          {message.imageUrls && message.imageUrls.length > 0 && (
+                            <div className={`mb-2 ${message.imageUrls.length === 1 ? 'w-full' : 'grid grid-cols-2 gap-2'}`}>
+                              {message.imageUrls.map((url, index) => {
+                                const isSingleImage = message.imageUrls?.length === 1;
+                                return (
+                                  <div 
+                                    key={url} 
+                                    className={`relative ${isSingleImage ? 'w-full aspect-[4/3]' : 'w-30 h-30'} rounded-lg overflow-hidden group cursor-pointer`}
+                                    onClick={() => setSelectedImage(url)}
+                                  >
+                                    <Image
+                                      src={url}
+                                      alt={`Message attachment ${index + 1}`}
+                                      fill
+                                      className="object-cover transition-transform group-hover:scale-105"
+                                      sizes={isSingleImage ? "(max-width: 768px) 100vw, 80vw" : "(max-width: 768px) 50vw, 25vw"}
+                                    />
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                      <ZoomIn className="h-6 w-6 text-white" />
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
                           <p className="break-words">{message.message || message.text}</p>
                           <div className="text-[10px] mt-1 text-white/70 text-right">
                             {new Date(message.timestamp).toLocaleTimeString([], {
@@ -284,15 +447,23 @@ export default function InboxPage() {
             {/* Reply input */}
             <div className="p-4 border-t bg-white">
               <div className="flex gap-2">
-                <Input
-                  className="shadow-sm focus-visible:ring-primary"
-                  placeholder="Type your reply..."
-                  value={replyMessage}
-                  onChange={(e) => setReplyMessage(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendReply()}
-                />
+                <div className="flex-1 flex items-center bg-gray-100 rounded-lg px-4 py-1 border border-gray-200 shadow-inner">
+                  <ChatImageUpload
+                    ref={imageUploadRef}
+                    onImageUpload={(urls) => setImageUrls(urls)}
+                    disabled={!selectedChat}
+                  />
+                  <Input
+                    className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    placeholder="Type your reply..."
+                    value={replyMessage}
+                    onChange={(e) => setReplyMessage(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendReply()}
+                  />
+                </div>
                 <Button 
                   onClick={handleSendReply}
+                  disabled={!replyMessage.trim() && imageUrls.length === 0}
                   className="shadow-sm hover:shadow-md transition-all"
                 >
                   <Send className="h-4 w-4 mr-1" />

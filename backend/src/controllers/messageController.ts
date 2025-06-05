@@ -54,7 +54,7 @@ export const messageController = {
 
   replyToMessage: async (req: Request, res: Response) => {
     try {
-      const { userId, message, adminName } = req.body;
+      const { userId, message, adminName, imageUrls = [] } = req.body;
 
       // Debugging line to check if req.io exists
       console.log(req.io);
@@ -66,6 +66,7 @@ export const messageController = {
         timestamp: new Date(),
         isRead: true,
         isAdmin: true,
+        imageUrls
       });
 
       const savedMessage = await newMessage.save();
