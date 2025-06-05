@@ -11,7 +11,8 @@ export interface ChatMessage {
   isAdmin?: boolean;
   userId?: string;
   username?: string;
-  guestUsername?: string; // Add this line to your ChatMessage interface
+  guestUsername?: string;
+  imageUrls?: string[];
 }
 
 
@@ -43,7 +44,8 @@ export const chatApi = {
         isAdmin: message.sender === 'bot',
         isRead: message.sender === 'bot',
         isSpecialOffer: message.isSpecialOffer || false,
-        timestamp: message.timestamp || new Date()
+        timestamp: message.timestamp || new Date(),
+        imageUrls: message.imageUrls
       };
 
       const { data } = await instance.post<ChatMessage>('/api/messages/create', messagePayload);

@@ -9,6 +9,7 @@ export interface IMessage extends Document {
   timestamp: Date;
   isRead: boolean;
   isAdmin: boolean;
+  imageUrls?: string[];
 }
 
 const messageSchema = new Schema({
@@ -36,6 +37,10 @@ const messageSchema = new Schema({
   isAdmin: { 
     type: Boolean, 
     default: false 
+  },
+  imageUrls: {
+    type: [String],
+    default: []
   }
 });
 
