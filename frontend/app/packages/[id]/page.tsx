@@ -13,12 +13,14 @@ import {
   BookingCard,
   ReviewSection,
 } from './components';
+import  Chatbots  from "@/components/ui/chatbot"; // Import your chatbot
 
 export default function PackageDetail() {
     const params = useParams();
     const [packageData, setPackageData] = useState<Package | null>(null);
     const [loading, setLoading] = useState(true);
     const [isWishlisted, setIsWishlisted] = useState(false);
+    const [isChatbotOpen, setIsChatbotOpen] = useState(false);
 
     useEffect(() => {
         const fetchPackage = async () => {
@@ -90,10 +92,14 @@ export default function PackageDetail() {
 
                     {/* Right column - Booking card */}
                     <div className="lg:col-span-1">
-                        <BookingCard packageData={packageData} />
+                        <BookingCard 
+                            packageData={packageData} 
+                            openChatbot={() => setIsChatbotOpen(true)} // Pass openChatbot function
+                        />
                     </div>
                 </div>
             </div>
+            <Chatbots isOpen={isChatbotOpen} onClose={() => setIsChatbotOpen(false)} />
         </div>
     );
 }

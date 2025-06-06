@@ -35,9 +35,10 @@ const formSchema = z.object({
 
 export interface BookingCardProps {
     packageData: Package;
+    openChatbot: () => void; // Add this prop
 }
 
-export const BookingCard = ({ packageData }: BookingCardProps) => {
+export const BookingCard = ({ packageData, openChatbot }: BookingCardProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -52,6 +53,7 @@ export const BookingCard = ({ packageData }: BookingCardProps) => {
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
     // Here you would handle the booking request
+    openChatbot(); // Open the chatbot after successful validation
   };
 
   return (

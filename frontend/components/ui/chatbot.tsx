@@ -24,10 +24,15 @@ interface Message {
 }
 
 
-const Chatbot = () => {
+interface ChatbotProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const [localIsOpen, setLocalIsOpen] = useState(false); // Renamed from isOpen
   const [isTyping, setIsTyping] = useState(false);
   const [guestReady, setGuestReady] = useState(false);
   const [username, setUsername] = useState("");
@@ -337,7 +342,8 @@ const formatMessage = (msg: ChatMessage): Message => ({
 
 
   const handleClose = () => {
-    setIsOpen(false);
+    onClose();
+    // setIsOpen(false);
     // Clear guest credentials when closing chat
     localStorage.removeItem("guestUserId");
     localStorage.removeItem("guestUsername");
@@ -350,6 +356,13 @@ const formatMessage = (msg: ChatMessage): Message => ({
   };
 
 
+  // Remove all usage of setIsOpen and use the prop isOpen for visibility
+  // For example, to close the chatbot, call onClose()
+
+  // Remove or refactor any code that toggles localIsOpen or setIsOpen
+
+  if (!isOpen) return null;
+
   return (
     <div className="fixed bottom-4 right-4 z-50">
       <AnimatePresence mode="wait">
@@ -360,7 +373,7 @@ const formatMessage = (msg: ChatMessage): Message => ({
             exit={{ scale: 0.8, opacity: 0 }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => setIsOpen(true)}
+            onClick={() => setLocalIsOpen(true)}
             className="p-4 bg-gradient-to-r from-[#2E2E2E] to-[#444444] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
             aria-label="Open chat"
           >
