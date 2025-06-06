@@ -10,6 +10,7 @@ import packageRoutes from './routes/packageRoutes';
 import bookingRoutes from './routes/bookingRoutes';
 import messageRoutes from './routes/messageRoutes';
 import guestRoutes from './routes/guestRoutes';
+import reviewRoutes from './routes/reviewRoutes';
 import connectDB from './config/db';
 import { initializeSocket } from './config/socket';
 import { isLoggedIn } from './lib/users';
@@ -51,7 +52,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/create/guests', guestRoutes);
-app.use('/api/bookings', bookingRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 const PORT: number = parseInt(process.env.PORT || "8081", 10);
 server.listen(PORT, () => {

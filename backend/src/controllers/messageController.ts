@@ -17,7 +17,7 @@ export const messageController = {
 
   createMessage: async (req: Request, res: Response) => {
     try {
-      const { message, username, userId, isAdmin = false } = req.body;
+      const { message, username, userId, isAdmin = false, imageUrls = [] } = req.body;
 
       if (!message || !userId) {
         return res.status(400).json({ message: 'Message and userId are required' });
@@ -32,18 +32,17 @@ export const messageController = {
         timestamp: new Date(),
         isRead: isAdmin, 
         isAdmin,
+        imageUrls
       });
 
       const savedMessage = await newMessage.save();
 
       // Emit the message in real-time
-    //   req.io.emit('message', savedMessage);
-  // Ensure req.io exists before emitting
-  if (req.io) {
-    req.io.emit('message', savedMessage);  // Emit admin reply to all connected clients
-  } else {
-    console.error('Socket.io instance is not available');
-  }
+      if (req.io) {
+        req.io.emit('message', savedMessage);
+      } else {
+        console.error('Socket.io instance is not available');
+      }
 
       res.status(201).json(savedMessage);
     } catch (error) {
@@ -55,7 +54,7 @@ export const messageController = {
 
   replyToMessage: async (req: Request, res: Response) => {
     try {
-      const { userId, message, adminName } = req.body;
+      const { userId, message, adminName, imageUrls = [] } = req.body;
 
       // Debugging line to check if req.io exists
       console.log(req.io);
@@ -67,6 +66,7 @@ export const messageController = {
         timestamp: new Date(),
         isRead: true,
         isAdmin: true,
+        imageUrls
       });
 
       const savedMessage = await newMessage.save();
