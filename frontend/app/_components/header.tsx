@@ -41,9 +41,9 @@ function Header() {
   
   return (
     <Card 
-      className={`fixed top-0 z-50 w-full max-w-[95%] md:max-w-7xl left-1/2 transform -translate-x-1/2 transition-all duration-500 ease-in-out ${scrolled 
-        ? 'mt-2 px-4 py-2 rounded-2xl bg-white/30 backdrop-blur-lg shadow-lg border border-white/20' 
-        : 'mt-4 px-6 py-3 rounded-3xl bg-white/50 backdrop-blur-md shadow-xl hover:shadow-2xl border border-white/10'}`}
+      className={`fixed top-0 rounded-full z-50 w-full max-w-[95%] md:max-w-7xl left-1/2 transform -translate-x-1/2 transition-all duration-500 ease-in-out ${scrolled 
+        ? 'mt-2 px-4 py-2  bg-white/30 backdrop-blur-lg shadow-lg border border-white/20' 
+        : 'mt-4 px-6 py-3  bg-white/50 backdrop-blur-md shadow-xl hover:shadow-2xl border border-white/10'}`}
     >
       <CardContent className="flex items-center justify-between p-0">
         <Logo {...headerProps.logo} />
