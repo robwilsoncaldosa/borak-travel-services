@@ -64,7 +64,7 @@ export function ResponsiveLandingSection() {
               
               <p className="text-sm sm:text-base text-white/95 leading-relaxed text-center sm:text-left" 
                  style={{ fontFamily: '"Poppins", sans-serif' }}>
-                From pristine beaches and crystal-clear waters to vibrant cultural experiences — travel in comfort and style.
+                From pristine beaches and crystal-clear waters to vibrant cultural experiences &mdash; travel in comfort and style.
               </p>
             </div>
             
