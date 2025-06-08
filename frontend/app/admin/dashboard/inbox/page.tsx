@@ -13,7 +13,7 @@ import { AnimatePresence } from "framer-motion";
 
 import { io, Socket } from "socket.io-client";
 
-let socket: Socket;
+// let socket: Socket;
 
 // Move ImageModal outside of InboxPage component and memoize it
 const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {

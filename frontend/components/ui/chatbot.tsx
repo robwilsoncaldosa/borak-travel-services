@@ -109,7 +109,7 @@ interface ChatbotProps {
 const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [localIsOpen, setLocalIsOpen] = useState(false); // Renamed from isOpen
+  const [, setLocalIsOpen] = useState(false); // Renamed from isOpen
   const [isTyping, setIsTyping] = useState(false);
   const [guestReady, setGuestReady] = useState(false);
   const [username, setUsername] = useState("");
@@ -123,7 +123,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
   const imageUploadRef = useRef<ChatImageUploadRef>(null);
-  const imageCache = useRef<Map<string, boolean>>(new Map());
+  // const imageCache = useRef<Map<string, boolean>>(new Map());
 
   // Check session timeout
   const checkSessionTimeout = useCallback(() => {
