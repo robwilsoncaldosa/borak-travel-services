@@ -26,7 +26,7 @@ export function ResponsiveLandingSection() {
       <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/60 z-5"></div>
       
       {/* Mobile: centered, Desktop: right-aligned */}
-      <div className="relative z-10 flex flex-col h-full items-center justify-center px-4 sm:px-6 lg:items-end lg:justify-center lg:pr-8 text-white">
+      <div className="relative z-10 flex flex-col h-full items-center justify-center px-4 sm:px-6 lg:items-end lg:justify-center lg:pr-8 text-white pt-10">
         <div className="w-full max-w-sm sm:max-w-md lg:max-w-lg backdrop-blur-2xl bg-white/15 p-4 sm:p-6 lg:p-8 rounded-2xl border border-white/30 shadow-2xl transform hover:scale-105 transition-all duration-300">
           <AnimatedSection type="initial" direction="right">
             <div className="flex items-center gap-3 sm:gap-4 mb-3 sm:mb-4">
