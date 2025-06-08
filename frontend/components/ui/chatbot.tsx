@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useRef, useCallback, memo, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { Send, MessageCircle, X, Bot, MapPin, Plane, PalmtreeIcon, SunIcon, Globe, ZoomIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
