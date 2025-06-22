@@ -57,12 +57,12 @@ export function ResponsiveLandingSection() {
             </p>
             
             <div className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
-              <p className="text-sm sm:text-base text-white/95 leading-relaxed text-center sm:text-left" 
+              <p className="hidden sm:block text-sm sm:text-base text-white/95 leading-relaxed text-center sm:text-left" 
                  style={{ fontFamily: '"Poppins", sans-serif' }}>
                 <span className="font-semibold text-yellow-200">Discover paradise</span> with our premium van rental services tailored for your journey through Cebu&apos;s breathtaking landscapes.
               </p>
               
-              <p className="text-sm sm:text-base text-white/95 leading-relaxed text-center sm:text-left" 
+              <p className="hidden sm:block text-sm sm:text-base text-white/95 leading-relaxed text-center sm:text-left" 
                  style={{ fontFamily: '"Poppins", sans-serif' }}>
                 From pristine beaches and crystal-clear waters to vibrant cultural experiences &mdash; travel in comfort and style.
               </p>
