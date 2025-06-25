@@ -26,11 +26,58 @@ export const bookingController = {
 
   createBooking: async (req: Request, res: Response): Promise<void> => {
     try {
-      const booking = new Booking(req.body);
+      const {
+        user_id,
+        package_id,
+        destination,
+        pickup_location,
+        pickup_date,
+        return_date,
+        status,
+        payment_status,
+        packs,
+      } = req.body;
+
+      // Validate required fields
+      if (
+        !user_id ||
+        !package_id ||
+        !destination ||
+        !pickup_location ||
+        !pickup_date ||
+        !return_date ||
+        !packs
+      ) {
+        res.status(400).json({ message: "Missing required fields" });
+        return; // Ensure the method returns void
+      }
+
+      // Validate data types
+      if (typeof packs !== "number" || packs < 1) {
+        res.status(400).json({ message: "Invalid number of packs" });
+        return; // Ensure the method returns void
+      }
+
+      // Create booking in the database
+      const booking = new Booking({
+        user_id,
+        package_id,
+        destination,
+        pickup_location,
+        pickup_date,
+        return_date,
+        status: status || "PENDING", // Default to "PENDING"
+        paymentStatus: payment_status || "PENDING", // Default to "PENDING"
+        packs,
+      });
+
       const saved = await booking.save();
       res.status(201).json(saved);
+      return; // Ensure the method returns void
     } catch (error) {
-      res.status(400).json({ message: 'Failed to create booking' });
+      console.error("Error creating booking:", error);
+      res.status(500).json({ message: "Failed to create booking" });
+      return; // Ensure the method returns void
     }
   },
 

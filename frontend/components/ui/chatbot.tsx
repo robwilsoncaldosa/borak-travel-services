@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect, useRef, useCallback, memo, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, memo } from "react";
 import { Send, MessageCircle, X, Bot, MapPin, Plane, PalmtreeIcon, SunIcon, Globe, ZoomIn } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
@@ -8,6 +8,7 @@ import { chatApi, ChatMessage } from "@/lib/backend_api/chat";
 import { guestApi, GuestCreateDto } from "@/lib/backend_api/guest";
 import { io, Socket } from "socket.io-client";
 import { ChatImageUpload, ChatImageUploadRef } from "@/components/cloudinary/ChatImageUpload";
+import { BookingForm } from "@/components/BookingForm";
 
 let socket: Socket;
 
@@ -23,7 +24,18 @@ interface Message {
   imageUrls?: string[];
 }
 
-// Move ImageModal outside of Chatbot component and memoize it
+interface BookingFormData {
+  userId: string | "";
+  packageId: string;
+  destination: string;
+  pickupLocation: string;
+  pickupDate: string;
+  returnDate: string;
+  numPacks: number;
+  status: string;
+  paymentStatus: string;
+}
+
 const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {
   const [isLoading, setIsLoading] = useState(true);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -52,7 +64,6 @@ const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () 
     >
       <div className="relative p-4 w-full max-w-4xl max-h-full">
         <div className="relative bg-white rounded-lg shadow-sm">
-          {/* Modal header */}
           <div className="flex items-center justify-between p-4 border-b rounded-t border-gray-200">
             <h3 className="text-xl font-semibold text-gray-900">
               Image Preview
@@ -66,8 +77,6 @@ const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () 
               <span className="sr-only">Close modal</span>
             </button>
           </div>
-          
-          {/* Modal body */}
           <div className="p-4 space-y-4">
             <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
               {isLoading && (
@@ -109,7 +118,7 @@ interface ChatbotProps {
 const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [localIsOpen, setLocalIsOpen] = useState(false); // Renamed from isOpen
+  const [localIsOpen, setLocalIsOpen] = useState(false); 
   const [isTyping, setIsTyping] = useState(false);
   const [guestReady, setGuestReady] = useState(false);
   const [username, setUsername] = useState("");
@@ -124,17 +133,25 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
   const imageUploadRef = useRef<ChatImageUploadRef>(null);
   const imageCache = useRef<Map<string, boolean>>(new Map());
+  const [showBookingForm, setShowBookingForm] = useState(false); // Controls the visibility of the booking form
+  const [selectedBookingMessage, setSelectedBookingMessage] = useState<Message | null>(null); // Tracks the clicked booking form message
 
-  // Check session timeout
+  const handleBookingFormClick = () => {
+    setShowBookingForm(true); // Show the booking form
+  };
+
+  const handleCancelBookingForm = () => {
+    setShowBookingForm(false); // Hide the booking form
+  };
+
   const checkSessionTimeout = useCallback(() => {
     const lastActive = localStorage.getItem("lastActive");
     if (lastActive) {
       const lastActiveTime = new Date(lastActive).getTime();
       const currentTime = new Date().getTime();
-      const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
+      const oneHour = 60 * 60 * 1000; 
       
       if (currentTime - lastActiveTime > oneHour) {
-        // Session expired
         localStorage.removeItem("guestUserId");
         localStorage.removeItem("guestUsername");
         localStorage.removeItem("lastActive");
@@ -151,7 +168,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     return true;
   }, []);
 
-  // Update last active time
   const updateLastActive = useCallback(() => {
     localStorage.setItem("lastActive", new Date().toISOString());
   }, []);
@@ -168,7 +184,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     }
   }, [checkSessionTimeout, updateLastActive]);
 
-  // Update last active time when chat is opened
   useEffect(() => {
     if (isOpen && guestReady) {
       updateLastActive();
@@ -265,11 +280,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     imageUrls: msg.imageUrls,
   });
 
-  // const handleClose = () => {
-  //   setIsOpen(false);
-  //   updateLastActive();
-  // };
-
   const preloadImage = useCallback((url: string) => {
     if (preloadedImages.has(url)) return;
     
@@ -321,7 +331,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
       sender: "user",
       message: input,
       timestamp: new Date(),
-      userId,
+      userId: userId || "",
       username,
       imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
     };
@@ -361,7 +371,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
           } else if (lowerInput.includes("price") || lowerInput.includes("cost") || lowerInput.includes("how much")) {
             responseText = "Our tour packages start from ₱1,500 per person. May I know which destination you're interested in for a more specific quote?";
           } else if (lowerInput.includes("book") || lowerInput.includes("reserve")) {
-            responseText = "Great! To book a tour, we'll need your preferred date, number of travelers, and pickup location. When are you planning to visit?";
+            responseText = "Great! To book a tour, please filled-up the booking form. below";
           } else if (lowerInput.includes("oslob")) {
             responseText = "Our Oslob Whale Shark Watching tour is very popular! It includes snorkeling with the gentle giants. Would you like more details or pricing?";
             isSpecialOffer = true;
@@ -457,28 +467,77 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     </motion.div>
   );
 
+  // const handleBookingFormSubmit = async (data: BookingFormData) => {
+  //   try {
+  //     await chatApi.createBooking({
+  //       userId: data.userId || userId || "",
+  //       packageId: data.packageId,
+  //       destination: data.destination,
+  //       pickupLocation: data.pickupLocation,
+  //       pickupDate: data.pickupDate,
+  //       returnDate: data.returnDate,
+  //       numPacks: data.numPacks,
+  //       status: "pending",
+  //       paymentStatus: "unpaid",
+  //     });
 
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       {
+  //         sender: "bot",
+  //         text: "Thank you! Your booking has been submitted successfully.",
+  //         timestamp: new Date(),
+  //       },
+  //     ]);
 
+  //     setShowBookingForm(false); // Close the booking form after submission
+  //   } catch (error) {
+  //     console.error("Failed to submit booking:", error);
+  //     setMessages((prevMessages) => [
+  //       ...prevMessages,
+  //       {
+  //         sender: "bot",
+  //         text: "Failed to submit your booking. Please try again later.",
+  //         timestamp: new Date(),
+  //       },
+  //     ]);
+  //   }
+  // };
 
   const handleClose = () => {
     onClose();
-    // setIsOpen(false);
-    // Clear guest credentials when closing chat
     localStorage.removeItem("guestUserId");
     localStorage.removeItem("guestUsername");
     setUserId(null);
     setUsername("");
     setEmail("");
     setGuestReady(false);
-    setAdminHasReplied(false); // Reset admin replied state
+    setAdminHasReplied(false);
     setMessages([]);
   };
 
+  useEffect(() => {
+    const bookingKeywords = ["booking", "reservation", "book"];
 
-  // Remove all usage of setIsOpen and use the prop isOpen for visibility
-  // For example, to close the chatbot, call onClose()
-
-  // Remove or refactor any code that toggles localIsOpen or setIsOpen
+    const lastMessage = messages[messages.length - 1];
+    if (
+      lastMessage &&
+      lastMessage.sender === "user" &&
+      bookingKeywords.some((keyword) =>
+        lastMessage.text.toLowerCase().includes(keyword)
+      )
+    ) {
+      setMessages((prevMessages) => [
+        ...prevMessages,
+        {
+          sender: "bot",
+          text: "Please fill out the booking form to complete your reservation.",
+          timestamp: new Date(),
+        },
+      ]);
+      setShowBookingForm(true);
+    }
+  }, [messages]);
 
   if (!isOpen) return null;
 
@@ -571,11 +630,12 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
                     </button>
                   </div>
                 </div>
-              )}
+              )
+              }
              
               {(() => {
                 const renderedIds = new Set();
-                return messages.map((msg) => {
+                return messages.map((msg, index) => {
                   if (msg.id && renderedIds.has(msg.id)) {
                     return null;
                   }
@@ -586,76 +646,40 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.1 }}
-                      className={`flex ${msg.sender === 'bot' ? 'justify-start' : 'justify-end'}`}
+                      className={`flex ${msg.sender === "bot" ? "justify-start" : "justify-end"}`}
                     >
-                      <div className={`flex max-w-[80%] ${msg.sender === 'bot' ? 'flex-row' : 'flex-row-reverse'}`}>
-                        {msg.sender === 'bot' ? (
+                      <div className={`flex max-w-[80%] ${msg.sender === "bot" ? "flex-row" : "flex-row-reverse"}`}>
+                        {msg.sender === "bot" ? (
                           <>
                             <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mr-2 bg-[#2E2E2E]">
                               <Bot size={16} className="text-white" />
                             </div>
                             <div className="p-3 rounded-2xl shadow-sm bg-white border border-gray-200">
-                              {msg.imageUrls && msg.imageUrls.length > 0 && (
-                                <div className={`mb-2 ${msg.imageUrls.length === 1 ? 'w-full' : 'grid grid-cols-2 gap-2'}`}>
-                                  {msg.imageUrls.map((url, index) => {
-                                    const isSingleImage = msg.imageUrls?.length === 1;
-                                    return (
-                                      <div 
-                                        key={url} 
-                                        className={`relative ${isSingleImage ? 'w-full aspect-[4/3]' : 'w-30 h-30'} rounded-lg overflow-hidden group cursor-pointer`}
-                                        onClick={() => setSelectedImage(url)}
-                                      >
-                                        <Image
-                                          src={url}
-                                          alt={`Message attachment ${index + 1}`}
-                                          fill
-                                          className="object-cover transition-transform group-hover:scale-105"
-                                          sizes={isSingleImage ? "(max-width: 768px) 100vw, 80vw" : "(max-width: 768px) 50vw, 25vw"}
-                                        />
-                                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                          <ZoomIn className="h-6 w-6 text-white" />
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
-                                </div>
-                              )}
-                              <p className="text-sm">{msg.text}</p>
+                              <p className="text-sm">
+                                {msg.text === "Great! To book a tour, please filled-up the booking form. below" ? (
+                                  <>
+                                    <span>{msg.text}</span>
+                                    <button
+                                      onClick={handleBookingFormClick}
+                                      className="text-blue-500 underline block mt-2"
+                                    >
+                                      Open Booking Form
+                                    </button>
+                                  </>
+                                ) : (
+                                  msg.text
+                                )}
+                              </p>
                               <p className="text-[10px] mt-1 opacity-70 text-right">
-                                {msg.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                               </p>
                             </div>
                           </>
                         ) : (
                           <div className="p-3 rounded-2xl shadow-sm bg-gradient-to-r from-[#2E2E2E] to-[#444444] text-white">
-                            {msg.imageUrls && msg.imageUrls.length > 0 && (
-                              <div className={`mb-2 ${msg.imageUrls.length === 1 ? 'w-full' : 'grid grid-cols-2 gap-2'}`}>
-                                {msg.imageUrls.map((url, index) => {
-                                  const isSingleImage = msg.imageUrls?.length === 1;
-                                  return (
-                                    <div 
-                                      key={url} 
-                                      className={`relative ${isSingleImage ? 'w-full aspect-[4/3]' : 'w-30 h-30'} rounded-lg overflow-hidden group cursor-pointer`}
-                                      onClick={() => setSelectedImage(url)}
-                                    >
-                                      <Image
-                                        src={url}
-                                        alt={`Message attachment ${index + 1}`}
-                                        fill
-                                        className="object-cover transition-transform group-hover:scale-105"
-                                        sizes={isSingleImage ? "(max-width: 768px) 100vw, 80vw" : "(max-width: 768px) 50vw, 25vw"}
-                                      />
-                                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                        <ZoomIn className="h-6 w-6 text-white" />
-                                      </div>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            )}
                             <p className="text-sm">{msg.text}</p>
                             <p className="text-[10px] mt-1 opacity-70 text-right">
-                              {msg.timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                              {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                             </p>
                           </div>
                         )}
@@ -720,9 +744,20 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
           renderGuestForm()
         )}
       </AnimatePresence>
+      {showBookingForm && (
+        <div className="mt-4">
+          <BookingForm
+            onSubmit={(data) => {
+              console.log("Booking submitted:", data);
+              setShowBookingForm(false); // Hide the form after submission
+            }}
+            onCancel={handleCancelBookingForm} // Close the form when canceleduserId={userId || ""} // Pass the current guest user ID
+            userId={userId || ""} // Pass the current guest user ID
+          />
+        </div>
+      )}
     </div>
   );
 };
-
 export default Chatbot;
 

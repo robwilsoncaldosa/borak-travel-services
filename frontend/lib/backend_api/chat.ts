@@ -1,3 +1,4 @@
+import { BookingFormData } from '@/components/BookingForm';
 import { instance } from '../axios';
 
 export interface ChatMessage {
@@ -101,5 +102,14 @@ export const chatApi = {
     }
   },
 
-
+  createBooking: async (bookingData: BookingFormData): Promise<void> => {
+    const response = await fetch("/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bookingData),
+    });
+    if (!response.ok) {
+      throw new Error("Failed to create booking");
+    }
+  },
 };

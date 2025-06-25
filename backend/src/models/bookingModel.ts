@@ -15,8 +15,8 @@ export interface IBooking extends Document {
 }
 
 const BookingSchema: Schema = new Schema({
-  user_id: { type: Number, required: true },
-  package_id: { type: Number, required: true },
+  user_id: { type: String, required: true },
+  package_id: { type: String, required: true },
   destination: { type: String, required: true },
   pickup_location: { type: String, required: true },
   pickup_date: { type: Date, required: true },
