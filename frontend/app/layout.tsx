@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen grid grid-rows-[1fr_auto]`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen `}
         suppressHydrationWarning
       >
         <ClientLayout>{children}</ClientLayout>

@@ -114,4 +114,6 @@ export const ChatImageUpload = forwardRef<ChatImageUploadRef, ChatImageUploadPro
       />
     </div>
   );
-}); 
+});
+
+ChatImageUpload.displayName = 'ChatImageUpload';

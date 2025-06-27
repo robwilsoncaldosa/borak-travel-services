@@ -9,11 +9,11 @@ import { Bot, Send, User, X, ZoomIn } from "lucide-react";
 import { chatApi, ChatMessage } from "@/lib/backend_api/chat";
 import { ChatImageUpload, ChatImageUploadRef } from "@/components/cloudinary/ChatImageUpload";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 
 import { io, Socket } from "socket.io-client";
 
-let socket: Socket;
+// let socket: Socket;
 
 // Move ImageModal outside of InboxPage component and memoize it
 const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {

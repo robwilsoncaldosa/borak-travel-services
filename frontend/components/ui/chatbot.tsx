@@ -217,24 +217,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     }
   }, [userId]);
 
-  useEffect(() => {
-    if (!isOpen || !guestReady || !userId) return;
-
-    socket = io(process.env.NEXT_PUBLIC_SERVER_ENDPOINT || "http://localhost:8081");
-
-    socket.on("message", handleIncomingMessage);
-
-    const interval = setInterval(() => {
-      if (userId) loadMessages();
-    }, 1000);
-
-    return () => {
-      socket?.off("message", handleIncomingMessage);
-      clearInterval(interval);
-    };
-  }, [isOpen, guestReady, userId, loadMessages]);
-
-  const [unreadCount, setUnreadCount] = useState(0);
 
   const handleIncomingMessage = (message: ChatMessage) => {
     const isFromHumanAdmin = message.isAdmin && message.username !== "Bot";
@@ -263,6 +245,26 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     });
     if (!isOpen) setUnreadCount(count => count + 1);
   };
+
+  useEffect(() => {
+    if (!isOpen || !guestReady || !userId) return;
+
+    socket = io(process.env.NEXT_PUBLIC_SERVER_ENDPOINT || "http://localhost:8081");
+
+    socket.on("message", handleIncomingMessage);
+
+    const interval = setInterval(() => {
+      if (userId) loadMessages();
+    }, 1000);
+
+    return () => {
+      socket?.off("message", handleIncomingMessage);
+      clearInterval(interval);
+    };
+  }, [isOpen, guestReady, userId, loadMessages, handleIncomingMessage]); // Added handleIncomingMessage
+
+  
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
     if (isOpen) setUnreadCount(0);
