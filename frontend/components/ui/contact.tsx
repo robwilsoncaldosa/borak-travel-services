@@ -12,8 +12,18 @@ const ContactPage = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle form submission logic here
-        console.log(formData);
+        
+        // Create mailto link with form data
+        const subject = encodeURIComponent('Contact Form Submission');
+        const body = encodeURIComponent(
+            `Name: ${formData.fullName}\n` +
+            `Email: ${formData.email}\n` +
+            `Mobile: ${formData.mobileNumber}\n` +
+            `Message: ${formData.message}`
+        );
+        
+        const mailtoLink = `mailto:borak@gmail.com?subject=${subject}&body=${body}`;
+        window.location.href = mailtoLink;
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
