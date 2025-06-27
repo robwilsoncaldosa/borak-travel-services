@@ -1,8 +1,8 @@
 import { instance } from '../axios';
 
 export interface BookingData {
-  user_id: number;
-  package_id: number;
+  user_id: string;
+  package_id: string;
   destination: string;
   pickup_location: string;
   pickup_date: string;

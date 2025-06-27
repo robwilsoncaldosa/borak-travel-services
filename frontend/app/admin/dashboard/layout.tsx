@@ -1,5 +1,6 @@
 "use client";
-import { ProtectedRoute } from "@/components/auth/protected-route";
+// Remove the unused import on line 2
+// import { ProtectedRoute } from "@/components/auth/protected-route"; // Remove this line
 import {
     Calendar1,
     Home,

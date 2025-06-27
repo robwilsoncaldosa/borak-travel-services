@@ -24,12 +24,20 @@ const headerProps: HeaderProps = {
 };
 
 // Mobile Header Component
+// Add proper type definition at the top of the file
+interface LogoProps {
+  imageSrc: string;
+  altText: string;
+  title: string;
+}
+
+// Fix line 32 - Replace 'any' with proper type
 function MobileHeader({ 
   logo, 
   navLinks, 
   scrolled 
 }: { 
-  logo: any; 
+  logo: LogoProps; // Changed from 'any'
   navLinks: NavLinkProps[]; 
   scrolled: boolean; 
 }) {
@@ -160,12 +168,13 @@ function MobileHeader({
 }
 
 // Desktop Header Component
+// Fix line 168 - Replace 'any' with proper type
 function DesktopHeader({ 
   logo, 
   navLinks, 
   scrolled 
 }: { 
-  logo: any; 
+  logo: LogoProps; // Changed from 'any'
   navLinks: NavLinkProps[]; 
   scrolled: boolean; 
 }) {
