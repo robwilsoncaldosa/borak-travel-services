@@ -9,7 +9,7 @@ export function BookNowButton() {
     <div className="flex items-center justify-center ">
       <button
         onClick={() => router.push('/packages')}
-        className="bg-[#2e2e2e] rounded-full px- py-5 dark:bg-white dark:text-black text-white flex justify-center group/modal-btn relative overflow-hidden"
+        className="bg-[#2e2e2e] rounded-2xl py-5 dark:bg-white dark:text-black text-white flex justify-center group/modal-btn relative overflow-hidden"
       >
         <span className="text-2xl px-16 group-hover/modal-btn:translate-x-65 text-center transition duration-500">
           Book Now

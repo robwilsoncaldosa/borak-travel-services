@@ -135,7 +135,7 @@ export const BookingCard = ({ packageData, openChatbot }: BookingCardProps) => {
                           type="button" 
                           variant="outline" 
                           size="icon" 
-                          className="h-8 w-8 rounded-full"
+                          className="h-8 w-8 rounded-full"  
                           onClick={() => field.value > 1 && form.setValue('guests', field.value - 1)}
                         >
                           -
@@ -172,7 +172,7 @@ export const BookingCard = ({ packageData, openChatbot }: BookingCardProps) => {
             {/* Booking button */}
             <Button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-md font-semibold tracking-wide transition-all duration-300 hover:bg-blue-700 flex items-center justify-center"
+              className="w-full bg-teal-950 hover:bg-teal-950/90 text-white py-3 px-4 rounded-md font-semibold tracking-wide transition-all duration-300 "
             >
               Contact for Booking
             </Button>
