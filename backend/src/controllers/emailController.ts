@@ -107,7 +107,7 @@ This is an automated notification to inform you of the new submission.
                     subject: `🔔 New Contact Form Submission from ${fullName}`,
                     text: smtpNotificationContent,
                     html: smtpNotificationHtml,
-                }).catch(error => {
+                }).catch((error: any) => {
                     console.error('Failed to send SMTP user notification:', error);
                     return null; // Don't fail the main request
                 })

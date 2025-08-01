@@ -43,9 +43,21 @@ export const userApi = {
       const response = await instance.post<LoginResponse>('/api/users/login', loginData);
       console.log('Login response:', response.data); // Debug log
       return response.data;
-    } catch (error) {
+    } catch (error: any) {
       console.log('Login error:', error);
-      // throw error;
+      
+      // Handle different types of errors
+      if (error.response) {
+        // Server responded with error status
+        const errorMessage = error.response.data?.message || error.response.data?.error || 'Login failed';
+        throw new Error(errorMessage);
+      } else if (error.request) {
+        // Network error
+        throw new Error('Network error. Please check your connection.');
+      } else {
+        // Other errors
+        throw new Error(error.message || 'Login failed');
+      }
     }
   },
 

@@ -21,6 +21,11 @@ export default function LoginPage() {
   const [alertOpen, setAlertOpen] = useState(false)
   const [alertMessage, setAlertMessage] = useState("")
 
+  const clearError = () => {
+    setAlertOpen(false)
+    setAlertMessage("")
+  }
+
   const toggleForm = () => {
     setShowLogin(!showLogin)
   }
@@ -32,13 +37,12 @@ export default function LoginPage() {
         toast.success('Login successful!')
         router.push('/admin/dashboard')
       } else {
-        setAlertMessage(error || 'Login failed')
+        // Show error immediately without loading state
+        setAlertMessage(error || 'Invalid email or password')
         setAlertOpen(true)
       }
-    } 
-
-    catch (error: unknown) {
-      let errorMessage = 'Login failed';
+    } catch (error: unknown) {
+      let errorMessage = 'Invalid email or password';
       if (error && typeof error === 'object' && 'response' in error) {
         const err = error as { response?: { data?: { message?: string } } };
         errorMessage = err.response?.data?.message || errorMessage;
@@ -52,7 +56,7 @@ export default function LoginPage() {
 
   return (
     <div className="bg-muted flex min-h-svh flex-col items-center justify-center p-6 md:p-10">
-      <CustomAlert open={alertOpen} message={alertMessage} onClose={() => setAlertOpen(false)} />
+      <CustomAlert open={alertOpen} message={alertMessage} onClose={clearError} />
       <div className="w-full max-w-sm md:max-w-3xl relative overflow-hidden rounded-lg border shadow-lg bg-background">
         <div className="grid md:grid-cols-1 relative">
           {/* Login Form */}
@@ -60,12 +64,13 @@ export default function LoginPage() {
             "transition-all duration-500 ease-in-out",
             showLogin ? "opacity-100 z-10" : "opacity-0 z-0 pointer-events-none"
           )}>
-            <LoginForm 
-              onRegisterClick={toggleForm} 
-              hideImage 
-              onSubmit={handleLogin}
-              isLoading={loading}
-            />
+                          <LoginForm 
+                onRegisterClick={toggleForm} 
+                hideImage 
+                onSubmit={handleLogin}
+                isLoading={loading}
+                onClearError={clearError}
+              />
           </div>
           
           {/* Register Form */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { ProtectedRoute } from "@/components/auth/protected-route"; 
+import { useAuth } from "@/hooks/useAuth";
 import {
     Calendar1,
     Home,
@@ -87,13 +88,12 @@ export default function MainLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const { logout, logoutLoading } = useAuth();
 
   // Logout handler
-  const handleLogout = () => {
-    // Remove token from localStorage (or cookies if you use cookies)
-    localStorage.removeItem("token");
-    // Optionally clear user info, etc.
-    // Redirect to login page
+  const handleLogout = async () => {
+    await logout();
+    // Redirect to login page after logout
     router.push("/admin/login");
   };
 
@@ -138,8 +138,16 @@ export default function MainLayout({
                 variant="destructive"
                 className="w-full mt-4"
                 onClick={handleLogout}
+                disabled={logoutLoading}
               >
-                Logout
+                {logoutLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Signing out...</span>
+                  </div>
+                ) : (
+                  "Logout"
+                )}
               </Button>
             </SidebarFooter>
           </Sidebar>
