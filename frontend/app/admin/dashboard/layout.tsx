@@ -1,5 +1,6 @@
 "use client";
-import { ProtectedRoute } from "@/components/auth/protected-route";
+
+import { ProtectedRoute } from "@/components/auth/protected-route"; 
 import {
     Calendar1,
     Home,

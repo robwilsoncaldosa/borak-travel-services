@@ -13,6 +13,7 @@ import guestRoutes from './routes/guestRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import connectDB from './config/db';
 import { initializeSocket } from './config/socket';
+import emailRoutes from './routes/emailRoutes';
 import { isLoggedIn } from './lib/users';
 
 dotenv.config();
@@ -53,6 +54,7 @@ app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/guests', guestRoutes);
 app.use('/api/reviews', reviewRoutes);
+app.use('/api/email', emailRoutes);
 
 const PORT: number = parseInt(process.env.PORT || "8081", 10);
 server.listen(PORT, () => {

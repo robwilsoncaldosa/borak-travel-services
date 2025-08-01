@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect, useRef, useCallback, memo } from "react";
-import { Send, MessageCircle, X, Bot, MapPin, Plane, PalmtreeIcon, SunIcon, Globe, ZoomIn } from "lucide-react";
+import { Send, MessageCircle, X, Bot, MapPin, Plane, PalmtreeIcon, SunIcon, Globe } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
@@ -24,17 +24,17 @@ interface Message {
   imageUrls?: string[];
 }
 
-interface BookingFormData {
-  userId: string | "";
-  packageId: string;
-  destination: string;
-  pickupLocation: string;
-  pickupDate: string;
-  returnDate: string;
-  numPacks: number;
-  status: string;
-  paymentStatus: string;
-}
+// interface BookingFormData {
+//   userId: string | "";
+//   packageId: string;
+//   destination: string;
+//   pickupLocation: string;
+//   pickupDate: string;
+//   returnDate: string;
+//   numPacks: number;
+//   status: string;
+//   paymentStatus: string;
+// }
 
 
 const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {
@@ -121,7 +121,7 @@ interface ChatbotProps {
 const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [localIsOpen, setLocalIsOpen] = useState(false); 
+  const [, setLocalIsOpen] = useState(false); 
   const [isTyping, setIsTyping] = useState(false);
   const [guestReady, setGuestReady] = useState(false);
   const [username, setUsername] = useState("");
@@ -135,7 +135,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [preloadedImages, setPreloadedImages] = useState<Set<string>>(new Set());
   const imageUploadRef = useRef<ChatImageUploadRef>(null);
-  const imageCache = useRef<Map<string, boolean>>(new Map());
+  // const imageCache = useRef<Map<string, boolean>>(new Map());
   const [showBookingForm, setShowBookingForm] = useState(false); // Controls the visibility of the booking form
   const [selectedBookingMessage, setSelectedBookingMessage] = useState<Message | null>(null); // Tracks the clicked booking form message
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // State for modal visibility
@@ -223,6 +223,16 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const updateLastActive = useCallback(() => {
     localStorage.setItem("lastActive", new Date().toISOString());
   }, []);
+ const handleIncomingMessage = useCallback((message: ChatMessage) => {
+    setAdminHasReplied(true);
+    setMessages((prev) => {
+      // Check if message already exists to prevent duplicates
+      const messageExists = prev.some(msg => msg.id === message.id);
+      if (messageExists) return prev;
+      
+      return [...prev, formatMessage(message)];
+    });
+  }, []);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("guestUserId");
@@ -270,34 +280,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   }, [userId]);
 
 
-  const handleIncomingMessage = (message: ChatMessage) => {
-    const isFromHumanAdmin = message.isAdmin && message.username !== "Bot";
-    if (isFromHumanAdmin) {
-      setAdminHasReplied(true);
-    }
-
-    const isFromBotOrAdmin = message.isAdmin || message.username === "Bot";
-
-    setMessages(prev => {
-      if (prev.some(m => m.id === message.id)) return prev;
-      return [
-        ...prev,
-        {
-          id: message.id,
-          sender: isFromBotOrAdmin ? "bot" : "user",
-          text: message.message || "",
-          timestamp: new Date(message.timestamp),
-          isSpecialOffer: message.isSpecialOffer,
-          userId: message.userId,
-          username: message.username,
-          isAdmin: message.isAdmin,
-          imageUrls: message.imageUrls,
-        }
-      ];
-    });
-    if (!isOpen) setUnreadCount(count => count + 1);
-  };
-
   useEffect(() => {
     if (!isOpen || !guestReady || !userId) return;
 
@@ -313,7 +295,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
       socket?.off("message", handleIncomingMessage);
       clearInterval(interval);
     };
-  }, [isOpen, guestReady, userId, loadMessages, handleIncomingMessage]); // Added handleIncomingMessage
+  }, [isOpen, guestReady, userId, loadMessages, handleIncomingMessage]);
 
   
   const [unreadCount, setUnreadCount] = useState(0);
@@ -735,7 +717,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
              
               {(() => {
                 const renderedIds = new Set();
-                return messages.map((msg, index) => {
+                return messages.map((msg, ) => {
                   if (msg.id && renderedIds.has(msg.id)) {
                     return null;
                   }

@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
+import { useState } from 'react';
 
 // This interface matches the transformed data structure we'll use for display
 export interface PackageCardProps {
@@ -14,23 +15,27 @@ export interface PackageCardProps {
 }
 
 export default function PackageCards({ packages }: { packages: PackageCardProps[] }) {
+    const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
+
+    const handleImageError = (packageId: string) => {
+        setImageErrors(prev => new Set(prev).add(packageId));
+    };
+
     return (
         <div className="py-8">
             <div className="max-w-[1400px] mx-auto">              
-                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 px-6 md:px-12 lg:px-16 gap-8">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 px-6 md:px-12 lg:px-8 gap-8">
                     {packages.map((pkg) => (
                         <div key={pkg.id} className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-full">
                             <div className="relative h-[250px] w-full">
                                 <Image
-                                    src={pkg.image}
+                                    src={imageErrors.has(pkg.id) ? '/Landing.jpg' : pkg.image}
                                     alt={pkg.title}
                                     fill
                                     className="object-cover"
                                     priority
                                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                    onError={(e) => {
-                                        e.currentTarget.src = '/Landing.jpg';
-                                    }}
+                                    onError={() => handleImageError(pkg.id)}
                                 />
                             </div>
                             

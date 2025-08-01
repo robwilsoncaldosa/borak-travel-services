@@ -6,19 +6,24 @@ import { LogoProps } from '../types/header.types';
 
 export const Logo = ({ imageSrc, altText, className }: LogoProps) => {
   return (
-    <Link href="/" className={`flex items-center space-x-3 group relative ${className || ''}`}>
-      <div className="relative overflow-hidden rounded-full p-1.5 bg-gradient-to-br from-primary/20 to-primary/10 group-hover:from-primary/30 group-hover:to-primary/20 transition-all duration-500 ease-in-out shadow-lg hover:shadow-primary/20">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent animate-pulse"></div>
-        <Image
-          src={imageSrc}
-          alt={altText}
-          width={48}
-          height={48}
-          priority
-          className="object-contain transform group-hover:scale-110 transition-transform duration-500 ease-in-out relative z-10"
-        />
+    <Link href="/" className={`flex items-center space-x-3 group ${className || ''}`}>
+      <div className="flex items-center gap-3">
+        <div className="relative">
+          <Image
+            src={imageSrc}
+            alt={altText}
+            width={60}
+            height={60}
+            priority
+            className="object-contain brightness-0 invert transform group-hover:scale-105 transition-transform duration-200"
+          />
+        </div>
+        <div className="text-white">
+          <div className="text-2xl font-bold tracking-wide">
+            BORAK<span className="text-blue-200">TRAVEL</span>
+          </div>
+        </div>
       </div>
-      
     </Link>
   );
 };

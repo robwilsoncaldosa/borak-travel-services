@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react';
 import { MdLocationOn, MdPhone, MdEmail, MdAccessTime } from 'react-icons/md';
+import { mailerApi, ContactFormData } from '../../lib/backend_api/mailerapi';
 
 const ContactPage = () => {
     const [formData, setFormData] = useState({
@@ -9,11 +10,53 @@ const ContactPage = () => {
         mobileNumber: '',
         message: '',
     });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitStatus, setSubmitStatus] = useState<{
+        type: 'success' | 'error' | null;
+        message: string;
+    }>({ type: null, message: '' });
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        // Handle form submission logic here
-        console.log(formData);
+        setIsSubmitting(true);
+        setSubmitStatus({ type: null, message: '' });
+
+        // Show immediate feedback
+        setSubmitStatus({
+            type: 'success',
+            message: 'Sending your message...'
+        });
+
+        try {
+            const result = await mailerApi.sendContactEmail(formData as ContactFormData);
+
+            if (result.success) {
+                setSubmitStatus({
+                    type: 'success',
+                    message: result.message || 'Message sent successfully! You will receive a confirmation email shortly.'
+                });
+                // Reset form on success
+                setFormData({
+                    fullName: '',
+                    email: '',
+                    mobileNumber: '',
+                    message: '',
+                });
+            } else {
+                setSubmitStatus({
+                    type: 'error',
+                    message: result.message || 'Failed to send message. Please try again.'
+                });
+            }
+        } catch (error) {
+            console.error('Error submitting form:', error);
+            setSubmitStatus({
+                type: 'error',
+                message: 'Network error. Please check your connection and try again.'
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -77,6 +120,18 @@ const ContactPage = () => {
                         {/* Right Side - Contact Form */}
                         <div className="w-full lg:w-[65%] p-8">
                             <h2 className="text-3xl font-bold mb-6 mt-4">Write to Us</h2>
+                            
+                            {/* Status Messages */}
+                            {submitStatus.type && (
+                                <div className={`mb-4 p-3 rounded-md ${
+                                    submitStatus.type === 'success' 
+                                        ? 'bg-green-100 text-green-700 border border-green-300' 
+                                        : 'bg-red-100 text-red-700 border border-red-300'
+                                }`}>
+                                    {submitStatus.message}
+                                </div>
+                            )}
+
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
@@ -91,6 +146,7 @@ const ContactPage = () => {
                                             onChange={handleChange}
                                             className="mt-1 block w-full p-2 border-2 border-gray-400 rounded-[5px] focus:border-blue-500 focus:ring-blue-500"
                                             required
+                                            disabled={isSubmitting}
                                         />
                                     </div>
                                     <div>
@@ -105,6 +161,7 @@ const ContactPage = () => {
                                             onChange={handleChange}
                                             className="mt-1 block w-full p-2 border-2 border-gray-400 rounded-[5px] focus:border-blue-500 focus:ring-blue-500"
                                             required
+                                            disabled={isSubmitting}
                                         />
                                     </div>
                                 </div>
@@ -121,6 +178,7 @@ const ContactPage = () => {
                                         onChange={handleChange}
                                         className="mt-1 block w-full p-2 border-2 border-gray-400 rounded-[5px] focus:border-blue-500 focus:ring-blue-500"
                                         required
+                                        disabled={isSubmitting}
                                     />
                                 </div>
 
@@ -135,14 +193,20 @@ const ContactPage = () => {
                                         onChange={handleChange}
                                         rows={4}
                                         className="mt-1 block w-full p-2 border-2 border-gray-400 rounded-[5px] focus:border-blue-500 focus:ring-blue-500"
+                                        disabled={isSubmitting}
                                     />
                                 </div>
 
                                 <button
                                     type="submit"
-                                    className="w-[150px] bg-[#2E2E2E] text-white py-2 px-4 rounded-md hover:bg-gray-700 transition-colors"
+                                    disabled={isSubmitting}
+                                    className={`w-[150px] py-2 px-4 rounded-md transition-colors ${
+                                        isSubmitting 
+                                            ? 'bg-gray-400 cursor-not-allowed' 
+                                            : 'bg-[#2E2E2E] hover:bg-gray-700'
+                                    } text-white`}
                                 >
-                                    Send Message
+                                    {isSubmitting ? 'Sending...' : 'Send Message'}
                                 </button>
                             </form>
                         </div>
