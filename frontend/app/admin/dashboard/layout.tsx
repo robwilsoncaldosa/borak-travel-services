@@ -8,7 +8,8 @@ import {
     LucideIcon,
     Package,
     Table2,
-    Users
+    Users,
+    BookOpen
 } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
@@ -53,6 +54,12 @@ const navItems: NavItem[] = [
     href: "/admin/dashboard/inbox",
     icon: Inbox,
   },
+ 
+  {
+    title: "Bookings",
+    href: "/admin/dashboard/bookings",
+    icon: BookOpen,
+  },
   
   {
     title: "Calendar View",
@@ -90,7 +97,7 @@ export default function MainLayout({
   };
 
   return (
-    // <ProtectedRoute allowedRoles={['admin']}>
+    <ProtectedRoute allowedRoles={['admin']}>
     <ThemeProvider
       attribute="class"
       defaultTheme="system"
@@ -149,6 +156,6 @@ export default function MainLayout({
         </div>
       </SidebarProvider>
     </ThemeProvider>
-  
+  </ProtectedRoute>
   );
 }

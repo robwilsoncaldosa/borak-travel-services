@@ -51,7 +51,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/bookings', bookingRoutes);
-app.use('/create/guests', guestRoutes);
+app.use('/api/guests', guestRoutes);
 app.use('/api/reviews', reviewRoutes);
 
 const PORT: number = parseInt(process.env.PORT || "8081", 10);

@@ -14,6 +14,7 @@ export interface ChatMessage {
   username?: string;
   guestUsername?: string;
   imageUrls?: string[];
+  bookingFormData?: any; // Add support for pre-filled booking form data
 }
 
 

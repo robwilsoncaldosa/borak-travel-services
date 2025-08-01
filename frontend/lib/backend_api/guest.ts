@@ -15,7 +15,17 @@ interface Guest {
 
 export const guestApi = {
   createGuest: async (guest: GuestCreateDto): Promise<Guest> => {
-    const res = await instance.post("/create/guests", guest);
+    const res = await instance.post("/api/guests", guest);
+    return res.data;
+  },
+ 
+  getGuestById: async (id: string): Promise<Guest> => {
+    const res = await instance.get(`/api/guests/${id}`);
+    return res.data;
+  },
+ 
+  getAllGuests: async (): Promise<Guest[]> => {
+    const res = await instance.get("/api/guests");
     return res.data;
   }
 };

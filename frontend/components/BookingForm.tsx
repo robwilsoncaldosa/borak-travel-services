@@ -12,10 +12,14 @@ export interface BookingFormData {
   destination: string;
   pickup_location: string;
   pickup_date: string;
+  pickup_time: string;
   return_date: string;
+  return_time: string;
   status: string;
   payment_status: string;
   packs: number;
+  price: number; 
+  paid_amount: number | null;
 }
 
 interface BookingFormProps {
@@ -23,6 +27,8 @@ interface BookingFormProps {
   onCancel?: () => void;
   initialData?: Partial<BookingFormData>;
   userId: string;
+  priceEditable?: boolean; 
+  onError?: () => void; 
 }
 
 const mapToCamelCase = (data: BookingFormData): BookingData => ({
@@ -31,10 +37,14 @@ const mapToCamelCase = (data: BookingFormData): BookingData => ({
   destination: data.destination,
   pickup_location: data.pickup_location,
   pickup_date: data.pickup_date,
+  pickup_time: data.pickup_time,
   return_date: data.return_date,
+  return_time: data.return_time,
   status: data.status,
   payment_status: data.payment_status,
   packs: data.packs,
+  price: data.price,
+  paid_amount: data.paid_amount,
 });
 
 export const BookingForm: React.FC<BookingFormProps> = ({
@@ -42,6 +52,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   onCancel,
   initialData = {},
   userId,
+  priceEditable = false, 
+  onError,
 }) => {
   const [form, setForm] = useState<BookingFormData>({
     user_id: userId,
@@ -49,16 +61,27 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     destination: initialData.destination || "",
     pickup_location: initialData.pickup_location || "",
     pickup_date: initialData.pickup_date || "",
+    pickup_time: initialData.pickup_time || "",
     return_date: initialData.return_date || "",
+    return_time: initialData.return_time || "",
     status: "PENDING",
     payment_status: "PENDING",
     packs: initialData.packs || 1,
+    price: initialData.price ?? 0, 
+    paid_amount: initialData.paid_amount ?? null,
   });
+
+
+  React.useEffect(() => {
+    setForm((prev) => ({ ...prev, user_id: userId }));
+    console.log('[BookingForm] user_id updated:', userId);
+  }, [userId]);
+
+  React.useEffect(() => {
+    console.log('[BookingForm] Initial user_id:', form.user_id, 'Initial package_id:', form.package_id);
+  }, []);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [packages, setPackages] = useState<{ id: string; title: string; location: string }[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // State for modal visibility
-  const [modalType, setModalType] = useState<"success" | "error">("success"); // State for modal type
-  const [modalMessage, setModalMessage] = useState<string>(""); // State for modal message
 
   useEffect(() => {
     const fetchPackages = async () => {
@@ -83,65 +106,82 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         package_id: value,
         destination: selectedPackage ? selectedPackage.location : "",
       }));
+      console.log('[BookingForm] Package selected:', value, 'Current user_id:', form.user_id);
     } else {
-      setForm((prev) => ({ ...prev, [name]: name === "packs" ? Number(value) : value }));
+      setForm((prev) => ({ ...prev, [name]: name === "packs" || name === "price" ? Number(value) : value }));
     }
   };
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
+    if (!form.user_id) newErrors.user_id = "User ID is required";
     if (!form.package_id) newErrors.package_id = "Package is required";
     if (!form.destination) newErrors.destination = "Destination is required";
     if (!form.pickup_location) newErrors.pickup_location = "Pickup location is required";
     if (!form.pickup_date) newErrors.pickup_date = "Pickup date is required";
+    if (!form.pickup_time) newErrors.pickup_time = "Pickup time is required";
     if (!form.return_date) newErrors.return_date = "Return date is required";
+    if (!form.return_time) newErrors.return_time = "Return time is required";
     if (form.packs < 1) newErrors.packs = "Number of packs must be at least 1";
+    if (form.price < 0) newErrors.price = "Price cannot be negative";
+
+    // Date and time validation
+    const now = new Date();
+    const currentDateTime = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
+    
+    if (form.pickup_date && form.pickup_time) {
+      const pickupDateTime = `${form.pickup_date}T${form.pickup_time}`;
+      if (pickupDateTime < currentDateTime) {
+        newErrors.pickup_date = "Pickup date and time cannot be earlier than current date and time";
+      }
+    }
+    
+    if (form.return_date && form.return_time && form.pickup_date && form.pickup_time) {
+      const pickupDateTime = `${form.pickup_date}T${form.pickup_time}`;
+      const returnDateTime = `${form.return_date}T${form.return_time}`;
+      if (returnDateTime <= pickupDateTime) {
+        newErrors.return_date = "Return date and time must be later than pickup date and time";
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+   
+    const submitForm = { ...form, user_id: userId };
     if (validate()) {
       try {
-        const payload = mapToCamelCase(form); // Convert to camelCase
-        console.log("Payload being sent:", payload); // Log the payload
+        const payload = mapToCamelCase(submitForm);
+        console.log("Payload being sent:", payload); 
         const response = await bookingsApi.createBooking(payload);
         console.log("Booking created successfully:", response);
   
-        // Update modal state
-        setModalType("success");
-        setModalMessage("Your booking has been submitted successfully.");
-        setIsModalOpen(true); // Open the modal
-  
-        onSubmit(form); // Pass the original form data to the callback
+       
+        onSubmit(submitForm);
       } catch (error) {
         console.error("Failed to create booking:", error);
   
         // Update modal state for error
-        setModalType("error");
-        setModalMessage("Failed to submit your booking. Please try again.");
-        setIsModalOpen(true); // Open the modal
+        onError?.();
       }
     }
   };
 
   return (
     <>
-      {/* Modal */}
-      {isModalOpen && (
-  <ModalMessagePrompt
-    type={modalType}
-    message={modalMessage}
-    onClose={() => setIsModalOpen(false)}
-  />
-)}
-
+    
       {/* Booking Form */}
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md mx-auto bg-white p-6 rounded-lg shadow-lg">
-        <h2 className="text-xl font-semibold text-gray-800">Booking Form</h2>
-        <p className="text-sm text-gray-600">Please fill out the details below to complete your booking.</p>
-
+      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg max-h-[80vh] overflow-hidden flex flex-col">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-xl font-semibold text-gray-800">Booking Form</h2>
+          <p className="text-sm text-gray-600 mt-1">Please fill out the details below to complete your booking.</p>
+        </div>
+        
+        <div className="flex-1 overflow-y-auto p-6">
+          <form onSubmit={handleSubmit} className="space-y-4" id="booking-form">
         {/* Package Selection */}
         <div>
           <Label htmlFor="package_id">Package</Label>
@@ -191,8 +231,21 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="date"
             value={form.pickup_date}
             onChange={handleChange}
+            min={new Date().toISOString().split('T')[0]}
           />
           {errors.pickup_date && <span className="text-red-500 text-xs">{errors.pickup_date}</span>}
+        </div>
+
+        <div>
+          <Label htmlFor="pickup_time">Pickup Time</Label>
+          <Input
+            id="pickup_time"
+            name="pickup_time"
+            type="time"
+            value={form.pickup_time}
+            onChange={handleChange}
+          />
+          {errors.pickup_time && <span className="text-red-500 text-xs">{errors.pickup_time}</span>}
         </div>
 
         <div>
@@ -203,8 +256,56 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             type="date"
             value={form.return_date}
             onChange={handleChange}
+            min={form.pickup_date || new Date().toISOString().split('T')[0]}
           />
           {errors.return_date && <span className="text-red-500 text-xs">{errors.return_date}</span>}
+        </div>
+
+        <div>
+          <Label htmlFor="return_time">Return Time</Label>
+          <Input
+            id="return_time"
+            name="return_time"
+            type="time"
+            value={form.return_time}
+            onChange={handleChange}
+          />
+          {errors.return_time && <span className="text-red-500 text-xs">{errors.return_time}</span>}
+        </div>
+
+        {/* Price Field */}
+        <div>
+          <Label htmlFor="price">Price (₱)</Label>
+          <Input
+            id="price"
+            name="price"
+            type="number"
+            min={0}
+            value={form.price}
+            onChange={handleChange}
+            readOnly={!priceEditable}
+            disabled={!priceEditable}
+            className={priceEditable ? "" : "bg-gray-100 cursor-not-allowed"}
+          />
+          {errors.price && <span className="text-red-500 text-xs">{errors.price}</span>}
+        </div>
+
+        {/* Paid Amount Field */}
+        <div>
+          <Label htmlFor="paid_amount">Paid Amount (₱)</Label>
+          <Input
+            id="paid_amount"
+            name="paid_amount"
+            type="number"
+            min={0}
+            value={form.paid_amount || ''}
+            onChange={handleChange}
+            readOnly={!priceEditable}
+            disabled={!priceEditable}
+            className={priceEditable ? "" : "bg-gray-100 cursor-not-allowed"}
+            placeholder="Enter paid amount"
+          />
+          {errors.paid_amount && <span className="text-red-500 text-xs">{errors.paid_amount}</span>}
         </div>
 
         <div>
@@ -220,16 +321,21 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           {errors.packs && <span className="text-red-500 text-xs">{errors.packs}</span>}
         </div>
 
-        {/* Buttons */}
-        <div className="flex justify-between">
-          <Button type="button" onClick={onCancel} className="bg-gray-300 text-gray-700 hover:bg-gray-400">
-            Cancel
-          </Button>
-          <Button type="submit" className="bg-blue-500 text-white hover:bg-blue-600">
-            Submit Booking
-          </Button>
+        </form>
         </div>
-      </form>
+        
+        {/* Sticky Footer with Buttons */}
+        <div className="p-6 border-t border-gray-200 bg-gray-50">
+          <div className="flex justify-between">
+            <Button type="button" onClick={onCancel} className="bg-gray-300 text-gray-700 hover:bg-gray-400">
+              Cancel
+            </Button>
+            <Button type="submit" form="booking-form" className="bg-blue-500 text-white hover:bg-blue-600">
+              Submit Booking
+            </Button>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

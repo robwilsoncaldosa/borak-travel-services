@@ -32,10 +32,14 @@ export const bookingController = {
         destination,
         pickup_location,
         pickup_date,
+        pickup_time,
         return_date,
+        return_time,
         status,
         payment_status,
         packs,
+        price,
+        paid_amount,
       } = req.body;
 
       // Validate required fields
@@ -45,7 +49,9 @@ export const bookingController = {
         !destination ||
         !pickup_location ||
         !pickup_date ||
+        !pickup_time ||
         !return_date ||
+        !return_time ||
         !packs
       ) {
         res.status(400).json({ message: "Missing required fields" });
@@ -57,6 +63,40 @@ export const bookingController = {
         res.status(400).json({ message: "Invalid number of packs" });
         return; // Ensure the method returns void
       }
+      if (price !== null && (typeof price !== "number" || price < 0)) {
+        res.status(400).json({ message: "Invalid price" });
+        return;
+      }
+      if (paid_amount !== null && (typeof paid_amount !== "number" || paid_amount < 0)) {
+        res.status(400).json({ message: "Invalid paid amount" });
+        return;
+      }
+
+      // Combine date and time strings into Date objects
+      console.log('Received date/time values:', {
+        pickup_date,
+        pickup_time,
+        return_date,
+        return_time
+      });
+      
+      const pickupDateTime = new Date(`${pickup_date}T${pickup_time}`);
+      const returnDateTime = new Date(`${return_date}T${return_time}`);
+      
+      console.log('Combined date/time objects:', {
+        pickupDateTime: pickupDateTime.toISOString(),
+        returnDateTime: returnDateTime.toISOString()
+      });
+      
+      // Validate that the dates are valid
+      if (isNaN(pickupDateTime.getTime())) {
+        res.status(400).json({ message: "Invalid pickup date and time" });
+        return;
+      }
+      if (isNaN(returnDateTime.getTime())) {
+        res.status(400).json({ message: "Invalid return date and time" });
+        return;
+      }
 
       // Create booking in the database
       const booking = new Booking({
@@ -64,11 +104,13 @@ export const bookingController = {
         package_id,
         destination,
         pickup_location,
-        pickup_date,
-        return_date,
+        pickup_date: pickupDateTime,
+        return_date: returnDateTime,
         status: status || "PENDING", // Default to "PENDING"
-        paymentStatus: payment_status || "PENDING", // Default to "PENDING"
+        payment_status: payment_status || "PENDING", // Default to "PENDING"
         packs,
+        price,
+        paid_amount,
       });
 
       const saved = await booking.save();

@@ -36,6 +36,7 @@ interface BookingFormData {
   paymentStatus: string;
 }
 
+
 const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {
   const [isLoading, setIsLoading] = useState(true);
   const imgRef = useRef<HTMLImageElement>(null);
@@ -115,6 +116,8 @@ interface ChatbotProps {
   onClose: () => void;
 }
 
+
+
 const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -135,6 +138,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const imageCache = useRef<Map<string, boolean>>(new Map());
   const [showBookingForm, setShowBookingForm] = useState(false); // Controls the visibility of the booking form
   const [selectedBookingMessage, setSelectedBookingMessage] = useState<Message | null>(null); // Tracks the clicked booking form message
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // State for modal visibility
+  const [modalType, setModalType] = useState<"success" | "error">("success"); // State for modal type
+  const [modalMessage, setModalMessage] = useState<string>(""); // State for modal message
 
   const handleBookingFormClick = () => {
     setShowBookingForm(true); // Show the booking form
@@ -144,6 +150,52 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     setShowBookingForm(false); // Hide the booking form
   };
 
+  const handleBookingFormSubmit = (data: any) => {
+    console.log("Booking submitted:", data);
+    setShowBookingForm(false); // Hide the form after submission
+    
+    // Add success message to chat
+    const successMessage: Message = {
+      sender: "bot",
+      text: "Thank you! Your booking has been submitted successfully. We'll contact you soon with confirmation details.",
+      timestamp: new Date(),
+      isAdmin: true,
+      username: "Bot"
+    };
+    
+    setMessages(prevMessages => [...prevMessages, successMessage]);
+    
+    // Show success modal
+    setModalType("success");
+    setModalMessage("Your booking has been submitted successfully! We'll contact you soon with confirmation details.");
+    setIsModalOpen(true);
+  };
+
+  const handleBookingFormError = () => {
+    // Add error message to chat
+    const errorMessage: Message = {
+      sender: "bot",
+      text: "Sorry, there was an error submitting your booking. Please try again or contact us for assistance.",
+      timestamp: new Date(),
+      isAdmin: true,
+      username: "Bot"
+    };
+    
+    setMessages(prevMessages => [...prevMessages, errorMessage]);
+    
+    // Show error modal
+    setModalType("error");
+    setModalMessage("Failed to submit your booking. Please try again.");
+    setIsModalOpen(true);
+  };
+
+  const handleMinimizeChatbot = () => {
+    setLocalIsOpen(false); // Minimize the chatbot
+  };
+
+  const handleOpenChatbot = () => {
+    setLocalIsOpen(true); // Open the chatbot
+  };
   const checkSessionTimeout = useCallback(() => {
     const lastActive = localStorage.getItem("lastActive");
     if (lastActive) {
@@ -507,7 +559,8 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   // };
 
   const handleClose = () => {
-    onClose();
+    // onClose();
+    setLocalIsOpen(false); 
     localStorage.removeItem("guestUserId");
     localStorage.removeItem("guestUsername");
     setUserId(null);
@@ -533,18 +586,63 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
         ...prevMessages,
         {
           sender: "bot",
-          text: "Please fill out the booking form to complete your reservation.",
+          text: "Please fill out the booking form to complete your reservation. [Open Booking Form]",
           timestamp: new Date(),
         },
       ]);
-      setShowBookingForm(true);
     }
   }, [messages]);
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50">
+    // <div className="fixed bottom-4 right-4 ">
+    <div className="fixed bottom-4 right-4 z-50 flex flex-row items-end justify-end space-x-4">
+      {/* Booking Form */}
+   {showBookingForm && (
+        <div className="mt-4">
+          <BookingForm
+            onSubmit={handleBookingFormSubmit}
+            onCancel={handleCancelBookingForm} // Close the form when canceleduserId={userId || ""} // Pass the current guest user ID
+            userId={userId || ""} // Pass the current guest user ID
+            priceEditable={false}
+            onError={handleBookingFormError}
+          />
+        </div>
+      )}
+
+      {/* Success Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <div className="flex justify-center mb-4">
+              {modalType === "success" ? (
+                <svg className="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ) : (
+                <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              )}
+            </div>
+            <h3 className="text-lg font-medium text-gray-900">{modalType === "success" ? "Success!" : "Error"}</h3>
+            <div className="mt-2 px-7 py-3">
+              <p className="text-sm text-gray-500">{modalMessage}</p>
+            </div>
+            <div className="items-center px-4 py-3">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md text-sm font-medium hover:bg-gray-300"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       <AnimatePresence mode="wait">
         {selectedImage && (
           <ImageModal
@@ -658,9 +756,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
                             </div>
                             <div className="p-3 rounded-2xl shadow-sm bg-white border border-gray-200">
                               <p className="text-sm">
-                                {msg.text === "Great! To book a tour, please filled-up the booking form. below" ? (
+                                {(msg.text === "Great! To book a tour, please filled-up the booking form. below") || (msg.text && msg.text.includes('[Open Booking Form]')) ? (
                                   <>
-                                    <span>{msg.text}</span>
+                                    <span>{msg.text.replace('[Open Booking Form]', '').trim()}</span>
                                     <button
                                       onClick={handleBookingFormClick}
                                       className="text-blue-500 underline block mt-2"
@@ -746,20 +844,10 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
           renderGuestForm()
         )}
       </AnimatePresence>
-      {showBookingForm && (
-        <div className="mt-4">
-          <BookingForm
-            onSubmit={(data) => {
-              console.log("Booking submitted:", data);
-              setShowBookingForm(false); // Hide the form after submission
-            }}
-            onCancel={handleCancelBookingForm} // Close the form when canceleduserId={userId || ""} // Pass the current guest user ID
-            userId={userId || ""} // Pass the current guest user ID
-          />
-        </div>
-      )}
+    
     </div>
   );
 };
 export default Chatbot;
+
 

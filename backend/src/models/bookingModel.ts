@@ -11,7 +11,9 @@ export interface IBooking extends Document {
   payment_status: 'FULL' | 'PARTIAL' | 'PENDING' | 'REFUNDED';
   created_at: Date;
   updated_at: Date;
-  packs: number; 
+  packs: number;
+  price: number | null;
+  paid_amount: number | null;
 }
 
 const BookingSchema: Schema = new Schema({
@@ -23,7 +25,9 @@ const BookingSchema: Schema = new Schema({
   return_date: { type: Date, required: true },
   status: { type: String, enum: ['PENDING', 'VERIFIED', 'INPROGRESS', 'RENDERED'], default: 'PENDING' },
   payment_status: { type: String, enum: ['FULL', 'PARTIAL', 'PENDING', 'REFUNDED'], default: 'PENDING' },
-  packs: { type: Number, required: true } ,
+  packs: { type: Number, required: true },
+  price: { type: Number, default: null },
+  paid_amount: { type: Number, default: null },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now }
  

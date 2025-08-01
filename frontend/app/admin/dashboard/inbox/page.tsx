@@ -5,15 +5,16 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect, useRef, useMemo, memo } from "react";
-import { Bot, Send, User, X, ZoomIn } from "lucide-react";
+import { Bot, Edit, Send, User, X, ZoomIn } from "lucide-react";
 import { chatApi, ChatMessage } from "@/lib/backend_api/chat";
 import { ChatImageUpload, ChatImageUploadRef } from "@/components/cloudinary/ChatImageUpload";
 import Image from "next/image";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { io, Socket } from "socket.io-client";
+import { BookingForm, BookingFormData } from "@/components/BookingForm";
 
-// let socket: Socket;
+let socket: Socket;
 
 // Move ImageModal outside of InboxPage component and memoize it
 const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {
@@ -110,10 +111,12 @@ export default function InboxPage() {
     const loadMessages = async () => {
       try {
         const data = await chatApi.getAllMessages();
+        console.log('Polling: fetched messages from backend:', data.length, 'messages');
 
         const validMessages = data.filter(
           (message) => message && (message.message || message.text) && message.userId
         );
+        console.log('Polling: valid messages after filtering:', validMessages.length);
 
         // Patch guestUsername for each message if it's a guest
         const patchedMessages = validMessages.map((message) => {
@@ -127,6 +130,7 @@ export default function InboxPage() {
         const sortedMessages = patchedMessages.sort(
           (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
+        console.log('Polling: setting messages to state:', sortedMessages.length, 'messages');
         setMessages(sortedMessages);
       } catch (error) {
         console.error('Failed to load messages:', error);
@@ -134,7 +138,7 @@ export default function InboxPage() {
     };
 
     loadMessages();
-    const interval = setInterval(loadMessages, 5000); // Reduced polling frequency
+    const interval = setInterval(loadMessages, 1000); 
 
     // Cleanup function
     return () => {
@@ -148,18 +152,30 @@ export default function InboxPage() {
   useEffect(() => {
     if (!socketRef.current) return;
 
-    socketRef.current.on('message', (newMessage: ChatMessage) => {
-      setMessages(prevMessages => {
+    // Listen for new messages from the customer
+    socketRef.current.on("message", (newMessage: ChatMessage) => {
+      setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages, newMessage];
         return updatedMessages.sort(
           (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
         );
       });
+
+      // Check if the message contains booking-related keywords
+      const bookingKeywords = ["booking", "reservation", "book"];
+      if (
+        newMessage.sender === "user" &&
+        bookingKeywords.some((keyword) =>
+          (newMessage.message ?? '').toLowerCase().includes(keyword)
+        )
+      ) {
+        handleSendBookingForm(newMessage.userId);
+      }
     });
 
     return () => {
       if (socketRef.current) {
-        socketRef.current.off('message');
+        socketRef.current.off("message");
       }
     };
   }, []);
@@ -202,6 +218,29 @@ export default function InboxPage() {
       setTimeout(() => scrollToBottom(), 100);
     } catch (error) {
       console.error('Failed to send reply:', error);
+    }
+  };
+
+  const handleSendBookingForm = (userId?: string) => {
+    const targetUserId = userId || selectedChat;
+    if (!targetUserId) return;
+
+    const bookingFormMessage: ChatMessage = {
+      userId: targetUserId,
+      message: "Please fill out the booking form to complete your reservation.",
+      isAdmin: true,
+      timestamp: new Date(),
+      username: "Admin",
+      sender: "bot",
+      isRead: true,
+      imageUrls: [],
+      isSpecialOffer: true, // Mark this as a special message for the chatbot
+    };
+
+    setMessages((prevMessages) => [...prevMessages, bookingFormMessage]);
+
+    if (socketRef.current) {
+      socketRef.current.emit("sendMessage", bookingFormMessage);
     }
   };
 
@@ -438,7 +477,7 @@ export default function InboxPage() {
                       )}
                     </div>
                   ))}
-                  {/* This empty div is used as a reference for scrolling to the bottom */}
+                 
                   <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
@@ -453,6 +492,47 @@ export default function InboxPage() {
                     onImageUpload={(urls) => setImageUrls(urls)}
                     disabled={!selectedChat}
                   />
+
+                      <button
+                      onClick={async () => {
+                        // Send booking form message immediately when icon is clicked
+                        if (selectedChat) {
+                          const bookingFormMessage: ChatMessage = {
+                            userId: selectedChat,
+                            message: "Please fill out the booking form to complete your reservation. [Open Booking Form]",
+                            isAdmin: true,
+                            timestamp: new Date(),
+                            username: "Admin",
+                            sender: "bot",
+                            isRead: true,
+                            imageUrls: [],
+                            isSpecialOffer: true,
+                          };
+
+                          // Send to backend and emit to clients
+                          try {
+                            const response = await chatApi.sendReply(selectedChat, bookingFormMessage.message || "", []);
+                            console.log('Booking form message sent successfully:', response);
+                            // Add to local messages only after successful backend response
+                            setMessages(prevMessages =>
+                              [...prevMessages, bookingFormMessage].sort(
+                                (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+                              )
+                            );
+                            if (socketRef.current) {
+                              socketRef.current.emit('sendMessage', bookingFormMessage);
+                            }
+                          } catch (error) {
+                            console.error('Failed to send booking form message:', error);
+                          }
+                        }
+                      }}
+                      className="text-gray-500 hover:text-gray-700"
+                      aria-label="Send booking form"
+                    >
+                      <Edit size={16} />
+                    </button>
+
                   <Input
                     className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     placeholder="Type your reply..."
@@ -470,6 +550,7 @@ export default function InboxPage() {
                   Send
                 </Button>
               </div>
+             
             </div>
           </>
         ) : (
@@ -484,6 +565,9 @@ export default function InboxPage() {
           </div>
         )}
       </Card>
+
     </div>
+
+        
   );
 }

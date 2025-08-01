@@ -3,6 +3,8 @@ import { GuestController } from '../controllers/guestController';
 
 const router = Router();
 
-router.post('/', (req, res) => GuestController.createGuestUser(req, res));
+router.get('/', GuestController.getAllGuests);
+router.get('/:id', GuestController.getGuestById);
+router.post('/', GuestController.createGuestUser);
 
 export default router;
