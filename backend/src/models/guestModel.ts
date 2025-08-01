@@ -6,6 +6,10 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IGuestUser extends Document {
   username: string;
   email: string;
+  firstname?: string;
+  middlename?: string;
+  lastname?: string;
+  mobile?: string;
 }
 
 const guestSchema = new Schema({
@@ -17,6 +21,22 @@ const guestSchema = new Schema({
     type: String,
     required: true,
     unique: true
+  },
+  firstname: {
+    type: String,
+    required: false
+  },
+  middlename: {
+    type: String,
+    required: false
+  },
+  lastname: {
+    type: String,
+    required: false
+  },
+  mobile: {
+    type: String,
+    required: false
   }
 }, {
   timestamps: true // Add timestamps for better tracking

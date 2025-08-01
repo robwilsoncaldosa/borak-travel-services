@@ -57,6 +57,10 @@ interface Booking {
   guest?: {
     username: string;
     email: string;
+    firstname?: string;
+    middlename?: string;
+    lastname?: string;
+    mobile?: string;
   };
 }
 
@@ -135,7 +139,10 @@ export default function BookingsPage() {
       booking.pickup_location.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (booking.guest?.username?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
-      (booking.guest?.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
+      (booking.guest?.email?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (booking.guest?.firstname?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (booking.guest?.lastname?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
+      (booking.guest?.mobile?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
     
     const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
     
@@ -409,11 +416,18 @@ export default function BookingsPage() {
             <div class="section-title">CUSTOMER INFORMATION</div>
             <div class="row">
               <span class="label">Customer Name:</span>
-              <span class="value">${booking.guest?.username || 'Guest ' + booking.user_id.slice(-6)}</span>
+              <span class="value">${booking.guest?.firstname && booking.guest?.lastname 
+                ? `${booking.guest.firstname} ${booking.guest.middlename ? booking.guest.middlename + ' ' : ''}${booking.guest.lastname}`
+                : booking.guest?.username || 'Guest ' + booking.user_id.slice(-6)
+              }</span>
             </div>
             <div class="row">
               <span class="label">Email:</span>
               <span class="value">${booking.guest?.email || 'No email available'}</span>
+            </div>
+            <div class="row">
+              <span class="label">Mobile Number:</span>
+              <span class="value">${booking.guest?.mobile || 'No mobile number available'}</span>
             </div>
             <div class="row">
               <span class="label">Customer ID:</span>
@@ -493,7 +507,11 @@ export default function BookingsPage() {
       'Booking ID',
       'Customer Name',
       'Customer Email',
+      'Customer Mobile',
       'Customer ID',
+      'First Name',
+      'Middle Name',
+      'Last Name',
       'Destination',
       'Pickup Location',
       'Pickup Date & Time',
@@ -511,9 +529,15 @@ export default function BookingsPage() {
     // Convert bookings data to CSV format
     const csvData = filteredBookings.map(booking => [
       booking._id,
-      booking.guest?.username || `Guest ${booking.user_id.slice(-6)}`,
+      booking.guest?.firstname && booking.guest?.lastname 
+        ? `${booking.guest.firstname} ${booking.guest.middlename ? booking.guest.middlename + ' ' : ''}${booking.guest.lastname}`
+        : booking.guest?.username || `Guest ${booking.user_id.slice(-6)}`,
       booking.guest?.email || 'No email available',
+      booking.guest?.mobile || 'No mobile available',
       booking.user_id,
+      booking.guest?.firstname || '',
+      booking.guest?.middlename || '',
+      booking.guest?.lastname || '',
       booking.destination,
       booking.pickup_location,
       formatDateTime(booking.pickup_date),
@@ -666,9 +690,9 @@ export default function BookingsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Customer</TableHead>
-                    <TableHead>Email</TableHead>
+                    {/* <TableHead>Email</TableHead> */}
                     <TableHead>Destination</TableHead>
-                    <TableHead>Pickup Location</TableHead>
+                    {/* <TableHead>Pickup Location</TableHead> */}
                     <TableHead>Pickup Date/Time</TableHead>
                     <TableHead>Return Date/Time</TableHead>
                     <TableHead>Packs</TableHead>
@@ -693,11 +717,11 @@ export default function BookingsPage() {
                         <TableCell className="font-medium">
                           {booking.guest?.username || `Guest ${booking.user_id.slice(-6)}`}
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600">
+                        {/* <TableCell className="text-sm text-gray-600">
                           {booking.guest?.email || 'No email available'}
-                        </TableCell>
+                        </TableCell> */}
                         <TableCell>{booking.destination}</TableCell>
-                        <TableCell>{booking.pickup_location}</TableCell>
+                        {/* <TableCell>{booking.pickup_location}</TableCell> */}
                         <TableCell>
                           {booking.pickup_date ? formatDateTime(booking.pickup_date) : 'No date'}
                         </TableCell>
@@ -787,16 +811,43 @@ export default function BookingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Customer Name</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedBooking.guest?.username || `Guest ${selectedBooking.user_id.slice(-6)}`}</p>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {selectedBooking.guest?.firstname && selectedBooking.guest?.lastname 
+                        ? `${selectedBooking.guest.firstname} ${selectedBooking.guest.middlename ? selectedBooking.guest.middlename + ' ' : ''}${selectedBooking.guest.lastname}`
+                        : selectedBooking.guest?.username || `Guest ${selectedBooking.user_id.slice(-6)}`
+                      }
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <p className="mt-1 text-sm text-gray-900">{selectedBooking.guest?.email || 'No email available'}</p>
                   </div>
                   <div>
+                    <label className="block text-sm font-medium text-gray-700">Mobile Number</label>
+                    <p className="mt-1 text-sm text-gray-900">{selectedBooking.guest?.mobile || 'No mobile number available'}</p>
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700">Customer ID</label>
                     <p className="mt-1 text-sm text-gray-900 font-mono">{selectedBooking.user_id}</p>
                   </div>
+                  {selectedBooking.guest?.username && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Usernane</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedBooking.guest.username}</p>
+                    </div>
+                  )}
+                  {/* {selectedBooking.guest?.middlename && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Middle Name</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedBooking.guest.middlename}</p>
+                    </div>
+                  )}
+                  {selectedBooking.guest?.lastname && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Last Name</label>
+                      <p className="mt-1 text-sm text-gray-900">{selectedBooking.guest.lastname}</p>
+                    </div>
+                  )} */}
                 </div>
               </div>
               
@@ -1104,7 +1155,10 @@ export default function BookingsPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-700">Customer Name:</span>
-                        <span className="text-gray-900">{selectedBooking.guest?.username || 'Guest ' + selectedBooking.user_id.slice(-6)}</span>
+                        <span className="text-gray-900"> {selectedBooking.guest?.firstname && selectedBooking.guest?.lastname 
+                        ? `${selectedBooking.guest.firstname} ${selectedBooking.guest.middlename ? selectedBooking.guest.middlename + ' ' : ''}${selectedBooking.guest.lastname}`
+                        : selectedBooking.guest?.username || `Guest ${selectedBooking.user_id.slice(-6)}`
+                      }</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-700">Email:</span>

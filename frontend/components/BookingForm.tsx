@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { ModalMessagePrompt } from "@/components/ui/modalMessagePrompt"; 
 import { BookingData, bookingsApi } from "@/lib/backend_api/bookings";
 import { packageApi } from "@/lib/backend_api/package";
+import { guestApi, GuestCreateDto } from "@/lib/backend_api/guest";
 
 export interface BookingFormData {
   user_id: string | "";
@@ -20,6 +21,10 @@ export interface BookingFormData {
   packs: number;
   price: number; 
   paid_amount: number | null;
+  firstname?: string;
+  middlename?: string;
+  lastname?: string;
+  mobile?: string;
 }
 
 interface BookingFormProps {
@@ -69,6 +74,10 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     packs: initialData.packs || 1,
     price: initialData.price ?? 0, 
     paid_amount: initialData.paid_amount ?? null,
+    firstname: initialData.firstname || "",
+    middlename: initialData.middlename || "",
+    lastname: initialData.lastname || "",
+    mobile: initialData.mobile || "",
   });
 
 
@@ -107,6 +116,23 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         destination: selectedPackage ? selectedPackage.location : "",
       }));
       console.log('[BookingForm] Package selected:', value, 'Current user_id:', form.user_id);
+    } else if (name === "mobile") {
+      // Format mobile number as user types
+      const cleanValue = value.replace(/\D/g, ''); // Remove non-digits
+      let formattedValue = cleanValue;
+      
+      // Format as Philippine mobile number (e.g., 0917 123 4567)
+      if (cleanValue.length > 0) {
+        if (cleanValue.length <= 4) {
+          formattedValue = cleanValue;
+        } else if (cleanValue.length <= 7) {
+          formattedValue = `${cleanValue.slice(0, 4)} ${cleanValue.slice(4)}`;
+        } else {
+          formattedValue = `${cleanValue.slice(0, 4)} ${cleanValue.slice(4, 7)} ${cleanValue.slice(7, 11)}`;
+        }
+      }
+      
+      setForm((prev) => ({ ...prev, [name]: formattedValue }));
     } else {
       setForm((prev) => ({ ...prev, [name]: name === "packs" || name === "price" ? Number(value) : value }));
     }
@@ -122,8 +148,27 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     if (!form.pickup_time) newErrors.pickup_time = "Pickup time is required";
     if (!form.return_date) newErrors.return_date = "Return date is required";
     if (!form.return_time) newErrors.return_time = "Return time is required";
+
+    if (!form.firstname) newErrors.firstname = "Firt name is required";
+    if (!form.lastname) newErrors.lastname = "Last name is required";
+    if (!form.mobile) newErrors.mobile = "Mobile is required";
     if (form.packs < 1) newErrors.packs = "Number of packs must be at least 1";
     if (form.price < 0) newErrors.price = "Price cannot be negative";
+
+    // Mobile number validation
+    if (form.mobile && form.mobile.trim() !== "") {
+      // Remove all non-digit characters for validation
+      const cleanMobile = form.mobile.replace(/\D/g, '');
+      
+      // Check if it's a valid Philippine mobile number
+      if (cleanMobile.length < 10 || cleanMobile.length > 11) {
+        newErrors.mobile = "Mobile number must be 10-11 digits";
+      } else if (!cleanMobile.startsWith('9')) {
+        newErrors.mobile = "Mobile number must start with 9";
+      } else if (!/^9\d{9,10}$/.test(cleanMobile)) {
+        newErrors.mobile = "Please enter a valid Philippine mobile number";
+      }
+    }
 
     // Date and time validation
     const now = new Date();
@@ -154,6 +199,25 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     const submitForm = { ...form, user_id: userId };
     if (validate()) {
       try {
+        // Update guest user with personal information if provided
+        if (form.firstname || form.middlename || form.lastname || form.mobile) {
+          try {
+            const guestData = {
+              firstname: form.firstname,
+              middlename: form.middlename,
+              lastname: form.lastname,
+              mobile: form.mobile
+            };
+            
+            // Update the existing guest user using their ID
+            await guestApi.updateGuest(userId, guestData);
+            console.log("Guest user updated with personal information");
+          } catch (guestError) {
+            console.error("Failed to update guest user:", guestError);
+            // Continue with booking creation even if guest update fails
+          }
+        }
+
         const payload = mapToCamelCase(submitForm);
         console.log("Payload being sent:", payload); 
         const response = await bookingsApi.createBooking(payload);
@@ -200,6 +264,58 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             ))}
           </select>
           {errors.package_id && <span className="text-red-500 text-xs">{errors.package_id}</span>}
+        </div>
+
+        {/* Personal Information */}
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="firstname">First Name</Label>
+            <Input
+              id="firstname"
+              name="firstname"
+              value={form.firstname}
+              onChange={handleChange}
+              placeholder="Enter first name"
+            />
+            {errors.firstname && <span className="text-red-500 text-xs">{errors.firstname}</span>}
+          </div>
+          <div>
+            <Label htmlFor="middlename">Middle Name</Label>
+            <Input
+              id="middlename"
+              name="middlename"
+              value={form.middlename}
+              onChange={handleChange}
+              placeholder="Enter middle name (optional)"
+            />
+            {errors.middlename && <span className="text-red-500 text-xs">{errors.middlename}</span>}
+          </div>
+          <div>
+            <Label htmlFor="lastname">Last Name</Label>
+            <Input
+              id="lastname"
+              name="lastname"
+              value={form.lastname}
+              onChange={handleChange}
+              placeholder="Enter last name"
+            />
+            {errors.lastname && <span className="text-red-500 text-xs">{errors.lastname}</span>}
+          </div>
+        </div>
+
+        <div>
+          <Label htmlFor="mobile">Mobile Number</Label>
+          <Input
+            id="mobile"
+            name="mobile"
+            value={form.mobile}
+            onChange={handleChange}
+            placeholder="917 123 4567"
+            type="tel"
+            maxLength={13}
+          />
+          <p className="text-xs text-gray-500 mt-1">Format: 0917 123 4567 (Philippine mobile number)</p>
+          {errors.mobile && <span className="text-red-500 text-xs">{errors.mobile}</span>}
         </div>
 
         {/* Destination */}

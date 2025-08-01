@@ -142,7 +142,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [modalType, setModalType] = useState<"success" | "error">("success"); // State for modal type
   const [modalMessage, setModalMessage] = useState<string>(""); // State for modal message
 
-  const handleBookingFormClick = () => {
+  const handleBookingFormClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default behavior
+    e.stopPropagation(); // Stop event propagation
     setShowBookingForm(true); // Show the booking form
   };
 
@@ -223,16 +225,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const updateLastActive = useCallback(() => {
     localStorage.setItem("lastActive", new Date().toISOString());
   }, []);
- const handleIncomingMessage = useCallback((message: ChatMessage) => {
-    setAdminHasReplied(true);
-    setMessages((prev) => {
-      // Check if message already exists to prevent duplicates
-      const messageExists = prev.some(msg => msg.id === message.id);
-      if (messageExists) return prev;
-      
-      return [...prev, formatMessage(message)];
-    });
-  }, []);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("guestUserId");
@@ -279,6 +271,34 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     }
   }, [userId]);
 
+
+  const handleIncomingMessage = (message: ChatMessage) => {
+    const isFromHumanAdmin = message.isAdmin && message.username !== "Bot";
+    if (isFromHumanAdmin) {
+      setAdminHasReplied(true);
+    }
+
+    const isFromBotOrAdmin = message.isAdmin || message.username === "Bot";
+
+    setMessages(prev => {
+      if (prev.some(m => m.id === message.id)) return prev;
+      return [
+        ...prev,
+        {
+          id: message.id,
+          sender: isFromBotOrAdmin ? "bot" : "user",
+          text: message.message || "",
+          timestamp: new Date(message.timestamp),
+          isSpecialOffer: message.isSpecialOffer,
+          userId: message.userId,
+          username: message.username,
+          isAdmin: message.isAdmin,
+          imageUrls: message.imageUrls,
+        }
+      ];
+    });
+    if (!isOpen) setUnreadCount(count => count + 1);
+  };
 
   useEffect(() => {
     if (!isOpen || !guestReady || !userId) return;
@@ -462,6 +482,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
+      e.preventDefault(); // Prevent default form submission
       if (!guestReady) {
         createGuest();
       } else {
@@ -495,6 +516,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
         className="w-full mb-4 px-3 py-2 border rounded-lg text-sm focus:outline-none"
       />
       <button
+        type="button"
         onClick={createGuest}
         className="w-full py-2 bg-gradient-to-r from-[#2E2E2E] to-[#444444] text-white rounded-lg text-sm font-medium hover:shadow-md"
       >
@@ -737,21 +759,23 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
                               <Bot size={16} className="text-white" />
                             </div>
                             <div className="p-3 rounded-2xl shadow-sm bg-white border border-gray-200">
-                              <p className="text-sm">
+                              <div className="text-sm">
                                 {(msg.text === "Great! To book a tour, please filled-up the booking form. below") || (msg.text && msg.text.includes('[Open Booking Form]')) ? (
                                   <>
-                                    <span>{msg.text.replace('[Open Booking Form]', '').trim()}</span>
+                                    <p>{msg.text.replace('[Open Booking Form]', '').trim()}</p>
                                     <button
+                                      type="button"
                                       onClick={handleBookingFormClick}
-                                      className="text-blue-500 underline block mt-2"
+                                      onMouseDown={(e) => e.preventDefault()}
+                                      className="text-blue-500 underline block mt-2 hover:text-blue-700 transition-colors"
                                     >
                                       Open Booking Form
                                     </button>
                                   </>
                                 ) : (
-                                  msg.text
+                                  <p>{msg.text}</p>
                                 )}
-                              </p>
+                              </div>
                               <p className="text-[10px] mt-1 opacity-70 text-right">
                                 {msg.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                               </p>
@@ -792,7 +816,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
             </div>
            
             <div className="p-3 bg-white border-t border-gray-200 bg-opacity-90">
-              <div className="flex items-center bg-gray-100 rounded-full px-4 py-1 border border-gray-200 shadow-inner">
+              <form onSubmit={(e) => e.preventDefault()} className="flex items-center bg-gray-100 rounded-full px-4 py-1 border border-gray-200 shadow-inner">
                 <ChatImageUpload
                   ref={imageUploadRef}
                   onImageUpload={(urls) => {
@@ -810,6 +834,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
                   aria-label="Type a message"
                 />
                 <motion.button
+                  type="button"
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={handleSend}
@@ -819,7 +844,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
                 >
                   <Send size={18} />
                 </motion.button>
-              </div>
+              </form>
             </div>
           </motion.div>
         ) : (
