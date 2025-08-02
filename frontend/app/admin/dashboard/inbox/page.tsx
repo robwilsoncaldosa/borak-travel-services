@@ -9,12 +9,10 @@ import { Bot, Edit, Send, User, X, ZoomIn } from "lucide-react";
 import { chatApi, ChatMessage } from "@/lib/backend_api/chat";
 import { ChatImageUpload, ChatImageUploadRef } from "@/components/cloudinary/ChatImageUpload";
 import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 
 import { io, Socket } from "socket.io-client";
-import { BookingForm, BookingFormData } from "@/components/BookingForm";
 
-let socket: Socket;
 
 // Move ImageModal outside of InboxPage component and memoize it
 const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () => void }) => {
@@ -24,10 +22,10 @@ const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () 
 
   useEffect(() => {
     if (hasLoadedRef.current) return;
-    
+
     const img = new window.Image();
     img.src = imageUrl;
-    
+
     img.onload = () => {
       hasLoadedRef.current = true;
       setIsLoading(false);
@@ -39,7 +37,7 @@ const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () 
   }, [imageUrl]);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden flex items-center justify-center w-full h-[calc(100%-1rem)] max-h-full"
       onClick={onClose}
     >
@@ -50,8 +48,8 @@ const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () 
             <h3 className="text-xl font-semibold text-gray-900">
               Image Preview
             </h3>
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
               onClick={onClose}
             >
@@ -59,7 +57,7 @@ const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () 
               <span className="sr-only">Close modal</span>
             </button>
           </div>
-          
+
           {/* Modal body */}
           <div className="p-4 space-y-4">
             <div className="relative w-full aspect-[4/3] bg-gray-100 rounded-lg overflow-hidden">
@@ -138,7 +136,7 @@ export default function InboxPage() {
     };
 
     loadMessages();
-    const interval = setInterval(loadMessages, 1000); 
+    const interval = setInterval(loadMessages, 1000);
 
     // Cleanup function
     return () => {
@@ -179,7 +177,7 @@ export default function InboxPage() {
       }
     };
   }, []);
-  
+
   const handleSendReply = async () => {
     if ((!replyMessage.trim() && imageUrls.length === 0) || !selectedChat) return;
 
@@ -213,7 +211,7 @@ export default function InboxPage() {
       setReplyMessage('');
       setImageUrls([]);
       imageUploadRef.current?.clearPreviews();
-      
+
       // Scroll to bottom after sending a message
       setTimeout(() => scrollToBottom(), 100);
     } catch (error) {
@@ -244,15 +242,15 @@ export default function InboxPage() {
     }
   };
 
-  const selectedChatMessages = useMemo(() => 
+  const selectedChatMessages = useMemo(() =>
     selectedChat
       ? messages
-          .filter(m => m.userId === selectedChat)
-          .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
+        .filter(m => m.userId === selectedChat)
+        .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime())
       : [],
     [selectedChat, messages]
   );
-  
+
   // Scroll to bottom whenever selected chat messages change
   useEffect(() => {
     scrollToBottom();
@@ -312,36 +310,33 @@ export default function InboxPage() {
               {latestMessages.map((chat, index) => {
                 const recipientUsername = messages.find(m => m.userId === chat.userId && !m.isAdmin)?.username || 'Guest';
                 const isLastMessageFromAdmin = chat.isAdmin;
-                const messagePreview = (chat.message || chat.text || '').substring(0, 50) + 
+                const messagePreview = (chat.message || chat.text || '').substring(0, 50) +
                   ((chat.message || chat.text || '').length > 50 ? '...' : '');
                 const messageTime = new Date(chat.timestamp);
                 const isToday = new Date().toDateString() === messageTime.toDateString();
-                const timeString = isToday 
+                const timeString = isToday
                   ? messageTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                   : messageTime.toLocaleDateString([], { month: 'short', day: 'numeric' });
 
                 return (
                   <div
                     key={chat.id || `chat-${index}-${chat.timestamp}`}
-                    className={`p-3 cursor-pointer rounded-lg mb-2 transition-all duration-200 hover:shadow-md ${
-                      selectedChat === chat.userId
-                        ? 'bg-primary/15 shadow-sm'
-                        : 'hover:bg-gray-50'
-                    } ${!chat.isRead && !chat.isAdmin ? 'border-l-4 border-primary' : 'border-l-4 border-transparent'}`}
+                    className={`p-3 cursor-pointer rounded-lg mb-2 transition-all duration-200 hover:shadow-md ${selectedChat === chat.userId
+                      ? 'bg-primary/15 shadow-sm'
+                      : 'hover:bg-gray-50'
+                      } ${!chat.isRead && !chat.isAdmin ? 'border-l-4 border-primary' : 'border-l-4 border-transparent'}`}
                     onClick={() => setSelectedChat(chat.userId ?? null)}
                   >
                     <div className="flex justify-between items-start">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                            isLastMessageFromAdmin ? 'bg-primary text-white' : 'bg-gray-100'
-                          }`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isLastMessageFromAdmin ? 'bg-primary text-white' : 'bg-gray-100'
+                            }`}>
                             {isLastMessageFromAdmin ? <User size={16} /> : <Bot size={16} />}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className={`font-medium truncate ${
-                              !chat.isRead && !chat.isAdmin ? 'text-gray-900' : 'text-gray-700'
-                            }`}>
+                            <h3 className={`font-medium truncate ${!chat.isRead && !chat.isAdmin ? 'text-gray-900' : 'text-gray-700'
+                              }`}>
                               {isLastMessageFromAdmin
                                 ? `${recipientUsername}`
                                 : `${recipientUsername}`}
@@ -410,8 +405,8 @@ export default function InboxPage() {
                                 {message.imageUrls.map((url, index) => {
                                   const isSingleImage = message.imageUrls?.length === 1;
                                   return (
-                                    <div 
-                                      key={url} 
+                                    <div
+                                      key={url}
                                       className={`relative ${isSingleImage ? 'w-full aspect-[4/3]' : 'w-30 h-30'} rounded-lg overflow-hidden group cursor-pointer`}
                                       onClick={() => setSelectedImage(url)}
                                     >
@@ -446,8 +441,8 @@ export default function InboxPage() {
                               {message.imageUrls.map((url, index) => {
                                 const isSingleImage = message.imageUrls?.length === 1;
                                 return (
-                                  <div 
-                                    key={url} 
+                                  <div
+                                    key={url}
                                     className={`relative ${isSingleImage ? 'w-full aspect-[4/3]' : 'w-30 h-30'} rounded-lg overflow-hidden group cursor-pointer`}
                                     onClick={() => setSelectedImage(url)}
                                   >
@@ -477,7 +472,7 @@ export default function InboxPage() {
                       )}
                     </div>
                   ))}
-                 
+
                   <div ref={messagesEndRef} />
                 </div>
               </ScrollArea>
@@ -493,45 +488,45 @@ export default function InboxPage() {
                     disabled={!selectedChat}
                   />
 
-                      <button
-                      onClick={async () => {
-                        // Send booking form message immediately when icon is clicked
-                        if (selectedChat) {
-                          const bookingFormMessage: ChatMessage = {
-                            userId: selectedChat,
-                            message: "Please fill out the booking form to complete your reservation. [Open Booking Form]",
-                            isAdmin: true,
-                            timestamp: new Date(),
-                            username: "Admin",
-                            sender: "bot",
-                            isRead: true,
-                            imageUrls: [],
-                            isSpecialOffer: true,
-                          };
+                  <button
+                    onClick={async () => {
+                      // Send booking form message immediately when icon is clicked
+                      if (selectedChat) {
+                        const bookingFormMessage: ChatMessage = {
+                          userId: selectedChat,
+                          message: "Please fill out the booking form to complete your reservation. [Open Booking Form]",
+                          isAdmin: true,
+                          timestamp: new Date(),
+                          username: "Admin",
+                          sender: "bot",
+                          isRead: true,
+                          imageUrls: [],
+                          isSpecialOffer: true,
+                        };
 
-                          // Send to backend and emit to clients
-                          try {
-                            const response = await chatApi.sendReply(selectedChat, bookingFormMessage.message || "", []);
-                            console.log('Booking form message sent successfully:', response);
-                            // Add to local messages only after successful backend response
-                            setMessages(prevMessages =>
-                              [...prevMessages, bookingFormMessage].sort(
-                                (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-                              )
-                            );
-                            if (socketRef.current) {
-                              socketRef.current.emit('sendMessage', bookingFormMessage);
-                            }
-                          } catch (error) {
-                            console.error('Failed to send booking form message:', error);
+                        // Send to backend and emit to clients
+                        try {
+                          const response = await chatApi.sendReply(selectedChat, bookingFormMessage.message || "", []);
+                          console.log('Booking form message sent successfully:', response);
+                          // Add to local messages only after successful backend response
+                          setMessages(prevMessages =>
+                            [...prevMessages, bookingFormMessage].sort(
+                              (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+                            )
+                          );
+                          if (socketRef.current) {
+                            socketRef.current.emit('sendMessage', bookingFormMessage);
                           }
+                        } catch (error) {
+                          console.error('Failed to send booking form message:', error);
                         }
-                      }}
-                      className="text-gray-500 hover:text-gray-700"
-                      aria-label="Send booking form"
-                    >
-                      <Edit size={16} />
-                    </button>
+                      }
+                    }}
+                    className="text-gray-500 hover:text-gray-700"
+                    aria-label="Send booking form"
+                  >
+                    <Edit size={16} />
+                  </button>
 
                   <Input
                     className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
@@ -541,7 +536,7 @@ export default function InboxPage() {
                     onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendReply()}
                   />
                 </div>
-                <Button 
+                <Button
                   onClick={handleSendReply}
                   disabled={!replyMessage.trim() && imageUrls.length === 0}
                   className="shadow-sm hover:shadow-md transition-all"
@@ -550,7 +545,7 @@ export default function InboxPage() {
                   Send
                 </Button>
               </div>
-             
+
             </div>
           </>
         ) : (
@@ -568,6 +563,6 @@ export default function InboxPage() {
 
     </div>
 
-        
+
   );
 }

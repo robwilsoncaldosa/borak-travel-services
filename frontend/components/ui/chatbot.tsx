@@ -44,10 +44,10 @@ const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () 
 
   useEffect(() => {
     if (hasLoadedRef.current) return;
-    
+
     const img = new window.Image();
     img.src = imageUrl;
-    
+
     img.onload = () => {
       hasLoadedRef.current = true;
       setIsLoading(false);
@@ -59,7 +59,7 @@ const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () 
   }, [imageUrl]);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 overflow-y-auto overflow-x-hidden flex items-center justify-center w-full h-[calc(100%-1rem)] max-h-full"
       onClick={onClose}
     >
@@ -69,8 +69,8 @@ const ImageModal = memo(({ imageUrl, onClose }: { imageUrl: string; onClose: () 
             <h3 className="text-xl font-semibold text-gray-900">
               Image Preview
             </h3>
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center"
               onClick={onClose}
             >
@@ -118,10 +118,10 @@ interface ChatbotProps {
 
 
 
-const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
+const Chatbot: React.FC<ChatbotProps> = ({ isOpen, }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
-  const [, setLocalIsOpen] = useState(false); 
+  const [, setLocalIsOpen] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [guestReady, setGuestReady] = useState(false);
   const [username, setUsername] = useState("");
@@ -137,7 +137,6 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const imageUploadRef = useRef<ChatImageUploadRef>(null);
   // const imageCache = useRef<Map<string, boolean>>(new Map());
   const [showBookingForm, setShowBookingForm] = useState(false); // Controls the visibility of the booking form
-  const [selectedBookingMessage, setSelectedBookingMessage] = useState<Message | null>(null); // Tracks the clicked booking form message
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false); // State for modal visibility
   const [modalType, setModalType] = useState<"success" | "error">("success"); // State for modal type
   const [modalMessage, setModalMessage] = useState<string>(""); // State for modal message
@@ -152,10 +151,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     setShowBookingForm(false); // Hide the booking form
   };
 
-  const handleBookingFormSubmit = (data: any) => {
+  //@ts-expect-error don't know how to type this
+  const handleBookingFormSubmit = (data) => {
     console.log("Booking submitted:", data);
     setShowBookingForm(false); // Hide the form after submission
-    
+
     // Add success message to chat
     const successMessage: Message = {
       sender: "bot",
@@ -164,9 +164,9 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
       isAdmin: true,
       username: "Bot"
     };
-    
+
     setMessages(prevMessages => [...prevMessages, successMessage]);
-    
+
     // Show success modal
     setModalType("success");
     setModalMessage("Your booking has been submitted successfully! We'll contact you soon with confirmation details.");
@@ -182,29 +182,29 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
       isAdmin: true,
       username: "Bot"
     };
-    
+
     setMessages(prevMessages => [...prevMessages, errorMessage]);
-    
+
     // Show error modal
     setModalType("error");
     setModalMessage("Failed to submit your booking. Please try again.");
     setIsModalOpen(true);
   };
 
-  const handleMinimizeChatbot = () => {
-    setLocalIsOpen(false); // Minimize the chatbot
-  };
+  // const handleMinimizeChatbot = () => {
+  //   setLocalIsOpen(false); // Minimize the chatbot
+  // };
 
-  const handleOpenChatbot = () => {
-    setLocalIsOpen(true); // Open the chatbot
-  };
+  // const handleOpenChatbot = () => {
+  //   setLocalIsOpen(true); // Open the chatbot
+  // };
   const checkSessionTimeout = useCallback(() => {
     const lastActive = localStorage.getItem("lastActive");
     if (lastActive) {
       const lastActiveTime = new Date(lastActive).getTime();
       const currentTime = new Date().getTime();
-      const oneHour = 60 * 60 * 1000; 
-      
+      const oneHour = 60 * 60 * 1000;
+
       if (currentTime - lastActiveTime > oneHour) {
         localStorage.removeItem("guestUserId");
         localStorage.removeItem("guestUsername");
@@ -252,7 +252,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
 
   const handleScroll = useCallback(() => {
     if (!messagesContainerRef.current) return;
-    
+
     const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     const isAtBottom = scrollHeight - scrollTop - clientHeight < 100;
     setShouldAutoScroll(isAtBottom);
@@ -317,7 +317,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     };
   }, [isOpen, guestReady, userId, loadMessages, handleIncomingMessage]);
 
-  
+
   const [unreadCount, setUnreadCount] = useState(0);
 
   useEffect(() => {
@@ -338,7 +338,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
 
   const preloadImage = useCallback((url: string) => {
     if (preloadedImages.has(url)) return;
-    
+
     const img = new window.Image();
     img.src = url;
     img.onload = () => {
@@ -379,7 +379,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
 
   const handleSend = async () => {
     if ((!input.trim() && imageUrls.length === 0) || !userId) return;
-   
+
     const shouldSuppressBotReply = adminHasReplied;
     setAdminHasReplied(false);
 
@@ -394,14 +394,14 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
 
     try {
       const createdMessage = await chatApi.createMessage(userMessage);
-     
+
       setMessages((prev) => [...prev, {
         ...userMessage,
         id: createdMessage.id,
         text: userMessage.message,
         imageUrls: userMessage.imageUrls,
       } as Message]);
-     
+
       if (socket) {
         socket.emit("sendMessage", createdMessage);
       }
@@ -410,11 +410,11 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
       setImageUrls([]);
       imageUploadRef.current?.clearPreviews();
       setIsTyping(true);
-     
+
       if (!shouldSuppressBotReply) {
         setTimeout(async () => {
           setIsTyping(false);
-         
+
           let responseText = "";
           let isSpecialOffer = false;
           const lowerInput = currentInput.toLowerCase();
@@ -445,7 +445,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
           } else {
             responseText = "I'm here to help with your travel plans. Could you please specify what you're looking for? You can ask about tours, pricing, or how to book.";
           }
-         
+
           const botMessage: ChatMessage = {
             sender: "bot",
             message: responseText,
@@ -564,7 +564,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
 
   const handleClose = () => {
     // onClose();
-    setLocalIsOpen(false); 
+    setLocalIsOpen(false);
     localStorage.removeItem("guestUserId");
     localStorage.removeItem("guestUsername");
     setUserId(null);
@@ -603,7 +603,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
     // <div className="fixed bottom-4 right-4 ">
     <div className="fixed bottom-4 right-4 z-50 flex flex-row items-end justify-end space-x-4">
       {/* Booking Form */}
-   {showBookingForm && (
+      {showBookingForm && (
         <div className="mt-4">
           <BookingForm
             onSubmit={handleBookingFormSubmit}
@@ -656,7 +656,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
           />
         )}
       </AnimatePresence>
-      
+
       <AnimatePresence mode="wait">
         {!isOpen ? (
           <motion.button
@@ -706,8 +706,8 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
                 <X size={18} />
               </motion.button>
             </div>
-           
-            <div 
+
+            <div
               ref={messagesContainerRef}
               onScroll={handleScroll}
               className="flex-1 p-4 overflow-y-auto bg-gradient-to-b from-gray-50 to-gray-100 space-y-3 bg-opacity-80"
@@ -736,10 +736,10 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
                 </div>
               )
               }
-             
+
               {(() => {
                 const renderedIds = new Set();
-                return messages.map((msg, ) => {
+                return messages.map((msg,) => {
                   if (msg.id && renderedIds.has(msg.id)) {
                     return null;
                   }
@@ -794,7 +794,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
                   );
                 });
               })()}
-             
+
               {isTyping && (
                 <div className="flex justify-start">
                   <div className="flex max-w-[80%] flex-row">
@@ -811,10 +811,10 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
                   </div>
                 </div>
               )}
-             
+
               <div ref={messagesEndRef} />
             </div>
-           
+
             <div className="p-3 bg-white border-t border-gray-200 bg-opacity-90">
               <form onSubmit={(e) => e.preventDefault()} className="flex items-center bg-gray-100 rounded-full px-4 py-1 border border-gray-200 shadow-inner">
                 <ChatImageUpload
@@ -851,7 +851,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
           renderGuestForm()
         )}
       </AnimatePresence>
-    
+
     </div>
   );
 };

@@ -43,9 +43,11 @@ export const userApi = {
       const response = await instance.post<LoginResponse>('/api/users/login', loginData);
       console.log('Login response:', response.data); // Debug log
       return response.data;
-    } catch (error: any) {
+    }
+    //@ts-nocheck
+    catch (error: any) {
       console.log('Login error:', error);
-      
+
       // Handle different types of errors
       if (error.response) {
         // Server responded with error status

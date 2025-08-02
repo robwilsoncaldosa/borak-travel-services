@@ -2,10 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ModalMessagePrompt } from "@/components/ui/modalMessagePrompt"; 
 import { BookingData, bookingsApi } from "@/lib/backend_api/bookings";
 import { packageApi } from "@/lib/backend_api/package";
-import { guestApi, GuestCreateDto } from "@/lib/backend_api/guest";
+import { guestApi } from "@/lib/backend_api/guest";
 
 export interface BookingFormData {
   user_id: string | "";
@@ -19,7 +18,7 @@ export interface BookingFormData {
   status: string;
   payment_status: string;
   packs: number;
-  price: number; 
+  price: number;
   paid_amount: number | null;
   firstname?: string;
   middlename?: string;
@@ -32,8 +31,8 @@ interface BookingFormProps {
   onCancel?: () => void;
   initialData?: Partial<BookingFormData>;
   userId: string;
-  priceEditable?: boolean; 
-  onError?: () => void; 
+  priceEditable?: boolean;
+  onError?: () => void;
 }
 
 const mapToCamelCase = (data: BookingFormData): BookingData => ({
@@ -57,7 +56,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   onCancel,
   initialData = {},
   userId,
-  priceEditable = false, 
+  priceEditable = false,
   onError,
 }) => {
   const [form, setForm] = useState<BookingFormData>({
@@ -72,7 +71,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     status: "PENDING",
     payment_status: "PENDING",
     packs: initialData.packs || 1,
-    price: initialData.price ?? 0, 
+    price: initialData.price ?? 0,
     paid_amount: initialData.paid_amount ?? null,
     firstname: initialData.firstname || "",
     middlename: initialData.middlename || "",
@@ -120,7 +119,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       // Format mobile number as user types
       const cleanValue = value.replace(/\D/g, ''); // Remove non-digits
       let formattedValue = cleanValue;
-      
+
       // Format as Philippine mobile number (e.g., 0917 123 4567)
       if (cleanValue.length > 0) {
         if (cleanValue.length <= 4) {
@@ -131,7 +130,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           formattedValue = `${cleanValue.slice(0, 4)} ${cleanValue.slice(4, 7)} ${cleanValue.slice(7, 11)}`;
         }
       }
-      
+
       setForm((prev) => ({ ...prev, [name]: formattedValue }));
     } else {
       setForm((prev) => ({ ...prev, [name]: name === "packs" || name === "price" ? Number(value) : value }));
@@ -159,7 +158,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     if (form.mobile && form.mobile.trim() !== "") {
       // Remove all non-digit characters for validation
       const cleanMobile = form.mobile.replace(/\D/g, '');
-      
+
       // Check if it's a valid Philippine mobile number
       if (cleanMobile.length < 10 || cleanMobile.length > 11) {
         newErrors.mobile = "Mobile number must be 10-11 digits";
@@ -173,14 +172,14 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     // Date and time validation
     const now = new Date();
     const currentDateTime = now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
-    
+
     if (form.pickup_date && form.pickup_time) {
       const pickupDateTime = `${form.pickup_date}T${form.pickup_time}`;
       if (pickupDateTime < currentDateTime) {
         newErrors.pickup_date = "Pickup date and time cannot be earlier than current date and time";
       }
     }
-    
+
     if (form.return_date && form.return_time && form.pickup_date && form.pickup_time) {
       const pickupDateTime = `${form.pickup_date}T${form.pickup_time}`;
       const returnDateTime = `${form.return_date}T${form.return_time}`;
@@ -195,7 +194,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-   
+
     const submitForm = { ...form, user_id: userId };
     if (validate()) {
       try {
@@ -208,7 +207,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
               lastname: form.lastname,
               mobile: form.mobile
             };
-            
+
             // Update the existing guest user using their ID
             await guestApi.updateGuest(userId, guestData);
             console.log("Guest user updated with personal information");
@@ -219,15 +218,15 @@ export const BookingForm: React.FC<BookingFormProps> = ({
         }
 
         const payload = mapToCamelCase(submitForm);
-        console.log("Payload being sent:", payload); 
+        console.log("Payload being sent:", payload);
         const response = await bookingsApi.createBooking(payload);
         console.log("Booking created successfully:", response);
-  
-       
+
+
         onSubmit(submitForm);
       } catch (error) {
         console.error("Failed to create booking:", error);
-  
+
         // Update modal state for error
         onError?.();
       }
@@ -236,210 +235,210 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
   return (
     <>
-    
+
       {/* Booking Form */}
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg max-h-[80vh] overflow-hidden flex flex-col">
         <div className="p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-800">Booking Form</h2>
           <p className="text-sm text-gray-600 mt-1">Please fill out the details below to complete your booking.</p>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-6">
           <form onSubmit={handleSubmit} className="space-y-4" id="booking-form">
-        {/* Package Selection */}
-        <div>
-          <Label htmlFor="package_id">Package</Label>
-          <select
-            id="package_id"
-            name="package_id"
-            value={form.package_id}
-            onChange={handleChange}
-            className="w-full border rounded px-2 py-1"
-          >
-            <option value="">Select package</option>
-            {packages.map((pkg) => (
-              <option key={pkg.id} value={pkg.id}>
-                {pkg.title}
-              </option>
-            ))}
-          </select>
-          {errors.package_id && <span className="text-red-500 text-xs">{errors.package_id}</span>}
+            {/* Package Selection */}
+            <div>
+              <Label htmlFor="package_id">Package</Label>
+              <select
+                id="package_id"
+                name="package_id"
+                value={form.package_id}
+                onChange={handleChange}
+                className="w-full border rounded px-2 py-1"
+              >
+                <option value="">Select package</option>
+                {packages.map((pkg) => (
+                  <option key={pkg.id} value={pkg.id}>
+                    {pkg.title}
+                  </option>
+                ))}
+              </select>
+              {errors.package_id && <span className="text-red-500 text-xs">{errors.package_id}</span>}
+            </div>
+
+            {/* Personal Information */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="firstname">First Name</Label>
+                <Input
+                  id="firstname"
+                  name="firstname"
+                  value={form.firstname}
+                  onChange={handleChange}
+                  placeholder="Enter first name"
+                />
+                {errors.firstname && <span className="text-red-500 text-xs">{errors.firstname}</span>}
+              </div>
+              <div>
+                <Label htmlFor="middlename">Middle Name</Label>
+                <Input
+                  id="middlename"
+                  name="middlename"
+                  value={form.middlename}
+                  onChange={handleChange}
+                  placeholder="Enter middle name (optional)"
+                />
+                {errors.middlename && <span className="text-red-500 text-xs">{errors.middlename}</span>}
+              </div>
+              <div>
+                <Label htmlFor="lastname">Last Name</Label>
+                <Input
+                  id="lastname"
+                  name="lastname"
+                  value={form.lastname}
+                  onChange={handleChange}
+                  placeholder="Enter last name"
+                />
+                {errors.lastname && <span className="text-red-500 text-xs">{errors.lastname}</span>}
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="mobile">Mobile Number</Label>
+              <Input
+                id="mobile"
+                name="mobile"
+                value={form.mobile}
+                onChange={handleChange}
+                placeholder="917 123 4567"
+                type="tel"
+                maxLength={13}
+              />
+              <p className="text-xs text-gray-500 mt-1">Format: 0917 123 4567 (Philippine mobile number)</p>
+              {errors.mobile && <span className="text-red-500 text-xs">{errors.mobile}</span>}
+            </div>
+
+            {/* Destination */}
+            <div>
+              <Label htmlFor="destination">Destination</Label>
+              <Input
+                id="destination"
+                name="destination"
+                value={form.destination}
+                onChange={handleChange}
+                readOnly
+                className="bg-gray-100 cursor-not-allowed"
+              />
+              {errors.destination && <span className="text-red-500 text-xs">{errors.destination}</span>}
+            </div>
+
+            {/* Pickup Location */}
+            <div>
+              <Label htmlFor="pickup_location">Pickup Location</Label>
+              <Input id="pickup_location" name="pickup_location" value={form.pickup_location} onChange={handleChange} />
+              {errors.pickup_location && <span className="text-red-500 text-xs">{errors.pickup_location}</span>}
+            </div>
+
+            <div>
+              <Label htmlFor="pickup_date">Pickup Date</Label>
+              <Input
+                id="pickup_date"
+                name="pickup_date"
+                type="date"
+                value={form.pickup_date}
+                onChange={handleChange}
+                min={new Date().toISOString().split('T')[0]}
+              />
+              {errors.pickup_date && <span className="text-red-500 text-xs">{errors.pickup_date}</span>}
+            </div>
+
+            <div>
+              <Label htmlFor="pickup_time">Pickup Time</Label>
+              <Input
+                id="pickup_time"
+                name="pickup_time"
+                type="time"
+                value={form.pickup_time}
+                onChange={handleChange}
+              />
+              {errors.pickup_time && <span className="text-red-500 text-xs">{errors.pickup_time}</span>}
+            </div>
+
+            <div>
+              <Label htmlFor="return_date">Return Date</Label>
+              <Input
+                id="return_date"
+                name="return_date"
+                type="date"
+                value={form.return_date}
+                onChange={handleChange}
+                min={form.pickup_date || new Date().toISOString().split('T')[0]}
+              />
+              {errors.return_date && <span className="text-red-500 text-xs">{errors.return_date}</span>}
+            </div>
+
+            <div>
+              <Label htmlFor="return_time">Return Time</Label>
+              <Input
+                id="return_time"
+                name="return_time"
+                type="time"
+                value={form.return_time}
+                onChange={handleChange}
+              />
+              {errors.return_time && <span className="text-red-500 text-xs">{errors.return_time}</span>}
+            </div>
+
+            {/* Price Field */}
+            <div>
+              <Label htmlFor="price">Price (₱)</Label>
+              <Input
+                id="price"
+                name="price"
+                type="number"
+                min={0}
+                value={form.price}
+                onChange={handleChange}
+                readOnly={!priceEditable}
+                disabled={!priceEditable}
+                className={priceEditable ? "" : "bg-gray-100 cursor-not-allowed"}
+              />
+              {errors.price && <span className="text-red-500 text-xs">{errors.price}</span>}
+            </div>
+
+            {/* Paid Amount Field */}
+            <div>
+              <Label htmlFor="paid_amount">Paid Amount (₱)</Label>
+              <Input
+                id="paid_amount"
+                name="paid_amount"
+                type="number"
+                min={0}
+                value={form.paid_amount || ''}
+                onChange={handleChange}
+                readOnly={!priceEditable}
+                disabled={!priceEditable}
+                className={priceEditable ? "" : "bg-gray-100 cursor-not-allowed"}
+                placeholder="Enter paid amount"
+              />
+              {errors.paid_amount && <span className="text-red-500 text-xs">{errors.paid_amount}</span>}
+            </div>
+
+            <div>
+              <Label htmlFor="packs">Number of Packs</Label>
+              <Input
+                id="packs"
+                name="packs"
+                type="number"
+                min={1}
+                value={form.packs}
+                onChange={handleChange}
+              />
+              {errors.packs && <span className="text-red-500 text-xs">{errors.packs}</span>}
+            </div>
+
+          </form>
         </div>
 
-        {/* Personal Information */}
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="firstname">First Name</Label>
-            <Input
-              id="firstname"
-              name="firstname"
-              value={form.firstname}
-              onChange={handleChange}
-              placeholder="Enter first name"
-            />
-            {errors.firstname && <span className="text-red-500 text-xs">{errors.firstname}</span>}
-          </div>
-          <div>
-            <Label htmlFor="middlename">Middle Name</Label>
-            <Input
-              id="middlename"
-              name="middlename"
-              value={form.middlename}
-              onChange={handleChange}
-              placeholder="Enter middle name (optional)"
-            />
-            {errors.middlename && <span className="text-red-500 text-xs">{errors.middlename}</span>}
-          </div>
-          <div>
-            <Label htmlFor="lastname">Last Name</Label>
-            <Input
-              id="lastname"
-              name="lastname"
-              value={form.lastname}
-              onChange={handleChange}
-              placeholder="Enter last name"
-            />
-            {errors.lastname && <span className="text-red-500 text-xs">{errors.lastname}</span>}
-          </div>
-        </div>
-
-        <div>
-          <Label htmlFor="mobile">Mobile Number</Label>
-          <Input
-            id="mobile"
-            name="mobile"
-            value={form.mobile}
-            onChange={handleChange}
-            placeholder="917 123 4567"
-            type="tel"
-            maxLength={13}
-          />
-          <p className="text-xs text-gray-500 mt-1">Format: 0917 123 4567 (Philippine mobile number)</p>
-          {errors.mobile && <span className="text-red-500 text-xs">{errors.mobile}</span>}
-        </div>
-
-        {/* Destination */}
-        <div>
-          <Label htmlFor="destination">Destination</Label>
-          <Input
-            id="destination"
-            name="destination"
-            value={form.destination}
-            onChange={handleChange}
-            readOnly
-            className="bg-gray-100 cursor-not-allowed"
-          />
-          {errors.destination && <span className="text-red-500 text-xs">{errors.destination}</span>}
-        </div>
-
-        {/* Pickup Location */}
-        <div>
-          <Label htmlFor="pickup_location">Pickup Location</Label>
-          <Input id="pickup_location" name="pickup_location" value={form.pickup_location} onChange={handleChange} />
-          {errors.pickup_location && <span className="text-red-500 text-xs">{errors.pickup_location}</span>}
-        </div>
-
-        <div>
-          <Label htmlFor="pickup_date">Pickup Date</Label>
-          <Input
-            id="pickup_date"
-            name="pickup_date"
-            type="date"
-            value={form.pickup_date}
-            onChange={handleChange}
-            min={new Date().toISOString().split('T')[0]}
-          />
-          {errors.pickup_date && <span className="text-red-500 text-xs">{errors.pickup_date}</span>}
-        </div>
-
-        <div>
-          <Label htmlFor="pickup_time">Pickup Time</Label>
-          <Input
-            id="pickup_time"
-            name="pickup_time"
-            type="time"
-            value={form.pickup_time}
-            onChange={handleChange}
-          />
-          {errors.pickup_time && <span className="text-red-500 text-xs">{errors.pickup_time}</span>}
-        </div>
-
-        <div>
-          <Label htmlFor="return_date">Return Date</Label>
-          <Input
-            id="return_date"
-            name="return_date"
-            type="date"
-            value={form.return_date}
-            onChange={handleChange}
-            min={form.pickup_date || new Date().toISOString().split('T')[0]}
-          />
-          {errors.return_date && <span className="text-red-500 text-xs">{errors.return_date}</span>}
-        </div>
-
-        <div>
-          <Label htmlFor="return_time">Return Time</Label>
-          <Input
-            id="return_time"
-            name="return_time"
-            type="time"
-            value={form.return_time}
-            onChange={handleChange}
-          />
-          {errors.return_time && <span className="text-red-500 text-xs">{errors.return_time}</span>}
-        </div>
-
-        {/* Price Field */}
-        <div>
-          <Label htmlFor="price">Price (₱)</Label>
-          <Input
-            id="price"
-            name="price"
-            type="number"
-            min={0}
-            value={form.price}
-            onChange={handleChange}
-            readOnly={!priceEditable}
-            disabled={!priceEditable}
-            className={priceEditable ? "" : "bg-gray-100 cursor-not-allowed"}
-          />
-          {errors.price && <span className="text-red-500 text-xs">{errors.price}</span>}
-        </div>
-
-        {/* Paid Amount Field */}
-        <div>
-          <Label htmlFor="paid_amount">Paid Amount (₱)</Label>
-          <Input
-            id="paid_amount"
-            name="paid_amount"
-            type="number"
-            min={0}
-            value={form.paid_amount || ''}
-            onChange={handleChange}
-            readOnly={!priceEditable}
-            disabled={!priceEditable}
-            className={priceEditable ? "" : "bg-gray-100 cursor-not-allowed"}
-            placeholder="Enter paid amount"
-          />
-          {errors.paid_amount && <span className="text-red-500 text-xs">{errors.paid_amount}</span>}
-        </div>
-
-        <div>
-          <Label htmlFor="packs">Number of Packs</Label>
-          <Input
-            id="packs"
-            name="packs"
-            type="number"
-            min={1}
-            value={form.packs}
-            onChange={handleChange}
-          />
-          {errors.packs && <span className="text-red-500 text-xs">{errors.packs}</span>}
-        </div>
-
-        </form>
-        </div>
-        
         {/* Sticky Footer with Buttons */}
         <div className="p-6 border-t border-gray-200 bg-gray-50">
           <div className="flex justify-between">

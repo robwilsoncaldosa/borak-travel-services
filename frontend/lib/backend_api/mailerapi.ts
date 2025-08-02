@@ -18,9 +18,11 @@ export const mailerApi = {
         try {
             const response = await instance.post<ContactResponse>('/api/email/contact', formData);
             return response.data;
-        } catch (error: any) {
+        }
+        //@ts-nocheck
+        catch (error: any) {
             console.error('Error sending contact email:', error);
-            
+
             // Handle different types of errors
             if (error.response) {
                 // Server responded with error status

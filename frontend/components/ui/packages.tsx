@@ -16,7 +16,6 @@ export interface PackageCardProps {
 
 export default function PackageCards({ packages }: { packages: PackageCardProps[] }) {
     const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
-    const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
     const handleImageError = (packageId: string) => {
         setImageErrors(prev => new Set(prev).add(packageId));
