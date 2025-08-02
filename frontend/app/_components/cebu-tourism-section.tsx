@@ -19,7 +19,7 @@ export default function CebuTourismSection() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
             <div className="rounded-3xl overflow-hidden min-h-[250px]">
               <Image
-                src="/cebu-vans.png"
+                src="/Borak Pictures & Logo/CebuCityTour.png"
                 alt="Cebu van rentals"
                 width={600}
                 height={450}
@@ -28,7 +28,7 @@ export default function CebuTourismSection() {
             </div>
             <div className="rounded-3xl overflow-hidden min-h-[250px]">
               <Image
-                src="/cebu-city.png"
+                src="/Borak Pictures & Logo/CebuCityTour2.png"
                 alt="Cebu city skyline"
                 width={600}
                 height={400}
@@ -37,7 +37,7 @@ export default function CebuTourismSection() {
             </div>
             <div className="rounded-3xl overflow-hidden min-h-[250px]">
               <Image
-                src="/cebu-beach.png"
+                src="/Borak Pictures & Logo/BookNowTraveFar.png"
                 alt="Cebu beach"
                 width={600}
                 height={400}
@@ -46,7 +46,7 @@ export default function CebuTourismSection() {
             </div>
             <div className="rounded-3xl overflow-hidden min-h-[250px]">
               <Image
-                src="/cebu-aerial.png"
+                src="/Borak Pictures & Logo/KawasanFalls.png"
                 alt="Cebu aerial view"
                 width={600}
                 height={400}

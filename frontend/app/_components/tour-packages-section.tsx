@@ -14,12 +14,12 @@ export default function TourPackagesSection() {
               Our touriest destinations offer an unrivaled blend of natural beauty and cultural richness
             </p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             <div className="rounded-3xl overflow-hidden  hover:shadow-xl transition-shadow duration-300 h-[630px]">
               <div className="relative w-full h-full">
                 <Image
-                  src="/tour-package-1.png"
+                  src="/Borak Pictures & Logo/OlangoIsland.png"
                   alt="International travel package"
                   fill
                   className="object-contain md:object-cover w-full"
@@ -28,28 +28,19 @@ export default function TourPackagesSection() {
                 />
               </div>
             </div>
-            
+
             <div className="rounded-3xl overflow-hidden  hover:shadow-xl transition-shadow duration-300 h-[630px]">
               <div className="relative w-full h-full">
                 <Image
-                  src="/tour-package-2.png"
+                  src="/Borak Pictures & Logo/TumalogFalls.png"
                   alt="Waterfall tour package"
                   fill
                   className="object-cover"
                 />
               </div>
             </div>
-            
-            <div className="rounded-3xl overflow-hidden  hover:shadow-xl transition-shadow duration-300 h-[630px]">
-              <div className="relative w-full h-full">
-                <Image
-                  src="/tour-package-3.png"
-                  alt="Adventure tour package"
-                  fill
-                  className="object-cover"
-                />
-              </div>
-            </div>
+
+
           </div>
         </div>
       </div>

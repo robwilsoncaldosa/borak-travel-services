@@ -6,7 +6,7 @@ export interface PackageDescriptionProps {
 }
 
 export const PackageDescription = ({ packageData }: PackageDescriptionProps) => (
-    <div className=" rounded-lg  p-6 mb-8">
+    <div className=" rounded-lg  p-6 ps-0 mb-8">
         <p className="text-gray-700 mb-6">
             {packageData.about_tour}
         </p>
