@@ -8,7 +8,7 @@ export interface NavLinkProps {
 export interface LogoProps {
   imageSrc: string;
   altText: string;
-  title: string;
+  title?: string;
   className?: string;
 }
 

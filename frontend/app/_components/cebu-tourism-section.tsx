@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function CebuTourismSection() {
   return (
-    <div className="w-full py-12">
+    <div className="w-full py-12 pt-6">
       <div className="container mx-auto px-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
@@ -15,7 +15,7 @@ export default function CebuTourismSection() {
               the friendliness of the local people
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
             <div className="rounded-3xl overflow-hidden min-h-[250px]">
               <Image

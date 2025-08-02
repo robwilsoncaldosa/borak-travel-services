@@ -4,11 +4,11 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { LogoProps } from '../types/header.types';
 
-export const Logo = ({ imageSrc, altText, className }: LogoProps) => {
+export const Logo = ({ imageSrc, altText, className, title }: LogoProps) => {
   return (
     <Link href="/" className={`flex items-center space-x-3 group ${className || ''}`}>
       <div className="flex items-center gap-3">
-        <div className="relative">
+        <div className="relative rounded-full bg-teal-950 dark:rounded-none dark:bg-transparent">
           <Image
             src={imageSrc}
             alt={altText}
@@ -20,10 +20,14 @@ export const Logo = ({ imageSrc, altText, className }: LogoProps) => {
         </div>
         <div className="text-white">
           <div className="text-2xl font-bold tracking-wide">
-            BORAK<span className="text-blue-200">TRAVEL</span>
+            {title ? (
+              <span className='text-teal-950 dark:text-white'>{title}</span>
+            ) : (
+              <>BORAK<span className="text-blue-200">TRAVEL</span></>
+            )}
           </div>
         </div>
       </div>
-    </Link>
+    </Link >
   );
 };

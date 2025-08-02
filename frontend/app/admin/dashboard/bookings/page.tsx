@@ -5,21 +5,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from "@/components/ui/table";
-import { 
-  DropdownMenu, 
-  DropdownMenuContent, 
-  DropdownMenuItem, 
-  DropdownMenuLabel, 
-  DropdownMenuSeparator, 
-  DropdownMenuTrigger 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import {
   Download,
@@ -28,9 +28,7 @@ import {
   Filter,
   Mail,
   MoreHorizontal,
-  RefreshCw,
   Search,
-  Send,
   Trash2,
   X,
   Printer,
@@ -104,7 +102,7 @@ export default function BookingsPage() {
       setLoading(true);
       const response = await bookingsApi.getAllBookings();
       console.log('Received bookings data:', response);
-      
+
       // Fetch guest data for each booking
       const bookingsWithGuests = await Promise.all(
         response.map(async (booking: Booking) => {
@@ -124,7 +122,7 @@ export default function BookingsPage() {
           }
         })
       );
-      
+
       setBookings(bookingsWithGuests);
     } catch (error) {
       console.error("Failed to load bookings:", error);
@@ -134,7 +132,7 @@ export default function BookingsPage() {
   };
 
   const filteredBookings = bookings.filter((booking) => {
-    const matchesSearch = 
+    const matchesSearch =
       booking.destination.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.pickup_location.toLowerCase().includes(searchTerm.toLowerCase()) ||
       booking.user_id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -143,9 +141,9 @@ export default function BookingsPage() {
       (booking.guest?.firstname?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       (booking.guest?.lastname?.toLowerCase().includes(searchTerm.toLowerCase()) || false) ||
       (booking.guest?.mobile?.toLowerCase().includes(searchTerm.toLowerCase()) || false);
-    
+
     const matchesStatus = statusFilter === "all" || booking.status === statusFilter;
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -157,7 +155,7 @@ export default function BookingsPage() {
       RENDERED: { color: "bg-green-100 text-green-800", label: "Completed" },
       CANCELLED: { color: "bg-red-100 text-red-800", label: "Cancelled" },
     };
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.PENDING;
     return <Badge className={config.color}>{config.label}</Badge>;
   };
@@ -169,7 +167,7 @@ export default function BookingsPage() {
       FULL: { color: "bg-green-100 text-green-800", label: "Paid" },
       REFUNDED: { color: "bg-gray-100 text-gray-800", label: "Refunded" },
     };
-    
+
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.PENDING;
     return <Badge className={config.color}>{config.label}</Badge>;
   };
@@ -177,12 +175,12 @@ export default function BookingsPage() {
   const formatDateTime = (dateString: string) => {
     console.log('Formatting date:', dateString);
     const dateObj = new Date(dateString);
-    
+
     if (isNaN(dateObj.getTime())) {
       console.error('Invalid date:', dateString);
       return 'Invalid Date';
     }
-    
+
     return dateObj.toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -205,20 +203,20 @@ export default function BookingsPage() {
     setSelectedBooking(booking);
     setShowBookingModal(true);
   };
-  
+
   const handleEditBooking = (booking: Booking) => {
     console.log('Edit booking:', booking);
     setSelectedBooking(booking);
-   
+
     // Parse the date strings to extract date and time
     const pickupDate = new Date(booking.pickup_date);
     const returnDate = new Date(booking.return_date);
-    
+
     console.log('Original pickup_date:', booking.pickup_date);
     console.log('Parsed pickupDate:', pickupDate);
     console.log('Original return_date:', booking.return_date);
     console.log('Parsed returnDate:', returnDate);
-    
+
     // Format date as YYYY-MM-DD for date inputs
     const formatDateForInput = (date: Date) => {
       const year = date.getFullYear();
@@ -226,24 +224,24 @@ export default function BookingsPage() {
       const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     };
-    
+
     // Format time as HH:MM for time inputs
     const formatTimeForInput = (date: Date) => {
       const hours = String(date.getHours()).padStart(2, '0');
       const minutes = String(date.getMinutes()).padStart(2, '0');
       return `${hours}:${minutes}`;
     };
-    
+
     const formattedPickupDate = formatDateForInput(pickupDate);
     const formattedPickupTime = formatTimeForInput(pickupDate);
     const formattedReturnDate = formatDateForInput(returnDate);
     const formattedReturnTime = formatTimeForInput(returnDate);
-    
+
     console.log('Formatted pickup date:', formattedPickupDate);
     console.log('Formatted pickup time:', formattedPickupTime);
     console.log('Formatted return date:', formattedReturnDate);
     console.log('Formatted return time:', formattedReturnTime);
-    
+
     setEditFormData({
       pickup_date: formattedPickupDate,
       pickup_time: formattedPickupTime,
@@ -257,16 +255,16 @@ export default function BookingsPage() {
     setShowEditModal(true);
     setShowBookingModal(false);
   };
-  
+
   const handleUpdateStatus = (booking: Booking) => {
     console.log('Update status for booking:', booking);
     const statusOptions = ['PENDING', 'VERIFIED', 'INPROGRESS', 'RENDERED'];
     const currentStatus = booking.status;
     const availableStatuses = statusOptions.filter(status => status !== currentStatus);
-    
+
     const statusList = availableStatuses.map(status => `${status}`).join('\n');
     const newStatus = prompt(`Current status: ${currentStatus}\n\nAvailable statuses:\n${statusList}\n\nEnter new status:`);
-    
+
     if (newStatus && statusOptions.includes(newStatus.toUpperCase())) {
       // TODO: Call API to update status
       console.log(`Updating booking ${booking._id} status from ${currentStatus} to: ${newStatus.toUpperCase()}`);
@@ -275,7 +273,7 @@ export default function BookingsPage() {
       alert(`Invalid status: ${newStatus}\nValid options: ${statusOptions.join(', ')}`);
     }
   };
-  
+
   const handleSendEmail = (booking: Booking) => {
     console.log('Send email for booking:', booking);
     const email = booking.guest?.email;
@@ -286,37 +284,37 @@ export default function BookingsPage() {
       alert('No email address available for this customer');
     }
   };
-  
+
   const handleSendSMS = (booking: Booking) => {
     console.log('Send SMS for booking:', booking);
     // TODO: Integrate with SMS service
     alert(`Sending SMS notification for booking: ${booking._id}\nCustomer: ${booking.guest?.username || booking.user_id}`);
   };
-  
+
   const handlePrintReceipt = (booking: Booking) => {
     console.log('Print receipt for booking:', booking);
     setSelectedBooking(booking);
     setShowReceiptModal(true);
   };
-  
+
   const handleCancelBooking = async (booking: Booking) => {
     console.log('Cancel booking:', booking);
     const confirmCancel = confirm(`Are you sure you want to cancel this booking?\n\nBooking ID: ${booking._id}\nCustomer: ${booking.guest?.username || booking.user_id}\nDestination: ${booking.destination}\n\nThis will update the booking status to CANCELLED.`);
-    
+
     if (confirmCancel) {
       try {
         const updatedData = {
           status: 'CANCELLED' as const
         };
-        
+
         console.log('Cancelling booking with data:', updatedData);
-        
+
         // Call API to update booking status
         const response = await bookingsApi.updateBooking(booking._id, updatedData);
         console.log('Booking cancelled successfully:', response);
-        
+
         alert('Booking cancelled successfully!');
-        
+
         // Refresh the bookings list
         loadBookings();
       } catch (error) {
@@ -350,10 +348,10 @@ export default function BookingsPage() {
     setShowReceiptModal(false);
     setSelectedBooking(null);
   };
-  
+
   const handlePrintReceiptAction = () => {
     if (!selectedBooking) return;
-    
+
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       const receiptContent = generateReceiptHTML(selectedBooking);
@@ -362,10 +360,10 @@ export default function BookingsPage() {
       printWindow.print();
     }
   };
-  
+
   const handleSendReceiptEmail = () => {
     if (!selectedBooking) return;
-    
+
     const email = selectedBooking.guest?.email;
     if (email) {
       // TODO: Implement email sending functionality
@@ -375,12 +373,12 @@ export default function BookingsPage() {
       alert('No email address available for this customer');
     }
   };
-  
+
   const generateReceiptHTML = (booking: Booking) => {
     const receiptNumber = booking._id.slice(-8).toUpperCase();
     const currentDate = new Date().toLocaleDateString();
     const currentTime = new Date().toLocaleTimeString();
-    
+
     return `
       <!DOCTYPE html>
       <html>
@@ -416,10 +414,10 @@ export default function BookingsPage() {
             <div class="section-title">CUSTOMER INFORMATION</div>
             <div class="row">
               <span class="label">Customer Name:</span>
-              <span class="value">${booking.guest?.firstname && booking.guest?.lastname 
-                ? `${booking.guest.firstname} ${booking.guest.middlename ? booking.guest.middlename + ' ' : ''}${booking.guest.lastname}`
-                : booking.guest?.username || 'Guest ' + booking.user_id.slice(-6)
-              }</span>
+              <span class="value">${booking.guest?.firstname && booking.guest?.lastname
+        ? `${booking.guest.firstname} ${booking.guest.middlename ? booking.guest.middlename + ' ' : ''}${booking.guest.lastname}`
+        : booking.guest?.username || 'Guest ' + booking.user_id.slice(-6)
+      }</span>
             </div>
             <div class="row">
               <span class="label">Email:</span>
@@ -525,11 +523,11 @@ export default function BookingsPage() {
       'Created Date',
       'Last Updated'
     ];
-    
+
     // Convert bookings data to CSV format
     const csvData = filteredBookings.map(booking => [
       booking._id,
-      booking.guest?.firstname && booking.guest?.lastname 
+      booking.guest?.firstname && booking.guest?.lastname
         ? `${booking.guest.firstname} ${booking.guest.middlename ? booking.guest.middlename + ' ' : ''}${booking.guest.lastname}`
         : booking.guest?.username || `Guest ${booking.user_id.slice(-6)}`,
       booking.guest?.email || 'No email available',
@@ -551,12 +549,12 @@ export default function BookingsPage() {
       new Date(booking.created_at).toLocaleDateString(),
       new Date(booking.updated_at).toLocaleDateString()
     ]);
-    
+
     // Combine headers and data
     const csvContent = [headers, ...csvData]
       .map(row => row.map(field => `"${field}"`).join(','))
       .join('\n');
-    
+
     // Create and download CSV file
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
@@ -568,22 +566,22 @@ export default function BookingsPage() {
     link.click();
     document.body.removeChild(link);
   };
-  
+
   const handleEditFormChange = (field: string, value: any) => {
     setEditFormData(prev => ({
       ...prev,
       [field]: value
     }));
   };
-  
+
   const handleSaveBooking = async () => {
     if (!selectedBooking) return;
-    
+
     try {
       // Combine date and time for pickup and return
       const pickupDateTime = `${editFormData.pickup_date}T${editFormData.pickup_time}`;
       const returnDateTime = `${editFormData.return_date}T${editFormData.return_time}`;
-      
+
       const updatedData = {
         pickup_date: pickupDateTime,
         return_date: returnDateTime,
@@ -592,16 +590,16 @@ export default function BookingsPage() {
         status: editFormData.status,
         payment_status: editFormData.payment_status
       };
-      
+
       console.log('Updating booking with data:', updatedData);
-      
+
       // Call API to update booking
       const response = await bookingsApi.updateBooking(selectedBooking._id, updatedData);
       console.log('Booking updated successfully:', response);
-      
+
       alert('Booking updated successfully!');
       handleCloseEditModal();
-      
+
       // Refresh the bookings list
       loadBookings();
     } catch (error) {
@@ -621,7 +619,7 @@ export default function BookingsPage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-            <div>
+        <div>
           <h1 className="text-3xl font-bold tracking-tight">Bookings</h1>
           <p className="text-muted-foreground">
             Manage and track all customer bookings
@@ -686,108 +684,108 @@ export default function BookingsPage() {
           <div className="rounded-md border">
             <div className="overflow-x-auto w-full">
               <div className="min-w-[1500px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Customer</TableHead>
-                    {/* <TableHead>Email</TableHead> */}
-                    <TableHead>Destination</TableHead>
-                    {/* <TableHead>Pickup Location</TableHead> */}
-                    <TableHead>Pickup Date/Time</TableHead>
-                    <TableHead>Return Date/Time</TableHead>
-                    <TableHead>Packs</TableHead>
-                    <TableHead>Price</TableHead>
-                    <TableHead>Paid Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Payment</TableHead>
-                    <TableHead>Created</TableHead>
-                    <TableHead className="w-[50px]"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredBookings.length === 0 ? (
+                <Table>
+                  <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
-                        No bookings found
-                      </TableCell>
+                      <TableHead>Customer</TableHead>
+                      {/* <TableHead>Email</TableHead> */}
+                      <TableHead>Destination</TableHead>
+                      {/* <TableHead>Pickup Location</TableHead> */}
+                      <TableHead>Pickup Date/Time</TableHead>
+                      <TableHead>Return Date/Time</TableHead>
+                      <TableHead>Packs</TableHead>
+                      <TableHead>Price</TableHead>
+                      <TableHead>Paid Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Payment</TableHead>
+                      <TableHead>Created</TableHead>
+                      <TableHead className="w-[50px]"></TableHead>
                     </TableRow>
-                  ) : (
-                    filteredBookings.map((booking) => (
-                      <TableRow key={booking._id}>
-                        <TableCell className="font-medium">
-                          {booking.guest?.username || `Guest ${booking.user_id.slice(-6)}`}
-                        </TableCell>
-                        {/* <TableCell className="text-sm text-gray-600">
-                          {booking.guest?.email || 'No email available'}
-                        </TableCell> */}
-                        <TableCell>{booking.destination}</TableCell>
-                        {/* <TableCell>{booking.pickup_location}</TableCell> */}
-                        <TableCell>
-                          {booking.pickup_date ? formatDateTime(booking.pickup_date) : 'No date'}
-                        </TableCell>
-                        <TableCell>
-                          {booking.return_date ? formatDateTime(booking.return_date) : 'No date'}
-                        </TableCell>
-                        <TableCell>{booking.packs}</TableCell>
-                        <TableCell>{formatPrice(booking.price)}</TableCell>
-                        <TableCell>{booking.paid_amount ? formatPrice(booking.paid_amount) : '₱0.00'}</TableCell>
-                        <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                        <TableCell>{getPaymentStatusBadge(booking.payment_status)}</TableCell>
-                        <TableCell>
-                          {new Date(booking.created_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
-                                <Eye className="mr-2 h-4 w-4" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleEditBooking(booking)}>
-                                <Edit className="mr-2 h-4 w-4" />
-                                Edit Booking
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleSendEmail(booking)}>
-                                <Mail className="mr-2 h-4 w-4" />
-                                Send Email
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleSendSMS(booking)}>
-                                <MessageSquare className="mr-2 h-4 w-4" />
-                                Send SMS
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handlePrintReceipt(booking)}>
-                                <Printer className="mr-2 h-4 w-4" />
-                                Print Receipt
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                onClick={() => handleCancelBooking(booking)}
-                                className="text-red-600"
-                              >
-                                <Trash2 className="mr-2 h-4 w-4" />
-                                Cancel Booking
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredBookings.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
+                          No bookings found
                         </TableCell>
                       </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
+                    ) : (
+                      filteredBookings.map((booking) => (
+                        <TableRow key={booking._id}>
+                          <TableCell className="font-medium">
+                            {booking.guest?.username || `Guest ${booking.user_id.slice(-6)}`}
+                          </TableCell>
+                          {/* <TableCell className="text-sm text-gray-600">
+                          {booking.guest?.email || 'No email available'}
+                        </TableCell> */}
+                          <TableCell>{booking.destination}</TableCell>
+                          {/* <TableCell>{booking.pickup_location}</TableCell> */}
+                          <TableCell>
+                            {booking.pickup_date ? formatDateTime(booking.pickup_date) : 'No date'}
+                          </TableCell>
+                          <TableCell>
+                            {booking.return_date ? formatDateTime(booking.return_date) : 'No date'}
+                          </TableCell>
+                          <TableCell>{booking.packs}</TableCell>
+                          <TableCell>{formatPrice(booking.price)}</TableCell>
+                          <TableCell>{booking.paid_amount ? formatPrice(booking.paid_amount) : '₱0.00'}</TableCell>
+                          <TableCell>{getStatusBadge(booking.status)}</TableCell>
+                          <TableCell>{getPaymentStatusBadge(booking.payment_status)}</TableCell>
+                          <TableCell>
+                            {new Date(booking.created_at).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
+                                  <Eye className="mr-2 h-4 w-4" />
+                                  View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleEditBooking(booking)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit Booking
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSendEmail(booking)}>
+                                  <Mail className="mr-2 h-4 w-4" />
+                                  Send Email
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSendSMS(booking)}>
+                                  <MessageSquare className="mr-2 h-4 w-4" />
+                                  Send SMS
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handlePrintReceipt(booking)}>
+                                  <Printer className="mr-2 h-4 w-4" />
+                                  Print Receipt
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                  onClick={() => handleCancelBooking(booking)}
+                                  className="text-red-600"
+                                >
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Cancel Booking
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
-     
+
       {/* Booking Details Modal */}
       {showBookingModal && selectedBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -803,7 +801,7 @@ export default function BookingsPage() {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 space-y-6">
               {/* Customer Information */}
               <div>
@@ -812,7 +810,7 @@ export default function BookingsPage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Customer Name</label>
                     <p className="mt-1 text-sm text-gray-900">
-                      {selectedBooking.guest?.firstname && selectedBooking.guest?.lastname 
+                      {selectedBooking.guest?.firstname && selectedBooking.guest?.lastname
                         ? `${selectedBooking.guest.firstname} ${selectedBooking.guest.middlename ? selectedBooking.guest.middlename + ' ' : ''}${selectedBooking.guest.lastname}`
                         : selectedBooking.guest?.username || `Guest ${selectedBooking.user_id.slice(-6)}`
                       }
@@ -850,7 +848,7 @@ export default function BookingsPage() {
                   )} */}
                 </div>
               </div>
-              
+
               {/* Booking Information */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Booking Information</h3>
@@ -885,7 +883,7 @@ export default function BookingsPage() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Date Information */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Date Information</h3>
@@ -908,7 +906,7 @@ export default function BookingsPage() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Status Information */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Status Information</h3>
@@ -916,15 +914,15 @@ export default function BookingsPage() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Booking Status</label>
                     <div className="mt-1">{getStatusBadge(selectedBooking.status)}</div>
-            </div>
-            <div>
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700">Payment Status</label>
                     <div className="mt-1">{getPaymentStatusBadge(selectedBooking.payment_status)}</div>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             {/* Modal Footer */}
             <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
               <Button
@@ -944,7 +942,7 @@ export default function BookingsPage() {
           </div>
         </div>
       )}
-     
+
       {/* Edit Booking Modal */}
       {showEditModal && selectedBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -960,7 +958,7 @@ export default function BookingsPage() {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 space-y-6">
               {/* Customer Information (Read-only) */}
               <div>
@@ -982,41 +980,41 @@ export default function BookingsPage() {
                     <label className="block text-sm font-medium text-gray-700">Pickup Location</label>
                     <p className="mt-1 text-sm text-gray-900 bg-gray-50 p-2 rounded">{selectedBooking.pickup_location}</p>
                   </div>
-            </div>
-          </div>
+                </div>
+              </div>
 
               {/* Editable Date & Time Fields */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Date & Time Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700">Pickup Date</label>
-            <Input
+                    <Input
                       type="date"
                       value={editFormData.pickup_date}
                       onChange={(e) => handleEditFormChange('pickup_date', e.target.value)}
                       className="mt-1"
-            />
-          </div>
-          <div>
+                    />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700">Pickup Time</label>
                     <Input
                       type="time"
                       value={editFormData.pickup_time}
                       onChange={(e) => handleEditFormChange('pickup_time', e.target.value)}
                       className="mt-1"
-            />
-          </div>
-          <div>
+                    />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700">Return Date</label>
                     <Input
                       type="date"
                       value={editFormData.return_date}
                       onChange={(e) => handleEditFormChange('return_date', e.target.value)}
                       className="mt-1"
-            />
-          </div>
-          <div>
+                    />
+                  </div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700">Return Time</label>
                     <Input
                       type="time"
@@ -1026,13 +1024,13 @@ export default function BookingsPage() {
                     />
                   </div>
                 </div>
-          </div>
+              </div>
 
               {/* Editable Price */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Price Information</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700">Price (₱)</label>
                     <Input
                       type="number"
@@ -1044,13 +1042,13 @@ export default function BookingsPage() {
                     />
                   </div>
                 </div>
-          </div>
+              </div>
 
               {/* Editable Paid Amount */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Paid Amount</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
+                  <div>
                     <label className="block text-sm font-medium text-gray-700">Paid Amount (₱)</label>
                     <Input
                       type="number"
@@ -1063,7 +1061,7 @@ export default function BookingsPage() {
                   </div>
                 </div>
               </div>
-              
+
               {/* Editable Status Information */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-3">Status Information</h3>
@@ -1097,7 +1095,7 @@ export default function BookingsPage() {
                   </div>
                 </div>
               </div>
-          </div>
+            </div>
 
             {/* Modal Footer */}
             <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
@@ -1105,19 +1103,19 @@ export default function BookingsPage() {
                 variant="outline"
                 onClick={handleCloseEditModal}
               >
-              Cancel
-            </Button>
+                Cancel
+              </Button>
               <Button
                 onClick={handleSaveBooking}
                 className="bg-green-600 hover:bg-green-700"
               >
                 Save Changes
-            </Button>
+              </Button>
             </div>
           </div>
         </div>
       )}
-      
+
       {/* Receipt Modal */}
       {showReceiptModal && selectedBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -1135,7 +1133,7 @@ export default function BookingsPage() {
                 <X className="h-6 w-6" />
               </button>
             </div>
-            
+
             {/* Receipt Content */}
             <div className="p-6 overflow-y-auto max-h-[60vh]">
               <div className="bg-gray-50 p-6 rounded-lg border">
@@ -1147,7 +1145,7 @@ export default function BookingsPage() {
                     {new Date().toLocaleDateString()} | {new Date().toLocaleTimeString()}
                   </p>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Customer Information */}
                   <div>
@@ -1155,10 +1153,10 @@ export default function BookingsPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-700">Customer Name:</span>
-                        <span className="text-gray-900"> {selectedBooking.guest?.firstname && selectedBooking.guest?.lastname 
-                        ? `${selectedBooking.guest.firstname} ${selectedBooking.guest.middlename ? selectedBooking.guest.middlename + ' ' : ''}${selectedBooking.guest.lastname}`
-                        : selectedBooking.guest?.username || `Guest ${selectedBooking.user_id.slice(-6)}`
-                      }</span>
+                        <span className="text-gray-900"> {selectedBooking.guest?.firstname && selectedBooking.guest?.lastname
+                          ? `${selectedBooking.guest.firstname} ${selectedBooking.guest.middlename ? selectedBooking.guest.middlename + ' ' : ''}${selectedBooking.guest.lastname}`
+                          : selectedBooking.guest?.username || `Guest ${selectedBooking.user_id.slice(-6)}`
+                        }</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-700">Email:</span>
@@ -1170,7 +1168,7 @@ export default function BookingsPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Booking Information */}
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-3 border-b border-gray-300 pb-2">Booking Information</h3>
@@ -1189,7 +1187,7 @@ export default function BookingsPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Date Information */}
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-3 border-b border-gray-300 pb-2">Date Information</h3>
@@ -1208,7 +1206,7 @@ export default function BookingsPage() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Payment Information */}
                   <div>
                     <h3 className="font-semibold text-gray-900 mb-3 border-b border-gray-300 pb-2">Payment Information</h3>
@@ -1236,22 +1234,22 @@ export default function BookingsPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="text-center mt-8 pt-6 border-t border-gray-300">
                   <div className="flex items-center justify-center mb-4">
-                    <img 
-                      src="/borak-signature.png" 
-                      alt="Borak Travel Cebu Services Signature" 
+                    <img
+                      src="/borak-signature.png"
+                      alt="Borak Travel Cebu Services Signature"
                       className="h-16 w-auto"
                     />
                   </div>
                   <p className="text-sm text-gray-600 mb-2">Thank you for choosing Borak Travel Cebu Services!</p>
                   <p className="text-sm text-gray-600 mb-2">For inquiries, please contact us at work.boraktravel@gmail.com</p>
-                 
+
                 </div>
               </div>
             </div>
-            
+
             {/* Modal Footer */}
             <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end space-x-3">
               <Button

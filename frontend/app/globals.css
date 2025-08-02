@@ -121,11 +121,11 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
-    font-family: "Geist",monospace
-
+    font-family: "Geist", monospace
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground scroll-smooth;
   }
 }
 
@@ -136,6 +136,7 @@
     0% {
       transform: translateX(-200px);
     }
+
     100% {
       transform: translateX(200px);
     }
@@ -144,7 +145,8 @@
 
 /* Custom Scrollbar Styling */
 ::-webkit-scrollbar {
-  width: 12px; /* Slightly wider for better visibility */
+  width: 12px;
+  /* Slightly wider for better visibility */
 }
 
 ::-webkit-scrollbar-track {
@@ -153,19 +155,24 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--primary); /* Using primary color for better visibility */
+  background: var(--primary);
+  /* Using primary color for better visibility */
   border-radius: 6px;
-  border: 3px solid var(--background); /* Thicker border for a pill effect */
-  opacity: 0.8; /* Slight transparency for aesthetics */
+  border: 3px solid var(--background);
+  /* Thicker border for a pill effect */
+  opacity: 0.8;
+  /* Slight transparency for aesthetics */
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--accent-foreground); /* More noticeable on hover */
+  background: var(--accent-foreground);
+  /* More noticeable on hover */
   opacity: 1;
 }
 
 /* Firefox Scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: var(--primary) var(--background); /* Using primary color for better visibility */
+  scrollbar-color: var(--primary) var(--background);
+  /* Using primary color for better visibility */
 }
