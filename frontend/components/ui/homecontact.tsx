@@ -1,6 +1,5 @@
 'use client'
 import { useState } from 'react';
-import { MdLocationOn, MdPhone, MdEmail, MdAccessTime } from 'react-icons/md';
 import { mailerApi, ContactFormData } from '../../lib/backend_api/mailerapi';
 import { Button } from './button';
 

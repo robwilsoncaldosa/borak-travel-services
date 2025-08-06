@@ -46,4 +46,13 @@ export const bookingsApi = {
      throw error;
    }
  },
+  sendReceiptEmail: async (bookingId: string) => {
+    try {
+      const response = await instance.post(`/api/bookings/${bookingId}/send-receipt`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to send receipt email:", error);
+      throw error;
+    }
+  },
 };

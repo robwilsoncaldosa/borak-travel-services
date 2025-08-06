@@ -274,15 +274,10 @@ export default function BookingsPage() {
   //   }
   // };
 
-  const handleSendEmail = (booking: Booking) => {
+  const handleSendEmail = async (booking: Booking) => {
     console.log('Send email for booking:', booking);
-    const email = booking.guest?.email;
-    if (email) {
-      // TODO: Open email composer or send automated email
-      alert(`Sending email to: ${email}\nSubject: Booking Confirmation - ${booking.destination}`);
-    } else {
-      alert('No email address available for this customer');
-    }
+    // TODO: Implement email sending functionality
+    alert(`Sending email notification for booking: ${booking._id}\nCustomer: ${booking.guest?.username || booking.user_id}`);
   };
 
   const handleSendSMS = (booking: Booking) => {
@@ -361,16 +356,23 @@ export default function BookingsPage() {
     }
   };
 
-  const handleSendReceiptEmail = () => {
+  const handleSendReceiptEmail = async () => {
     if (!selectedBooking) return;
-
-    const email = selectedBooking.guest?.email;
-    if (email) {
-      // TODO: Implement email sending functionality
-      console.log('Sending receipt to email:', email);
-      alert(`Receipt sent to: ${email}`);
-    } else {
-      alert('No email address available for this customer');
+    try {
+      console.log(`Sending receipt email for booking ID: ${selectedBooking._id}`);
+      const response = await bookingsApi.sendReceiptEmail(selectedBooking._id);
+      if (response && response.message) {
+        console.log('Receipt sent successfully!');
+        alert(response.message);
+      } else {
+        console.error('Failed to send receipt.', response);
+        alert('Failed to send receipt.');
+      }
+    } catch (error: any) {
+      console.error('Error sending receipt:', error);
+      // Try to show backend error message if available
+      const backendMessage = error?.response?.data?.message || error?.message;
+      alert(backendMessage ? `Error: ${backendMessage}` : 'Error sending receipt.');
     }
   };
 
