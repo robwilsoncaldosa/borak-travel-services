@@ -13,11 +13,11 @@ function BookNowSection() {
             Ready to explore Cebu? Fill out the form below to book your van rental and experience the beauty of the Philippines with our professional service.
           </p>
         </div>
-        <Contact/>
-        
+        <Contact />
+
         <div className="mt-12 text-center">
           <p className="text-white/80">
-            Need help with your booking? Call us at <span className="font-semibold text-white">+63 912 345 6789</span> or email <span className="font-semibold text-white">bookings@borakvanrentals.com</span>
+            Need help with your booking? Call us at <span className="font-semibold text-white">+63 917 589 1678</span> or email <span className="font-semibold text-white">boraktravel@gmail.com</span>
           </p>
         </div>
       </div>

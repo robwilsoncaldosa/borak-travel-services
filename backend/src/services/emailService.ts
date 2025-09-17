@@ -43,16 +43,16 @@ export class EmailService {
   public async sendContactFormEmail(formData: ContactFormData): Promise<EmailResponse> {
     try {
       const { fullName, email, mobileNumber, message } = formData;
-      
+
       // Email to admin
-      const adminEmail = process.env.ADMIN_EMAIL || 'borak@gmail.com';
-      
+      const adminEmail = process.env.ADMIN_EMAIL || 'work.boraktravel@gmail.com';
+
       const adminSubject = 'New Contact Form Submission - Borak Travel Services';
       const adminHtml = this.generateContactFormAdminEmail(formData);
-      
+
       const userSubject = 'Thank you for contacting Borak Travel Services';
       const userHtml = this.generateContactFormUserEmail(formData);
-      
+
       // Send both emails in parallel for faster response
       const [adminResult, userResult] = await Promise.all([
         this.sendEmail({
@@ -104,9 +104,9 @@ export class EmailService {
       };
 
       const info = await transporter.sendMail(mailOptions);
-      
+
       console.log('Email sent successfully:', info.messageId);
-      
+
       return {
         success: true,
         message: 'Email sent successfully',
@@ -124,7 +124,7 @@ export class EmailService {
   // Generate admin email HTML for contact form
   private generateContactFormAdminEmail(formData: ContactFormData): string {
     const { fullName, email, mobileNumber, message } = formData;
-    
+
     return `
       <!DOCTYPE html>
       <html>
@@ -179,7 +179,7 @@ export class EmailService {
   // Generate user confirmation email HTML
   private generateContactFormUserEmail(formData: ContactFormData): string {
     const { fullName } = formData;
-    
+
     return `
       <!DOCTYPE html>
       <html>
@@ -206,8 +206,8 @@ export class EmailService {
             <p>Our team typically responds within 24-48 hours during business days.</p>
             <p>If you have any urgent inquiries, please feel free to call us at:</p>
             <ul>
-              <li>Phone: +1 234 567 890</li>
-              <li>Email: borak@gmail.com</li>
+              <li>Phone: +63 917 589 1678</li>
+              <li>Email: work.boraktravel@gmail.com</li>
             </ul>
             <p>Best regards,<br>The Borak Travel Services Team</p>
           </div>
