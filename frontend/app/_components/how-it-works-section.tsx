@@ -1,7 +1,6 @@
 "use client";
 
 import Image from "next/image";
-import { Search, Calendar, CreditCard, Navigation } from "lucide-react";
 
 export default function HowItWorksSection() {
   return (
@@ -17,61 +16,29 @@ export default function HowItWorksSection() {
               className="rounded-3xl object-cover min-h-[500px] w-full"
             />
           </div>
-          
+
           <div className="w-full md:w-1/2 space-y-8">
             <div>
               <p className="text-neutral-600 dark:text-neutral-300 text-lg">How it works</p>
-              <h2 className="text-4xl font-bold text-neutral-900 dark:text-white mt-2">One Click for you</h2>
+              <h2 className="text-4xl font-bold text-neutral-900 dark:text-white mt-2">Simple Steps to Paradise</h2>
             </div>
-            
-            <div className="space-y-6">
-              <div className="group p-6 rounded-xl border border-transparent box-border transition-all duration-300 hover:shadow-md hover:border-neutral-200 dark:hover:border-neutral-700 hover:translate-y-[-4px]">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 rounded-full transition-colors duration-300 bg-transparent group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30">
-                    <Search className="h-6 w-6 text-[#2e2e2e] dark:text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-[#2e2e2e] dark:text-neutral-100">Find your destination</h3>
-                    <p className="text-neutral-600 dark:text-neutral-300 mt-1">Embark on a journey to discover your dreams destination, where adventure and relaxation await.</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="group p-6 rounded-xl border border-transparent box-border transition-all duration-300 hover:shadow-md hover:border-neutral-200 dark:hover:border-neutral-700 hover:translate-y-[-4px]">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 rounded-full transition-colors duration-300 bg-transparent group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30">
-                    <Calendar className="h-6 w-6 text-[#2e2e2e] dark:text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-[#2e2e2e] dark:text-neutral-100">Book a Tour</h3>
-                    <p className="text-neutral-600 dark:text-neutral-300 mt-1">Ensure a smooth travel experience by booking a tickets to your Preferred destination via our booking platform</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="group p-6 rounded-xl border border-transparent box-border transition-all duration-300 hover:shadow-md hover:border-neutral-200 dark:hover:border-neutral-700 hover:translate-y-[-4px]">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 rounded-full transition-colors duration-300 bg-transparent group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30">
-                    <CreditCard className="h-6 w-6 text-[#2e2e2e] dark:text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-[#2e2e2e] dark:text-neutral-100">Make Payment</h3>
-                    <p className="text-neutral-600 dark:text-neutral-300 mt-1">We offer a variety of payment options to meet your preferences and ensure a hassle-free transactions process.</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="group p-6 rounded-xl border border-transparent box-border transition-all duration-300 hover:shadow-md hover:border-neutral-200 dark:hover:border-neutral-700 hover:translate-y-[-4px]">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 rounded-full transition-colors duration-300 bg-transparent group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30">
-                    <Navigation className="h-6 w-6 text-[#2e2e2e] dark:text-white" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-semibold text-[#2e2e2e] dark:text-neutral-100">Rent a Van and Explore destination with packages</h3>
-                    <p className="text-neutral-600 dark:text-neutral-300 mt-1">You&apos;ll be immersed in a captivating tapestry of sights, sounds and tastes, as you wind your way though the ancient streets.</p>
-                  </div>
-                </div>
-              </div>
+
+            <div className="prose prose-lg max-w-none">
+              <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6">
+                Planning your perfect Cebu adventure has never been easier. Start by browsing our carefully curated collection of travel packages, each designed to showcase the best of what this beautiful island has to offer. From pristine beaches to historic landmarks, our diverse selection ensures there's something for every type of traveler.
+              </p>
+
+              <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6">
+                Once you've found your ideal getaway, booking is just a few clicks away. Our streamlined reservation system guides you through the process effortlessly, allowing you to secure your dates and customize your experience. No complicated forms or lengthy procedures – just simple, intuitive booking that gets you one step closer to your dream vacation.
+              </p>
+
+              <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6">
+                We've made payment convenient and secure with multiple options to suit your preferences. Whether you prefer GCash for quick mobile payments, traditional bank transfers, or credit card transactions, we've got you covered. All payments are processed through secure channels, giving you peace of mind as you prepare for your journey.
+              </p>
+
+              <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed">
+                Finally, sit back and let us handle the rest. From the moment you arrive, our reliable transportation and expert local guides ensure a hassle-free experience. Explore Cebu's hidden gems, create unforgettable memories, and discover why thousands of travelers choose us for their Philippine adventures. Your journey to paradise starts here.
+              </p>
             </div>
           </div>
         </div>

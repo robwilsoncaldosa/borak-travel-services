@@ -55,4 +55,14 @@ export const bookingsApi = {
       throw error;
     }
   },
+
+  deleteBooking: async (bookingId: string) => {
+    try {
+      const response = await instance.delete(`/api/bookings/${bookingId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to delete booking:", error);
+      throw error;
+    }
+  },
 };

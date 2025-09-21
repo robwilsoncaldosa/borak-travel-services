@@ -118,7 +118,7 @@ interface ChatbotProps {
 
 
 
-const Chatbot: React.FC<ChatbotProps> = ({ isOpen, }) => {
+const Chatbot: React.FC<ChatbotProps> = ({ isOpen, onClose }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [, setLocalIsOpen] = useState(false);
@@ -490,15 +490,21 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, }) => {
       }
     }
   };
-
   const renderGuestForm = () => (
     <motion.div
       key="guestForm"
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       exit={{ y: 20, opacity: 0 }}
-      className="w-80 sm:w-96 bg-white shadow-2xl rounded-2xl p-6"
+      className="w-80 sm:w-96 bg-white shadow-2xl rounded-2xl p-6 relative"
     >
+      <button
+        onClick={() => { handleClose(); }} // Remove handleClose to prevent hiding
+        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+        aria-label="Close form"
+      >
+        <X size={18} />
+      </button>
       <h2 className="text-xl font-semibold mb-4 text-[#2E2E2E]">Welcome 👋</h2>
       <p className="text-sm mb-4 text-gray-600">Please enter your name and email/phone to start chatting.</p>
       <input
@@ -563,16 +569,43 @@ const Chatbot: React.FC<ChatbotProps> = ({ isOpen, }) => {
   // };
 
   const handleClose = () => {
-    // onClose();
+    // Call the parent onClose function to properly close the chatbot
+    onClose();
+
+    // Reset all local state
     setLocalIsOpen(false);
-    localStorage.removeItem("guestUserId");
-    localStorage.removeItem("guestUsername");
-    setUserId(null);
+    setMessages([]);
+    setInput("");
+    setIsTyping(false);
+    setGuestReady(false);
     setUsername("");
     setEmail("");
-    setGuestReady(false);
+    setUserId(null);
     setAdminHasReplied(false);
-    setMessages([]);
+    setShouldAutoScroll(true);
+    setImageUrls([]);
+    setSelectedImage(null);
+    setPreloadedImages(new Set());
+    setShowBookingForm(false);
+    setIsModalOpen(false);
+    setModalType("success");
+    setModalMessage("");
+    setUnreadCount(0);
+
+    // Clear localStorage
+    localStorage.removeItem("guestUserId");
+    localStorage.removeItem("guestUsername");
+    localStorage.removeItem("lastActive");
+
+    // Clear image upload component
+    if (imageUploadRef.current) {
+      imageUploadRef.current.clearPreviews();
+    }
+
+    // Disconnect socket if it exists
+    if (socket) {
+      socket.disconnect();
+    }
   };
 
   useEffect(() => {

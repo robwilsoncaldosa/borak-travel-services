@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -635,160 +635,159 @@ export default function BookingsPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Bookings</CardTitle>
-          <CardDescription>
-            A list of all bookings with their current status and details.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                placeholder="Search bookings..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Status: {statusFilter === "all" ? "All" : statusFilter}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => setStatusFilter("all")}>
-                  All
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("PENDING")}>
-                  Pending
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("VERIFIED")}>
-                  Verified
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("INPROGRESS")}>
-                  In Progress
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("RENDERED")}>
-                  Completed
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setStatusFilter("CANCELLED")}>
-                  Cancelled
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
 
-          <div className="rounded-md border">
-            <div className="overflow-x-auto w-full">
-              <div className="min-w-[1500px]">
-                <Table>
-                  <TableHeader>
+      <CardHeader>
+        <CardTitle>All Bookings</CardTitle>
+        <CardDescription>
+          A list of all bookings with their current status and details.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <div className="flex items-center gap-4 mb-6">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              placeholder="Search bookings..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Filter className="mr-2 h-4 w-4" />
+                Status: {statusFilter === "all" ? "All" : statusFilter}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => setStatusFilter("all")}>
+                All
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter("PENDING")}>
+                Pending
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter("VERIFIED")}>
+                Verified
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter("INPROGRESS")}>
+                In Progress
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter("RENDERED")}>
+                Completed
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setStatusFilter("CANCELLED")}>
+                Cancelled
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="rounded-md border">
+          <div className="overflow-x-auto w-full">
+            <div className="min-w-[1500px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Customer</TableHead>
+                    {/* <TableHead>Email</TableHead> */}
+                    <TableHead>Destination</TableHead>
+                    {/* <TableHead>Pickup Location</TableHead> */}
+                    <TableHead>Pickup Date/Time</TableHead>
+                    <TableHead>Return Date/Time</TableHead>
+                    <TableHead>Packs</TableHead>
+                    <TableHead>Price</TableHead>
+                    <TableHead>Paid Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Payment</TableHead>
+                    <TableHead>Created</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredBookings.length === 0 ? (
                     <TableRow>
-                      <TableHead>Customer</TableHead>
-                      {/* <TableHead>Email</TableHead> */}
-                      <TableHead>Destination</TableHead>
-                      {/* <TableHead>Pickup Location</TableHead> */}
-                      <TableHead>Pickup Date/Time</TableHead>
-                      <TableHead>Return Date/Time</TableHead>
-                      <TableHead>Packs</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Paid Amount</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Payment</TableHead>
-                      <TableHead>Created</TableHead>
-                      <TableHead className="w-[50px]"></TableHead>
+                      <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
+                        No bookings found
+                      </TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredBookings.length === 0 ? (
-                      <TableRow>
-                        <TableCell colSpan={13} className="text-center py-8 text-muted-foreground">
-                          No bookings found
+                  ) : (
+                    filteredBookings.map((booking) => (
+                      <TableRow key={booking._id}>
+                        <TableCell className="font-medium">
+                          {booking.guest?.username || `Guest ${booking.user_id.slice(-6)}`}
                         </TableCell>
-                      </TableRow>
-                    ) : (
-                      filteredBookings.map((booking) => (
-                        <TableRow key={booking._id}>
-                          <TableCell className="font-medium">
-                            {booking.guest?.username || `Guest ${booking.user_id.slice(-6)}`}
-                          </TableCell>
-                          {/* <TableCell className="text-sm text-gray-600">
+                        {/* <TableCell className="text-sm text-gray-600">
                           {booking.guest?.email || 'No email available'}
                         </TableCell> */}
-                          <TableCell>{booking.destination}</TableCell>
-                          {/* <TableCell>{booking.pickup_location}</TableCell> */}
-                          <TableCell>
-                            {booking.pickup_date ? formatDateTime(booking.pickup_date) : 'No date'}
-                          </TableCell>
-                          <TableCell>
-                            {booking.return_date ? formatDateTime(booking.return_date) : 'No date'}
-                          </TableCell>
-                          <TableCell>{booking.packs}</TableCell>
-                          <TableCell>{formatPrice(booking.price)}</TableCell>
-                          <TableCell>{booking.paid_amount ? formatPrice(booking.paid_amount) : '₱0.00'}</TableCell>
-                          <TableCell>{getStatusBadge(booking.status)}</TableCell>
-                          <TableCell>{getPaymentStatusBadge(booking.payment_status)}</TableCell>
-                          <TableCell>
-                            {new Date(booking.created_at).toLocaleDateString()}
-                          </TableCell>
-                          <TableCell>
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
-                                  <Eye className="mr-2 h-4 w-4" />
-                                  View Details
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleEditBooking(booking)}>
-                                  <Edit className="mr-2 h-4 w-4" />
-                                  Edit Booking
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleSendEmail(booking)}>
-                                  <Mail className="mr-2 h-4 w-4" />
-                                  Send Email
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleSendSMS(booking)}>
-                                  <MessageSquare className="mr-2 h-4 w-4" />
-                                  Send SMS
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handlePrintReceipt(booking)}>
-                                  <Printer className="mr-2 h-4 w-4" />
-                                  Print Receipt
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() => handleCancelBooking(booking)}
-                                  className="text-red-600"
-                                >
-                                  <Trash2 className="mr-2 h-4 w-4" />
-                                  Cancel Booking
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
-                        </TableRow>
-                      ))
-                    )}
-                  </TableBody>
-                </Table>
-              </div>
+                        <TableCell>{booking.destination}</TableCell>
+                        {/* <TableCell>{booking.pickup_location}</TableCell> */}
+                        <TableCell>
+                          {booking.pickup_date ? formatDateTime(booking.pickup_date) : 'No date'}
+                        </TableCell>
+                        <TableCell>
+                          {booking.return_date ? formatDateTime(booking.return_date) : 'No date'}
+                        </TableCell>
+                        <TableCell>{booking.packs}</TableCell>
+                        <TableCell>{formatPrice(booking.price)}</TableCell>
+                        <TableCell>{booking.paid_amount ? formatPrice(booking.paid_amount) : '₱0.00'}</TableCell>
+                        <TableCell>{getStatusBadge(booking.status)}</TableCell>
+                        <TableCell>{getPaymentStatusBadge(booking.payment_status)}</TableCell>
+                        <TableCell>
+                          {new Date(booking.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem onClick={() => handleViewDetails(booking)}>
+                                <Eye className="mr-2 h-4 w-4" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleEditBooking(booking)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Edit Booking
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleSendEmail(booking)}>
+                                <Mail className="mr-2 h-4 w-4" />
+                                Send Email
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleSendSMS(booking)}>
+                                <MessageSquare className="mr-2 h-4 w-4" />
+                                Send SMS
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handlePrintReceipt(booking)}>
+                                <Printer className="mr-2 h-4 w-4" />
+                                Print Receipt
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                onClick={() => handleCancelBooking(booking)}
+                                className="text-red-600"
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Cancel Booking
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </CardContent>
 
       {/* Booking Details Modal */}
       {showBookingModal && selectedBooking && (

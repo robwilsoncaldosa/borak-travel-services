@@ -251,10 +251,16 @@ export default function InboxPage() {
     [selectedChat, messages]
   );
 
-  // Scroll to bottom whenever selected chat messages change
+  // Only scroll to bottom when switching to a different chat (initial load)
   useEffect(() => {
-    scrollToBottom();
-  }, [selectedChatMessages]);
+    if (selectedChat && selectedChatMessages.length > 0) {
+      // Use a longer timeout to ensure the DOM has updated
+      const timer = setTimeout(() => {
+        scrollToBottom();
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedChat]); // Only depend on selectedChat, not selectedChatMessages
 
   const scrollToBottom = () => {
     if (messagesEndRef.current) {
@@ -293,7 +299,7 @@ export default function InboxPage() {
       </AnimatePresence>
 
       {/* Chat List */}
-      <Card className="w-1/3 flex flex-col min-h-0 shadow-md border-0">
+      <Card className="w-1/3 flex flex-col gap-0 min-h-0 shadow-md border-0 py-0 rounded-none">
         <div className="p-4 flex-shrink-0 bg-gradient-to-r from-primary/10 to-primary/5 border-b">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Messages</h2>
@@ -372,11 +378,11 @@ export default function InboxPage() {
       </Card>
 
       {/* Chat Details with Reply */}
-      <Card className="flex-1 flex flex-col min-h-0 shadow-md border-0">
+      <Card className="flex-1 gap-0 flex flex-col min-h-0 shadow-md border-0 py-0 rounded-none">
         {selectedChat ? (
           <>
             {/* Header */}
-            <div className="p-4 border-b bg-gradient-to-r from-primary/10 to-primary/5">
+            <div className="p-4  border-b bg-gradient-to-r from-primary/10 to-primary/5">
               <h2 className="text-xl font-semibold flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-100">
                   <Bot size={16} />
@@ -529,7 +535,7 @@ export default function InboxPage() {
                   </button>
 
                   <Input
-                    className="flex-1 bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+                    className="flex-1  bg-transparent border-0 focus-visible:ring-0 focus-visible:ring-offset-0"
                     placeholder="Type your reply..."
                     value={replyMessage}
                     onChange={(e) => setReplyMessage(e.target.value)}
