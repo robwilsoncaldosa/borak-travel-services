@@ -4,14 +4,13 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect, useRef, useMemo, memo } from "react";
+import { useState, useEffect, useRef, useMemo, memo, useCallback } from "react";
 import { Bot, Edit, Send, User, X, ZoomIn } from "lucide-react";
 import { chatApi, ChatMessage } from "@/lib/backend_api/chat";
-import { ChatImageUpload, ChatImageUploadRef } from "@/components/cloudinary/ChatImageUpload";
+import { ChatImageUpload } from "@/components/cloudinary/ChatImageUpload";
 import Image from "next/image";
 import { AnimatePresence } from "framer-motion";
-
-import { io, Socket } from "socket.io-client";
+import { useSocket } from "@/hooks/useSokcet";
 
 
 // Move ImageModal outside of InboxPage component and memoize it
@@ -98,54 +97,116 @@ export default function InboxPage() {
   const [replyMessage, setReplyMessage] = useState('');
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  // Remove unused isLoading variable
+  // const [, setIsLoading] = useState(true);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const imageUploadRef = useRef<ChatImageUploadRef>(null);
-  const socketRef = useRef<Socket | null>(null);
+  const imageUploadRef = useRef<any>(null);
+  const socketRef = useRef<any>(null);
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    // Initialize socket connection
-    socketRef.current = io(process.env.NEXT_PUBLIC_SERVER_ENDPOINT || 'http://localhost:8081');
+  // Initialize socket connection
+  const socket = useSocket();
 
-    const loadMessages = async () => {
-      try {
-        const data = await chatApi.getAllMessages();
-        console.log('Polling: fetched messages from backend:', data.length, 'messages');
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, []);
 
-        const validMessages = data.filter(
-          (message) => message && (message.message || message.text) && message.userId
-        );
-        console.log('Polling: valid messages after filtering:', validMessages.length);
+  // Move handleSendBookingForm before useEffect to fix dependency issues
+  const handleSendBookingForm = useCallback((userId?: string) => {
+    const targetUserId = userId || selectedChat;
+    if (!targetUserId) return;
 
-        // Patch guestUsername for each message if it's a guest
-        const patchedMessages = validMessages.map((message) => {
-          const isGuest = !message.isAdmin;
-          return {
-            ...message,
-            guestUsername: isGuest ? message.username || "Guest" : undefined,
-          };
-        });
-
-        const sortedMessages = patchedMessages.sort(
-          (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        );
-        console.log('Polling: setting messages to state:', sortedMessages.length, 'messages');
-        setMessages(sortedMessages);
-      } catch (error) {
-        console.error('Failed to load messages:', error);
-      }
+    const bookingFormMessage: ChatMessage = {
+      userId: targetUserId,
+      message: "Please fill out the booking form to complete your reservation.",
+      isAdmin: true,
+      timestamp: new Date(),
+      username: "Admin",
+      sender: "bot",
+      isRead: true,
+      imageUrls: [],
+      isSpecialOffer: true, // Mark this as a special message for the chatbot
     };
 
+    setMessages((prevMessages) => [...prevMessages, bookingFormMessage]);
+
+    if (socketRef.current) {
+      socketRef.current.emit("sendMessage", bookingFormMessage);
+    }
+  }, [selectedChat]);
+
+  // Load messages function with error handling
+  const loadMessages = useCallback(async () => {
+    try {
+      const data = await chatApi.getAllMessages();
+      console.log('Fetched messages from backend:', data.length, 'messages');
+
+      const validMessages = data.filter(
+        (message) => message && (message.message || message.text) && message.userId
+      );
+
+      const patchedMessages = validMessages.map((message) => {
+        const isGuest = !message.isAdmin;
+        return {
+          ...message,
+          guestUsername: isGuest ? message.username || "Guest" : undefined,
+        };
+      });
+
+      const sortedMessages = patchedMessages.sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+
+      setMessages(sortedMessages);
+    } catch (error) {
+      console.error('Failed to load messages:', error);
+    }
+  }, []);
+
+  // Initialize data and socket connection
+  useEffect(() => {
     loadMessages();
-    const interval = setInterval(loadMessages, 1000);
+
+    // Set up polling with longer interval to reduce server load during build
+    const pollInterval = process.env.NODE_ENV === 'production' ? 5000 : 2000; // 5s in prod, 2s in dev
+    pollingIntervalRef.current = setInterval(loadMessages, pollInterval);
+
+    // Socket setup
+    if (socket) {
+      socketRef.current = socket;
+
+      socket?.socket?.on("message", (newMessage: ChatMessage) => {
+        setMessages((prevMessages) => {
+          const updatedMessages = [...prevMessages, newMessage];
+          return updatedMessages.sort(
+            (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+          );
+        });
+
+        // Check for booking keywords
+        const bookingKeywords = ["booking", "reservation", "book"];
+        if (
+          newMessage.sender === "user" &&
+          bookingKeywords.some((keyword) =>
+            (newMessage.message ?? '').toLowerCase().includes(keyword)
+          )
+        ) {
+          handleSendBookingForm(newMessage.userId);
+        }
+      });
+    }
 
     // Cleanup function
     return () => {
-      clearInterval(interval);
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
       if (socketRef.current) {
         socketRef.current.disconnect();
       }
     };
-  }, []);
+  }, [socket, loadMessages, handleSendBookingForm]);
 
   useEffect(() => {
     if (!socketRef.current) return;
@@ -176,7 +237,7 @@ export default function InboxPage() {
         socketRef.current.off("message");
       }
     };
-  }, []);
+  }, [handleSendBookingForm]);
 
   const handleSendReply = async () => {
     if ((!replyMessage.trim() && imageUrls.length === 0) || !selectedChat) return;
@@ -219,29 +280,6 @@ export default function InboxPage() {
     }
   };
 
-  const handleSendBookingForm = (userId?: string) => {
-    const targetUserId = userId || selectedChat;
-    if (!targetUserId) return;
-
-    const bookingFormMessage: ChatMessage = {
-      userId: targetUserId,
-      message: "Please fill out the booking form to complete your reservation.",
-      isAdmin: true,
-      timestamp: new Date(),
-      username: "Admin",
-      sender: "bot",
-      isRead: true,
-      imageUrls: [],
-      isSpecialOffer: true, // Mark this as a special message for the chatbot
-    };
-
-    setMessages((prevMessages) => [...prevMessages, bookingFormMessage]);
-
-    if (socketRef.current) {
-      socketRef.current.emit("sendMessage", bookingFormMessage);
-    }
-  };
-
   const selectedChatMessages = useMemo(() =>
     selectedChat
       ? messages
@@ -251,7 +289,7 @@ export default function InboxPage() {
     [selectedChat, messages]
   );
 
-  // Only scroll to bottom when switching to a different chat (initial load)
+  // Fix missing dependencies in useEffect
   useEffect(() => {
     if (selectedChat && selectedChatMessages.length > 0) {
       // Use a longer timeout to ensure the DOM has updated
@@ -260,13 +298,9 @@ export default function InboxPage() {
       }, 200);
       return () => clearTimeout(timer);
     }
-  }, [selectedChat]); // Only depend on selectedChat, not selectedChatMessages
+  }, [selectedChat, scrollToBottom, selectedChatMessages.length]);
 
-  const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  };
+
 
   const latestMessagesByUser: { [userId: string]: ChatMessage } = {};
   messages.forEach((msg) => {

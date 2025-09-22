@@ -24,7 +24,7 @@ export const useSocket = () => {
       setMessages((prev) => [...prev, message]);
     });
 
-    socket.on('userTyping', (data) => {
+    socket.on('userTyping', () => {
       setIsTyping(true);
       setTimeout(() => setIsTyping(false), 2000); // Reset after 2s
     });

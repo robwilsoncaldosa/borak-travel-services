@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -76,8 +76,8 @@ export default function BookingsClient({ initialBookings }: BookingsClientProps)
     router.refresh();
   };
 
-  // Filter bookings based on search and filters
-  const applyFilters = () => {
+  // Filter bookings based on search and filters - wrap in useCallback to fix dependency issue
+  const applyFilters = useCallback(() => {
     let filtered = bookings;
 
     if (searchTerm) {
@@ -98,12 +98,12 @@ export default function BookingsClient({ initialBookings }: BookingsClientProps)
     }
 
     setFilteredBookings(filtered);
-  };
+  }, [bookings, searchTerm, statusFilter, paymentFilter]);
 
   // Apply filters whenever search term or filters change
   useEffect(() => {
     applyFilters();
-  }, [searchTerm, statusFilter, paymentFilter, bookings]);
+  }, [applyFilters]);
 
   const getStatusBadge = (status: string) => {
     const statusColors = {

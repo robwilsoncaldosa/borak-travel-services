@@ -4,15 +4,26 @@ import { User } from '@/lib/backend_api/user';
 
 const baseUrl = process.env.NEXT_PUBLIC_SERVER_ENDPOINT || 'http://localhost:5000';
 
-// Server-side data fetching with caching
+// Helper function to check if we're in build time
+const isBuildTime = process.env.NODE_ENV === 'production' && !process.env.NEXT_RUNTIME;
+
+// Server-side data fetching with build-time fallbacks
 export async function getPackagesServer() {
+    // Return empty array during build time to prevent timeouts
+    if (isBuildTime) {
+        console.log('Build time detected, returning empty packages array');
+        return [];
+    }
+
     try {
         const response = await fetch(`${baseUrl}/api/packages`, {
             next: { 
                 revalidate: 1800, // Cache for 30 minutes
                 tags: ['admin-packages']
             },
-            cache: 'force-cache'
+            cache: 'force-cache',
+            // Add timeout to prevent hanging
+            signal: AbortSignal.timeout(10000) // 10 second timeout
         });
 
         if (!response.ok) {
@@ -28,20 +39,27 @@ export async function getPackagesServer() {
 }
 
 export async function getBookingsServer() {
+    if (isBuildTime) {
+        console.log('Build time detected, returning empty bookings array');
+        return [];
+    }
+
     try {
         const response = await fetch(`${baseUrl}/api/bookings`, {
             next: { 
-                revalidate: 300, // Cache for 5 minutes (more frequent updates for bookings)
+                revalidate: 600, // Cache for 10 minutes
                 tags: ['admin-bookings']
             },
-            cache: 'force-cache'
+            cache: 'force-cache',
+            signal: AbortSignal.timeout(10000)
         });
 
         if (!response.ok) {
             throw new Error('Failed to fetch bookings');
         }
 
-        return await response.json();
+        const data = await response.json();
+        return data;
     } catch (error) {
         console.error('Error fetching bookings:', error);
         return [];
@@ -49,13 +67,19 @@ export async function getBookingsServer() {
 }
 
 export async function getReviewsServer() {
+    if (isBuildTime) {
+        console.log('Build time detected, returning empty reviews array');
+        return [];
+    }
+
     try {
         const response = await fetch(`${baseUrl}/api/reviews`, {
             next: { 
                 revalidate: 900, // Cache for 15 minutes
                 tags: ['admin-reviews']
             },
-            cache: 'force-cache'
+            cache: 'force-cache',
+            signal: AbortSignal.timeout(10000)
         });
 
         if (!response.ok) {
@@ -71,13 +95,19 @@ export async function getReviewsServer() {
 }
 
 export async function getUsersServer() {
+    if (isBuildTime) {
+        console.log('Build time detected, returning empty users array');
+        return [];
+    }
+
     try {
-        const response = await fetch(`${baseUrl}/api/users/getAll`, {
+        const response = await fetch(`${baseUrl}/api/users`, {
             next: { 
                 revalidate: 1800, // Cache for 30 minutes
                 tags: ['admin-users']
             },
-            cache: 'force-cache'
+            cache: 'force-cache',
+            signal: AbortSignal.timeout(10000)
         });
 
         if (!response.ok) {
@@ -92,36 +122,34 @@ export async function getUsersServer() {
     }
 }
 
-export async function getMessagesServer() {
-    try {
-        const response = await fetch(`${baseUrl}/api/messages`, {
-            next: { 
-                revalidate: 60, // Cache for 1 minute (frequent updates for messages)
-                tags: ['admin-messages']
-            },
-            cache: 'force-cache'
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch messages');
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error('Error fetching messages:', error);
-        return [];
-    }
-}
-
-// Dashboard stats calculation
+// Dashboard stats calculation with build-time fallbacks
 export async function getDashboardStats() {
+    if (isBuildTime) {
+        console.log('Build time detected, returning default dashboard stats');
+        return {
+            totalUsers: 0,
+            totalRevenue: 0,
+            totalBookings: 0,
+            activeBookings: 0,
+            totalPackages: 0,
+            totalReviews: 0
+        };
+    }
+
     try {
-        const [packages, bookings, users, reviews] = await Promise.all([
+        // Use Promise.allSettled to handle individual failures gracefully
+        const results = await Promise.allSettled([
             getPackagesServer(),
             getBookingsServer(),
             getUsersServer(),
             getReviewsServer()
         ]);
+
+        // Extract successful results or use empty arrays as fallbacks
+        const packages = results[0].status === 'fulfilled' ? results[0].value : [];
+        const bookings = results[1].status === 'fulfilled' ? results[1].value : [];
+        const users = results[2].status === 'fulfilled' ? results[2].value : [];
+        const reviews = results[3].status === 'fulfilled' ? results[3].value : [];
 
         // Calculate revenue from bookings
         const totalRevenue = bookings.reduce((sum: number, booking: any) => {
