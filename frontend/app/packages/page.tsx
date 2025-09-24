@@ -28,7 +28,7 @@ async function getPackagesServer() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
-        const response = await fetch(`${baseUrl}/api/packages`, {
+        const response = await fetch(`${baseUrl}api/packages`, {
             signal: controller.signal,
             next: {
                 revalidate: 3600, // Cache for 1 hour
