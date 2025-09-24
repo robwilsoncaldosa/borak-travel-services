@@ -118,7 +118,7 @@ function PackagesContent() {
                 let packagesData;
                 try {
                     packagesData = await getPackagesServer();
-                } catch (serverError) {
+                } catch {
                     console.log('Server-side fetch failed, trying client-side...');
                     // Fallback to client-side fetching
                     packagesData = await getPackagesClient();
