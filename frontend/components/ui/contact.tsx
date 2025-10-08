@@ -83,7 +83,7 @@ const ContactPage = () => {
                                     <div className="flex items-center gap-5 justify-center md:justify-center lg:justify-start">
                                         <MdLocationOn className="text-3xl" />
                                         <div>
-                                            <p className="text-center md:text-center lg:text-left">123 Business Street, City</p>
+                                            <p className="text-center md:text-center lg:text-left">Barangay Mohon, Talisay City, Cebu</p>
                                             {/* <p>City, Country</p> */}
                                         </div>
                                     </div>
@@ -93,8 +93,8 @@ const ContactPage = () => {
                                     <div className="flex items-center gap-5 justify-center md:justify-center lg:justify-start">
                                         <MdPhone className="text-3xl" />
                                         <div>
-                                            <p className="text-center md:text-center lg:text-left">+1 234 567 890</p>
-                                            <p className="text-center md:text-center lg:text-left">+1 234 567 890</p>
+                                            <p className="text-center md:text-center lg:text-left">+63 917 5891 678</p>
+                            
                                         </div>
                                     </div>
                                 </div>
@@ -102,7 +102,7 @@ const ContactPage = () => {
                                     <h3 className="font-semibold text-lg mb-2 text-center md:text-center lg:text-left">Email</h3>
                                     <div className="flex items-center gap-5 justify-center md:justify-center lg:justify-start">
                                         <MdEmail className="text-3xl" />
-                                        <p className="text-center md:text-center lg:text-left">borak@gmail.com</p>
+                                        <p className="text-center md:text-center lg:text-left">work.boraktravel@gmail.com</p>
                                     </div>
                                 </div>
                                 <div>

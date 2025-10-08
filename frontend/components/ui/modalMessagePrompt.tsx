@@ -1,9 +1,9 @@
 import React from "react";
 
 interface ModalMessagePromptProps {
-  type: "success" | "error"; // Type of the message
-  message: string; // Message to display
-  onClose: () => void; // Function to close the modal
+  type: "success" | "error"; 
+  message: string; 
+  onClose: () => void; 
 }
 
 export const ModalMessagePrompt: React.FC<ModalMessagePromptProps> = ({ type, message, onClose }) => {

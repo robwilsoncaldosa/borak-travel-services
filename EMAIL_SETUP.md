@@ -19,7 +19,7 @@ SMTP_USER=your-email@gmail.com
 SMTP_PASS=your-app-password
 
 # Business Email (where contact form submissions will be sent)
-ADMIN_EMAIL=borak@gmail.com
+ADMIN_EMAIL=work.boraktravel@gmail.com
 ```
 
 ## Gmail Setup (Recommended)
