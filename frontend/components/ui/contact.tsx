@@ -83,7 +83,8 @@ const ContactPage = () => {
                                     <div className="flex items-center gap-5 justify-center md:justify-center lg:justify-start">
                                         <MdLocationOn className="text-3xl" />
                                         <div>
-                                            <p className="text-center md:text-center lg:text-left">Brgy mohon, talisay city, cebu</p>
+                                            <p className="text-center md:text-center lg:text-left">Barangay Mohon, Talisay City, Cebu</p>
+                                            {/* <p>City, Country</p> */}
                                         </div>
                                     </div>
                                 </div>
@@ -92,7 +93,8 @@ const ContactPage = () => {
                                     <div className="flex items-center gap-5 justify-center md:justify-center lg:justify-start">
                                         <MdPhone className="text-3xl" />
                                         <div>
-                                            <p className="text-center md:text-center lg:text-left">+63 917 589 1678</p>
+                                            <p className="text-center md:text-center lg:text-left">+63 917 5891 678</p>
+                            
                                         </div>
                                     </div>
                                 </div>

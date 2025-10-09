@@ -79,6 +79,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     mobile: initialData.mobile || "",
   });
 
+  const [isOther, setIsOther] = useState<boolean>(false);
+  const [customPackageTitle, setCustomPackageTitle] = useState<string>("");
 
   React.useEffect(() => {
     setForm((prev) => ({ ...prev, user_id: userId }));
@@ -108,12 +110,19 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     const { name, value } = e.target;
 
     if (name === "package_id") {
-      const selectedPackage = packages.find((pkg) => pkg.id === value);
-      setForm((prev) => ({
-        ...prev,
-        package_id: value,
-        destination: selectedPackage ? selectedPackage.location : "",
-      }));
+      if (value === "OTHERS") {
+        setIsOther(true);
+        setForm((prev) => ({ ...prev, package_id: "", destination: "" }));
+      } else {
+        const selectedPackage = packages.find((pkg) => pkg.id === value);
+        setIsOther(false);
+        setCustomPackageTitle("");
+        setForm((prev) => ({
+          ...prev,
+          package_id: value,
+          destination: selectedPackage ? selectedPackage.location : "",
+        }));
+      }
       console.log('[BookingForm] Package selected:', value, 'Current user_id:', form.user_id);
     } else if (name === "mobile") {
       // Format mobile number as user types
@@ -132,6 +141,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
       }
 
       setForm((prev) => ({ ...prev, [name]: formattedValue }));
+    } else if (name === "customPackageTitle") {
+      setCustomPackageTitle(value);
     } else {
       setForm((prev) => ({ ...prev, [name]: name === "packs" || name === "price" ? Number(value) : value }));
     }
@@ -140,7 +151,8 @@ export const BookingForm: React.FC<BookingFormProps> = ({
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
     if (!form.user_id) newErrors.user_id = "User ID is required";
-    if (!form.package_id) newErrors.package_id = "Package is required";
+    if (!isOther && !form.package_id) newErrors.package_id = "Package is required";
+    if (isOther && !customPackageTitle.trim()) newErrors.package_id = "Package title is required";
     if (!form.destination) newErrors.destination = "Destination is required";
     if (!form.pickup_location) newErrors.pickup_location = "Pickup location is required";
     if (!form.pickup_date) newErrors.pickup_date = "Pickup date is required";
@@ -217,6 +229,26 @@ export const BookingForm: React.FC<BookingFormProps> = ({
           }
         }
 
+        // If "Others" selected, create the package first
+        if (isOther) {
+          const safeDestination = submitForm.destination?.trim() ? submitForm.destination : customPackageTitle;
+          const newPackage = await packageApi.createPackage({
+            title: customPackageTitle.trim(),
+            location: safeDestination || "",
+            duration_hours: 0,
+            about_tour: "",
+            highlights: [],
+            activities: [],
+            inclusions: [],
+            images: [],
+          });
+          submitForm.package_id = newPackage._id;
+          // Ensure destination is set if it was empty
+          if (!submitForm.destination) {
+            submitForm.destination = newPackage.location || newPackage.title;
+          }
+        }
+
         const payload = mapToCamelCase(submitForm);
         console.log("Payload being sent:", payload);
         const response = await bookingsApi.createBooking(payload);
@@ -251,7 +283,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
               <select
                 id="package_id"
                 name="package_id"
-                value={form.package_id}
+                value={isOther ? "OTHERS" : form.package_id}
                 onChange={handleChange}
                 className="w-full border rounded px-2 py-1"
               >
@@ -261,7 +293,21 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                     {pkg.title}
                   </option>
                 ))}
+               <option value="OTHERS">Others</option>
+               
               </select>
+              {isOther && (
+                <div className="mt-2">
+                  <Label htmlFor="customPackageTitle">Preferred Spot Name</Label>
+                  <Input
+                    id="customPackageTitle"
+                    name="customPackageTitle"
+                    value={customPackageTitle}
+                    onChange={handleChange}
+                    placeholder=""
+                  />
+                </div>
+              )}
               {errors.package_id && <span className="text-red-500 text-xs">{errors.package_id}</span>}
             </div>
 
@@ -274,7 +320,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                   name="firstname"
                   value={form.firstname}
                   onChange={handleChange}
-                  placeholder="Enter first name"
+                  placeholder=""
                 />
                 {errors.firstname && <span className="text-red-500 text-xs">{errors.firstname}</span>}
               </div>
@@ -285,7 +331,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                   name="middlename"
                   value={form.middlename}
                   onChange={handleChange}
-                  placeholder="Enter middle name (optional)"
+                  placeholder="Optional"
                 />
                 {errors.middlename && <span className="text-red-500 text-xs">{errors.middlename}</span>}
               </div>
@@ -296,7 +342,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                   name="lastname"
                   value={form.lastname}
                   onChange={handleChange}
-                  placeholder="Enter last name"
+                  placeholder=""
                 />
                 {errors.lastname && <span className="text-red-500 text-xs">{errors.lastname}</span>}
               </div>
@@ -309,7 +355,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                 name="mobile"
                 value={form.mobile}
                 onChange={handleChange}
-                placeholder="917 123 4567"
+                placeholder=""
                 type="tel"
                 maxLength={13}
               />
@@ -319,14 +365,14 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
             {/* Destination */}
             <div>
-              <Label htmlFor="destination">Destination</Label>
+              <Label htmlFor="destination">Destination Location</Label>
               <Input
                 id="destination"
                 name="destination"
                 value={form.destination}
                 onChange={handleChange}
-                readOnly
-                className="bg-gray-100 cursor-not-allowed"
+                readOnly={!isOther}
+                className={isOther ? "" : "bg-gray-100 cursor-not-allowed"}
               />
               {errors.destination && <span className="text-red-500 text-xs">{errors.destination}</span>}
             </div>
@@ -418,7 +464,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({
                 readOnly={!priceEditable}
                 disabled={!priceEditable}
                 className={priceEditable ? "" : "bg-gray-100 cursor-not-allowed"}
-                placeholder="Enter paid amount"
+                placeholder=""
               />
               {errors.paid_amount && <span className="text-red-500 text-xs">{errors.paid_amount}</span>}
             </div>

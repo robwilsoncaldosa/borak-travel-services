@@ -21,7 +21,7 @@ export default function Page() {
             onClick={() => setIsChatbotOpen(true)}
             className="p-4 bg-black text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center"
           >
-            <MessageCircle size={24} className="text-white" /> {/* Black chatbot icon */}
+            <MessageCircle size={24} className="text-white" /> 
           </button>
         )}
       </div>
