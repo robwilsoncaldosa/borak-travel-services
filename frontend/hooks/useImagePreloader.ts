@@ -17,7 +17,7 @@ export function useImagePreloader({ images, minLoadingTime = 2000 }: UseImagePre
     let loadedCount = 0;
 
     const preloadImage = (src: string): Promise<void> => {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const img = new Image();
         img.onload = () => {
           loadedCount++;
@@ -37,11 +37,11 @@ export function useImagePreloader({ images, minLoadingTime = 2000 }: UseImagePre
     const loadAllImages = async () => {
       try {
         await Promise.all(images.map(preloadImage));
-        
+
         // Ensure minimum loading time
         const elapsedTime = Date.now() - startTime;
         const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
-        
+
         setTimeout(() => {
           setIsLoading(false);
         }, remainingTime);
@@ -50,7 +50,7 @@ export function useImagePreloader({ images, minLoadingTime = 2000 }: UseImagePre
         // Still hide loading screen even if some images failed
         const elapsedTime = Date.now() - startTime;
         const remainingTime = Math.max(0, minLoadingTime - elapsedTime);
-        
+
         setTimeout(() => {
           setIsLoading(false);
         }, remainingTime);
