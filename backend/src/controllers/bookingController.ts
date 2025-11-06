@@ -44,19 +44,26 @@ export const bookingController = {
       } = req.body;
 
       // Validate required fields
-      if (
-        !user_id ||
-        !package_id ||
-        !destination ||
-        !pickup_location ||
-        !pickup_date ||
-        !pickup_time ||
-        !return_date ||
-        !return_time ||
-        !packs
-      ) {
-        res.status(400).json({ message: "Missing required fields" });
-        return; // Ensure the method returns void
+      const missingFields: string[] = [];
+      if (!user_id) missingFields.push('user_id');
+      if (!package_id) missingFields.push('package_id');
+      if (!destination) missingFields.push('destination');
+      if (!pickup_location) missingFields.push('pickup_location');
+      if (!pickup_date) missingFields.push('pickup_date');
+      if (!pickup_time) missingFields.push('pickup_time');
+      if (!return_date) missingFields.push('return_date');
+      if (!return_time) missingFields.push('return_time');
+      if (!packs) missingFields.push('packs');
+
+      if (missingFields.length > 0) {
+        console.error('Missing required fields:', missingFields);
+        console.error('Received data:', req.body);
+        res.status(400).json({ 
+          message: "Missing required fields",
+          missingFields: missingFields,
+          receivedData: req.body
+        });
+        return;
       }
 
       // Validate data types
@@ -100,33 +107,59 @@ export const bookingController = {
       }
 
       // Create booking in the database
-      const booking = new Booking({
+      const bookingData = {
         user_id,
         package_id,
         destination,
         pickup_location,
         pickup_date: pickupDateTime,
         return_date: returnDateTime,
+        pickup_time,
+        return_time,
         status: status || "PENDING", // Default to "PENDING"
         payment_status: payment_status || "PENDING", // Default to "PENDING"
         packs,
-        price,
-        paid_amount,
-      });
+        price: price ?? null,
+        paid_amount: paid_amount ?? null,
+      };
 
-      const saved = await booking.save();
+      console.log('Creating booking with data:', bookingData);
+      const saved = await Booking.create(bookingData);
+      console.log('Booking created successfully:', saved);
       res.status(201).json(saved);
       return; // Ensure the method returns void
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating booking:", error);
-      res.status(500).json({ message: "Failed to create booking" });
+      console.error("Error details:", {
+        message: error?.message,
+        code: error?.code,
+        details: error?.details,
+        hint: error?.hint,
+        stack: error?.stack
+      });
+      
+      // If it's a Supabase error, return more details
+      if (error?.code || error?.message) {
+        res.status(400).json({ 
+          message: "Failed to create booking",
+          error: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Failed to create booking",
+          error: error instanceof Error ? error.message : String(error)
+        });
+      }
       return; // Ensure the method returns void
     }
   },
 
   updateBooking: async (req: Request, res: Response): Promise<void> => {
     try {
-      const updated = await Booking.findByIdAndUpdate(req.params.id, req.body, { new: true });
+      const updated = await Booking.findByIdAndUpdate(req.params.id, req.body);
       if (!updated) {
         res.status(404).json({ message: 'Booking not found' });
         return;
@@ -156,7 +189,7 @@ export const bookingController = {
       const bookingId = req.params.id;
       console.log('[sendReceiptEmail] bookingId:', bookingId);
       const BookingModel = require('../models/bookingModel').default;
-      const GuestUser = require('../models/guestModel').default;
+      const GuestUserModel = require('../models/guestModel').default;
       const EmailService = require('../services/emailService').default;
 
       // Find booking
@@ -168,8 +201,8 @@ export const bookingController = {
         return;
       }
 
-      // Find guest by user_id (which is guest _id)
-      const guest = await GuestUser.findById(booking.user_id);
+      // Find guest by user_id (which is guest id)
+      const guest = await GuestUserModel.findById(booking.user_id);
       console.log('[sendReceiptEmail] guest:', guest);
       if (!guest) {
         console.log('[sendReceiptEmail] Guest not found for user_id:', booking.user_id);
@@ -178,7 +211,7 @@ export const bookingController = {
       }
 
       // Compose receipt email (detailed HTML style)
-      const receiptNumber = String(booking._id).slice(-8).toUpperCase();
+      const receiptNumber = String(booking.id).slice(-8).toUpperCase();
       const currentDate = new Date().toLocaleDateString();
       const currentTime = new Date().toLocaleTimeString();
       const guestName = guest.firstname && guest.lastname
@@ -241,7 +274,7 @@ export const bookingController = {
             <div class="section-title">BOOKING DETAILS</div>
             <div class="row">
               <span class="label">Booking ID:</span>
-              <span class="value">${booking._id}</span>
+              <span class="value">${booking.id}</span>
             </div>
             <div class="row">
               <span class="label">Destination:</span>

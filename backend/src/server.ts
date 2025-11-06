@@ -65,7 +65,11 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Welcome to BORAK CAR RENTAL TRAVEL AND TOURS");
 });
 
-connectDB();
+// Connect to Supabase
+connectDB().catch((error) => {
+  console.error('Failed to connect to Supabase:', error);
+  process.exit(1);
+});
 
 // Make io available throughout the application
 declare global {

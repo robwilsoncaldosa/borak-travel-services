@@ -26,12 +26,12 @@ async function getPackagesServer() {
     try {
         const baseUrl = process.env.NEXT_PUBLIC_SERVER_ENDPOINT || 'http://localhost:5000';
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 8000); 
 
-        const response = await fetch(`${baseUrl}api/packages`, {
+        const response = await fetch(`${baseUrl}/api/packages`, {
             signal: controller.signal,
             next: {
-                revalidate: 3600, // Cache for 1 hour
+                revalidate: 3600, 
                 tags: ['packages']
             },
             cache: 'force-cache'
@@ -68,11 +68,11 @@ async function getPackagesClient() {
     try {
         const baseUrl = process.env.NEXT_PUBLIC_SERVER_ENDPOINT || 'http://localhost:5000';
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout for client
+        const timeoutId = setTimeout(() => controller.abort(), 10000); 
 
         const response = await fetch(`${baseUrl}/api/packages`, {
             signal: controller.signal,
-            cache: 'no-store' // Don't cache client-side requests
+            cache: 'no-store'
         });
 
         clearTimeout(timeoutId);
@@ -96,7 +96,7 @@ async function getPackagesClient() {
         }));
     } catch (error) {
         console.error('Client-side fetch failed:', error);
-        return []; // Return empty array as final fallback
+        return []; 
     }
 }
 
@@ -131,7 +131,7 @@ function PackagesContent() {
                 console.error('All fetch attempts failed:', finalError);
                 if (isMounted) {
                     setError('Failed to load packages. Please try again later.');
-                    setPackages([]); // Set empty array as fallback
+                    setPackages([]); 
                 }
             } finally {
                 if (isMounted) {

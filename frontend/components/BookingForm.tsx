@@ -242,7 +242,10 @@ export const BookingForm: React.FC<BookingFormProps> = ({
             inclusions: [],
             images: [],
           });
-          submitForm.package_id = newPackage._id;
+          submitForm.package_id = newPackage.id || newPackage._id || '';
+          if (!submitForm.package_id) {
+            throw new Error('Failed to get package ID after creating package');
+          }
           // Ensure destination is set if it was empty
           if (!submitForm.destination) {
             submitForm.destination = newPackage.location || newPackage.title;
@@ -251,14 +254,35 @@ export const BookingForm: React.FC<BookingFormProps> = ({
 
         const payload = mapToCamelCase(submitForm);
         console.log("Payload being sent:", payload);
+        
+        // Validate payload before sending
+        if (!payload.user_id || !payload.package_id) {
+          console.error("Invalid payload - missing user_id or package_id:", payload);
+          alert("Error: Missing user ID or package ID. Please try again.");
+          onError?.();
+          return;
+        }
+        
         const response = await bookingsApi.createBooking(payload);
         console.log("Booking created successfully:", response);
 
-
         onSubmit(submitForm);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to create booking:", error);
-
+        
+        // Show more detailed error message
+        const errorMessage = error?.response?.data?.message || 
+                           error?.response?.data?.error ||
+                           error?.message || 
+                           "Failed to create booking. Please check the console for details.";
+        
+        console.error("Error details:", {
+          message: errorMessage,
+          missingFields: error?.response?.data?.missingFields,
+          receivedData: error?.response?.data?.receivedData,
+          error: error?.response?.data
+        });
+        
         // Update modal state for error
         onError?.();
       }

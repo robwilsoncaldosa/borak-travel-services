@@ -70,7 +70,7 @@ export const getPackageById = async (req: Request, res: Response): Promise<void>
 // Update a package
 export const updatePackage = async (req: Request, res: Response): Promise<void> => {
   try {
-    const updatedPackage = await Package.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedPackage = await Package.findByIdAndUpdate(req.params.id, req.body);
     if (!updatedPackage) {
       res.status(404).json({ message: 'Package not found' });
       return;

@@ -5,7 +5,7 @@ export interface ChatMessage {
   id?: string;
   sender: "user" | "bot";
   text?: string;
-  message?: string;
+  message?: string; 
   timestamp: Date | string;
   isSpecialOffer?: boolean;
   isRead?: boolean;
@@ -14,8 +14,7 @@ export interface ChatMessage {
   username?: string;
   guestUsername?: string;
   imageUrls?: string[];
-  //@ts-nocheck don't know how to type this
-  bookingFormData?: BookingFormData; // Add support for pre-filled booking form data
+  bookingFormData?: unknown; 
 }
 
 
@@ -31,14 +30,22 @@ export const chatApi = {
       }
 
       const { data } = await instance.get<ChatMessage[]>(`/api/messages/${userId}`);
-
+      
       // Ensure we return an array even if data is null/undefined
       return Array.isArray(data) ? data : [];
-    } catch (error) {
-      // Type guard to check if error is an AxiosError
-      if (error instanceof Error && 'response' in error && typeof error.response === 'object' && error.response && 'status' in error.response && error.response.status === 404) {
+    } catch (error: any) {
+      // Handle network errors (backend not running, CORS, etc.)
+      if (error.code === 'ERR_NETWORK' || error.message === 'Network Error') {
+        console.error('Network error - backend server may not be running or CORS issue:', error.message);
+        return []; // Return empty array on network error
+      }
+      
+      // Handle 404 (new user with no messages)
+      if (error.response?.status === 404) {
         return []; // Return empty array for new users
       }
+      
+      // Handle other errors
       console.error('Failed to fetch messages:', error);
       return []; // Return empty array on error
     }

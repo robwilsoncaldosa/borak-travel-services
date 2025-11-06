@@ -21,12 +21,11 @@ class GuestController {
         if (lastname !== undefined) updateData.lastname = lastname;
         if (mobile !== undefined) updateData.mobile = mobile;
         
-        if (Object.keys(updateData).length > 0) {
-          await GuestUser.findByIdAndUpdate(existingGuest._id, updateData);
-          const updatedGuest = await GuestUser.findById(existingGuest._id);
+        if (Object.keys(updateData).length > 0 && existingGuest.id) {
+          const updatedGuest = await GuestUser.findByIdAndUpdate(existingGuest.id, updateData);
           
           res.status(200).json({
-            id: updatedGuest!._id,
+            id: updatedGuest!.id,
             username: updatedGuest!.username,
             email: updatedGuest!.email,
             firstname: updatedGuest!.firstname,
@@ -40,7 +39,7 @@ class GuestController {
         
         // Return existing guest's ID if no updates needed
         res.status(200).json({
-          id: existingGuest._id,
+          id: existingGuest.id,
           username: existingGuest.username,
           email: existingGuest.email,
           firstname: existingGuest.firstname,
@@ -53,7 +52,7 @@ class GuestController {
       }
   
       // Create new guest if not found
-      const guest = new GuestUser({ 
+      const guest = await GuestUser.create({ 
         username,
         email,
         firstname,
@@ -61,11 +60,10 @@ class GuestController {
         lastname,
         mobile
       });
-      await guest.save();
       
-      // Return the created guest with MongoDB's _id
+      // Return the created guest
       res.status(201).json({
-        id: guest._id,
+        id: guest.id,
         username: guest.username,
         email: guest.email,
         firstname: guest.firstname,
@@ -95,7 +93,7 @@ class GuestController {
       }
       
       console.log('Returning guest data:', {
-        id: guest._id,
+        id: guest.id,
         username: guest.username,
         email: guest.email,
         firstname: guest.firstname,
@@ -104,7 +102,7 @@ class GuestController {
         mobile: guest.mobile
       });
       res.status(200).json({
-        id: guest._id,
+        id: guest.id,
         username: guest.username,
         email: guest.email,
         firstname: guest.firstname,
@@ -124,7 +122,7 @@ class GuestController {
     try {
       const guests = await GuestUser.find();
       const formattedGuests = guests.map(guest => ({
-        id: guest._id,
+        id: guest.id,
         username: guest.username,
         email: guest.email,
         firstname: guest.firstname,
@@ -159,20 +157,21 @@ class GuestController {
       if (lastname !== undefined) updateData.lastname = lastname;
       if (mobile !== undefined) updateData.mobile = mobile;
 
-      const updatedGuest = await GuestUser.findByIdAndUpdate(
-        id, 
-        updateData, 
-        { new: true }
-      );
+      const updatedGuest = await GuestUser.findByIdAndUpdate(id, updateData);
+
+      if (!updatedGuest) {
+        res.status(404).json({ message: 'Guest not found' });
+        return;
+      }
 
       res.status(200).json({
-        id: updatedGuest!._id,
-        username: updatedGuest!.username,
-        email: updatedGuest!.email,
-        firstname: updatedGuest!.firstname,
-        middlename: updatedGuest!.middlename,
-        lastname: updatedGuest!.lastname,
-        mobile: updatedGuest!.mobile,
+        id: updatedGuest.id,
+        username: updatedGuest.username,
+        email: updatedGuest.email,
+        firstname: updatedGuest.firstname,
+        middlename: updatedGuest.middlename,
+        lastname: updatedGuest.lastname,
+        mobile: updatedGuest.mobile,
         message: 'Guest updated successfully'
       });
     } catch (error) {

@@ -59,9 +59,6 @@ export default function PackageDetail() {
         }
     };
 
- 
-
-
     if (loading) {
         return <LoadingSpinner />;
     }
@@ -72,30 +69,43 @@ export default function PackageDetail() {
 
     return (
         <div className="min-h-screen bg-white">
-            {/* Package Content */}
             <div className="max-w-7xl mx-auto px-4 py-8 pt-30">
-                <PackageHeader 
-                    packageData={packageData} 
-                    isWishlisted={isWishlisted} 
-                    toggleWishlist={toggleWishlist} 
-                    handleShare={handleShare} 
-                />
+                {/* Only show header if title exists */}
+                {packageData.title && (
+                    <PackageHeader 
+                        packageData={packageData} 
+                        isWishlisted={isWishlisted} 
+                        toggleWishlist={toggleWishlist} 
+                        handleShare={handleShare} 
+                    />
+                )}
 
-                {/* Two-column layout */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Left column - Main content */}
                     <div className="lg:col-span-2">
-                        <ImageGallery packageData={packageData} />
-                        <PackageDescription packageData={packageData} />
-                        <ReviewSection packageData={packageData} />
+                        {/* Only show gallery if images exist */}
+                        {packageData.images && packageData.images.length > 0 && (
+                            <ImageGallery packageData={packageData} />
+                        )}
+
+                        {/* Only show description if about_tour exists */}
+                        {packageData.about_tour && (
+                            <PackageDescription packageData={packageData} />
+                        )}
+
+                        {/* Only show reviews if there are reviews */}
+                        {Array.isArray(packageData.reviews) && packageData.reviews.length > 0 && (
+                            <ReviewSection packageData={packageData} />
+                        )}
                     </div>
 
-                    {/* Right column - Booking card */}
                     <div className="lg:col-span-1">
-                        <BookingCard 
-                            packageData={packageData} 
-                            openChatbot={() => setIsChatbotOpen(true)} // Pass openChatbot function
-                        />
+                        {/* Only show booking card if price exists */}
+                        {packageData.price && (
+                            <BookingCard 
+                                packageData={packageData} 
+                                openChatbot={() => setIsChatbotOpen(true)}
+                            />
+                        )}
                     </div>
                 </div>
             </div>

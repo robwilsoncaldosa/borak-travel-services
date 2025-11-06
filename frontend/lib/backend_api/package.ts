@@ -1,7 +1,8 @@
 import { instance } from '../axios';
 
 export interface Package {
-    _id: string;
+    id?: string;
+    _id?: string; // Keep for backward compatibility during migration
     title: string;
     location: string;
     duration_hours: number;
@@ -20,6 +21,7 @@ export interface Package {
       activity: string;
     }>;
     longDescription?: string;
+    price?: number;
 } 
 
 export const packageApi = {
@@ -33,7 +35,7 @@ export const packageApi = {
       return response.data;
     },
 
-    createPackage: async (packageData: Omit<Package, '_id' | 'created_at' | 'updated_at'>) => {
+    createPackage: async (packageData: Omit<Package, 'id' | '_id' | 'created_at' | 'updated_at'>) => {
       const response = await instance.post<Package>('/api/packages/create', packageData);
       return response.data;
     },

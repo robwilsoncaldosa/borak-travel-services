@@ -12,7 +12,7 @@ export interface BookingData {
   status: string;
   payment_status: string;
   packs: number;
-  price: number; // <-- Add price
+  price: number | null;
   paid_amount: number | null;
 }
 

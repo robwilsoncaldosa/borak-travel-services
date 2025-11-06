@@ -17,9 +17,7 @@ const router = express.Router();
 
 // Public routes - for customer chat messages
 router.post('/create', asyncHandler(messageController.createMessage));
-
-
-router.get('/:userId', messageController.getMessagesByUserId);
+router.get('/:userId', asyncHandler(messageController.getMessagesByUserId));
 
 // Protected routes - only for admina
 router.get('/', messageController.getAllMessages); // Changed from getAllMessage to getAll

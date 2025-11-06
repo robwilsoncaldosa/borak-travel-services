@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
-import Review from '../models/reviewModel';
+import Reviews from '../models/reviewModel';
 
 // Create a new Review
 export const createReview = async (req: Request, res: Response): Promise<void> => {
   try {
-    const newReview = await Review.create(req.body);
+    const newReview = await Reviews.create(req.body);
     res.status(201).json(newReview);
   } catch (error) {
     res.status(500).json({ message: 'Error creating Review', error });
@@ -14,8 +14,8 @@ export const createReview = async (req: Request, res: Response): Promise<void> =
 // Get all Reviews
 export const getAllReviews = async (req: Request, res: Response): Promise<void> => {
   try {
-    const Reviews = await Review.find();
-    res.status(200).json(Reviews);
+    const allReviews = await Reviews.find();
+    res.status(200).json(allReviews);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching Reviews', error });
   }
@@ -24,7 +24,7 @@ export const getAllReviews = async (req: Request, res: Response): Promise<void> 
 // Get a single Review
 export const getReviewById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const foundReview = await Review.findById(req.params.id);
+    const foundReview = await Reviews.findById(req.params.id);
     if (!foundReview) {
       res.status(404).json({ message: 'Review not found' });
       return;
@@ -39,7 +39,7 @@ export const getReviewById = async (req: Request, res: Response): Promise<void> 
 export const getPackageReviews = async (req: Request, res: Response): Promise<void> => {
   try {
     const packageId = req.params.id;
-    const reviews = await Review.find({ package_id: packageId });
+    const reviews = await Reviews.find({ package_id: packageId });
     res.status(200).json(reviews);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching package reviews', error });
@@ -49,7 +49,7 @@ export const getPackageReviews = async (req: Request, res: Response): Promise<vo
 // Update a Review
 export const updateReview = async (req: Request, res: Response): Promise<void> => {
   try {
-    const updatedReview = await Review.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updatedReview = await Reviews.findByIdAndUpdate(req.params.id, req.body);
     if (!updatedReview) {
       res.status(404).json({ message: 'Review not found' });
       return;
@@ -63,7 +63,7 @@ export const updateReview = async (req: Request, res: Response): Promise<void> =
 // Delete a Review
 export const deleteReview = async (req: Request, res: Response): Promise<void> => {
   try {
-    const deletedReview = await Review.findByIdAndDelete(req.params.id);
+    const deletedReview = await Reviews.findByIdAndDelete(req.params.id);
     if (!deletedReview) {
       res.status(404).json({ message: 'Review not found' });
       return;

@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import User from '../models/userModel';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { generateToken } from '../lib/users';
 
@@ -45,13 +45,13 @@ export const userController = {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
 
-      const token = generateToken(user._id.toString());
+      const token = generateToken(user.id || user.user_id);
 
       res.status(200).json({
         success: true,
         token,
         user: {
-          id: user._id,
+          id: user.id,
           firstname: user.firstname,
           lastname: user.lastname,
           email: user.email,
@@ -72,12 +72,10 @@ export const userController = {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(password, salt);
 
-      const user = new User({
+      const newUser = await User.create({
         ...userData,
         password: hashedPassword
       });
-      
-      const newUser = await user.save();
       res.status(201).json(newUser);
     } catch (error) {
       next(error);
@@ -104,11 +102,10 @@ export const userController = {
         updateData.password = await bcrypt.hash(password, salt);
       }
 
-      // Update user using MongoDB _id
-      const updatedUser = await User.findByIdAndUpdate(
-        user._id,
-        updateData,
-        { new: true, runValidators: true }
+      // Update user using id
+      const updatedUser = await User.findOneAndUpdate(
+        { user_id: id },
+        updateData
       );
 
       if (!updatedUser) {
@@ -132,8 +129,12 @@ export const userController = {
         return res.status(404).json({ message: 'User not found' });
       }
 
-      // Delete user using MongoDB _id
-      await User.findByIdAndDelete(user._id);
+      // Delete user using id
+      if (user.id) {
+        await User.findByIdAndDelete(user.id);
+      } else {
+        return res.status(404).json({ message: 'User ID not found' });
+      }
 
       res.status(200).json({ message: 'User deleted successfully' });
     } catch (error) {
