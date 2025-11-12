@@ -47,7 +47,7 @@ async function getPackagesServer() {
 
         // Transform the backend data
         return data.map((pkg: Package) => ({
-            id: pkg._id,
+            id: pkg.id,
             title: pkg.title,
             image: getValidImageUrl(pkg.images[0]),
             description: pkg.about_tour,

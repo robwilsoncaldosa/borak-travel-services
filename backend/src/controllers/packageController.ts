@@ -21,15 +21,11 @@ export const createPackage = async (req: Request, res: Response): Promise<void> 
     const normalizedAbout = (about_tour ?? '').toString().trim();
 
     const normalizedPayload = {
-      // title is required; if truly missing, set a safe fallback
       title: normalizedTitle || 'Custom Package',
-      // location is required string: use empty string if sent, otherwise fallback to placeholder to satisfy validator
       location: normalizedLocation || 'N/A',
       // duration required number: default to 0
       duration_hours: typeof duration_hours === 'number' ? duration_hours : 0,
-      // about_tour required string: allow empty from client, but ensure non-empty placeholder so validation passes
       about_tour: normalizedAbout || 'N/A',
-      // Arrays of strings; empty arrays are fine with current schema
       highlights: Array.isArray(highlights) ? highlights : [],
       activities: Array.isArray(activities) ? activities : [],
       inclusions: Array.isArray(inclusions) ? inclusions : [],
@@ -70,6 +66,7 @@ export const getPackageById = async (req: Request, res: Response): Promise<void>
 // Update a package
 export const updatePackage = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Package.findByIdAndUpdate in the Supabase-backed model accepts (id, updateData)
     const updatedPackage = await Package.findByIdAndUpdate(req.params.id, req.body);
     if (!updatedPackage) {
       res.status(404).json({ message: 'Package not found' });

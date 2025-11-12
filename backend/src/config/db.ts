@@ -3,40 +3,38 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+// Prefer service role key on server. Do NOT use this key in browser.
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY; // recommended for server
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY; // only for client usage
 
-if (!supabaseUrl || !supabaseKey) {
-  throw new Error('Missing Supabase environment variables. Please set SUPABASE_URL and SUPABASE_ANON_KEY or SUPABASE_SERVICE_ROLE_KEY');
+if (!SUPABASE_URL) {
+  throw new Error('Missing SUPABASE_URL');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+// Prefer service role for backend operations
+const supabaseKey = SUPABASE_SERVICE_ROLE_KEY || SUPABASE_ANON_KEY;
+if (!supabaseKey) {
+  throw new Error('Missing Supabase key. Set SUPABASE_SERVICE_ROLE_KEY (preferred) or SUPABASE_ANON_KEY.');
+}
 
-// Test connection
+// If running on Node <18, ensure fetch is available (uncomment if needed):
+// import fetch from 'node-fetch';
+// if (!globalThis.fetch) globalThis.fetch = fetch as any;
+
+export const supabase = createClient(SUPABASE_URL, supabaseKey);
+
+// Test connection (non-fatal)
 export const connectDB = async () => {
   try {
-    // Try a simple query to test the connection
-    // Using a table that should exist (messages is one of the first tables created)
     const { data, error } = await supabase.from('messages').select('id').limit(1);
-    
-    // If table doesn't exist, that's okay - we'll handle it gracefully
-    if (error && error.code !== 'PGRST116' && error.message && !error.message.includes('does not exist')) {
-      console.error('Supabase Connection Error ❌', error);
-      console.error('Error details:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
-      });
-      // Don't exit - let the server start and show errors when routes are hit
-      console.warn('⚠️  Supabase connection test failed, but server will continue. Check your environment variables and table setup.');
+    if (error && error.code !== 'PGRST116' && !/does not exist/i.test(String(error.message))) {
+      console.error('Supabase connection test error:', { message: error.message, code: error.code });
       return;
     }
     console.log('Supabase Connected ✅');
-  } catch (error) {
-    console.error('Supabase Connection Error ❌', error);
-    // Don't exit - let the server start so we can see what's wrong
-    console.warn('⚠️  Supabase connection test failed, but server will continue. Check your environment variables.');
+  } catch (err) {
+    console.error('Supabase connection test failed', err);
   }
 };
 

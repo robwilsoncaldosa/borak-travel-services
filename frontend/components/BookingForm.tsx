@@ -97,7 +97,14 @@ export const BookingForm: React.FC<BookingFormProps> = ({
     const fetchPackages = async () => {
       try {
         const response = await packageApi.getAllPackages();
-        setPackages(response.map((pkg) => ({ id: pkg._id, title: pkg.title, location: pkg.location })));
+        const list = (response || [])
+          .filter((pkg) => pkg._id ?? pkg.id) // keep only items with an id
+          .map((pkg) => ({
+            id: String(pkg._id ?? pkg.id),
+            title: pkg.title ?? "",
+            location: pkg.location ?? "",
+          }));
+        setPackages(list);
       } catch (error) {
         console.error("Failed to fetch packages:", error);
       }

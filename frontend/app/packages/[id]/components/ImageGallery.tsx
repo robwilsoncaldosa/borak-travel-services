@@ -9,6 +9,8 @@ export interface ImageGalleryProps {
 
 export const ImageGallery = ({ packageData }: ImageGalleryProps) => {
     const images = packageData.images || [];
+
+    console.log('Rendering ImageGallery with images:', images);
     const imageCount = images.length;
 
     if (imageCount === 0) {
