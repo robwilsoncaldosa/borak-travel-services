@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { bookingsApi } from "@/lib/backend_api/bookings";
 import { guestApi } from "@/lib/backend_api/guest";
+import Image from "next/image";
 
 interface Booking {
   _id: string;
@@ -1240,9 +1241,11 @@ export default function BookingsPage() {
 
                 <div className="text-center mt-8 pt-6 border-t border-gray-300">
                   <div className="flex items-center justify-center mb-4">
-                    <img
+                    <Image
                       src="/borak-signature.png"
                       alt="Borak Travel Cebu Services Signature"
+                      width={100}
+                      height={50}
                       className="h-16 w-auto"
                     />
                   </div>
