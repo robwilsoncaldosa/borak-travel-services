@@ -1,5 +1,5 @@
 export interface Review {
-    _id: string;
+    id: string;
     guest_id: string;
     package_id: string;
     review: string;
@@ -7,5 +7,4 @@ export interface Review {
     status: string;
     created_at: string;
     updated_at: string;
-  }
-  
+} 

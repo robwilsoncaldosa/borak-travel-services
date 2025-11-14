@@ -1,6 +1,7 @@
+import { bookingsApi } from '@/lib/backend_api/bookings';
 import { Package } from '@/lib/backend_api/package';
 import { Review } from '@/lib/backend_api/review';
-import { User } from '@/lib/backend_api/user';
+import { User, userApi } from '@/lib/backend_api/user';
 
 const baseUrl = process.env.NEXT_PUBLIC_SERVER_ENDPOINT || 'http://localhost:5000';
 
@@ -39,31 +40,18 @@ export async function getPackagesServer() {
 }
 
 export async function getBookingsServer() {
-    if (isBuildTime) {
-        console.log('Build time detected, returning empty bookings array');
-        return [];
-    }
+  if (isBuildTime) {
+    console.log('Build time detected, returning empty bookings array');
+    return [];
+  }
 
-    try {
-        const response = await fetch(`${baseUrl}/api/bookings`, {
-            next: { 
-                revalidate: 600, // Cache for 10 minutes
-                tags: ['admin-bookings']
-            },
-            cache: 'force-cache',
-            signal: AbortSignal.timeout(10000)
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch bookings');
-        }
-
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching bookings:', error);
-        return [];
-    }
+  try {
+    const data = await bookingsApi.getAllBookings();
+    return data; // already parsed JSON from axios
+  } catch (error) {
+    console.error('Error fetching bookings:', error);
+    return [];
+  }
 }
 
 export async function getReviewsServer() {
@@ -94,32 +82,29 @@ export async function getReviewsServer() {
     }
 }
 
-export async function getUsersServer() {
-    if (isBuildTime) {
-        console.log('Build time detected, returning empty users array');
-        return [];
+export async function getUsersServer(): Promise<User[]> {
+  // Avoid fetching at build time
+  if (typeof window === 'undefined' && process.env.NEXT_PUBLIC_IS_BUILD) {
+    console.log('Build time detected, returning empty users array');
+    return [];
+  }
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+
+    // Axios supports signal in recent versions
+    const users = await userApi.getAllUsers(); 
+    clearTimeout(timeoutId);
+
+    return users;
+  } catch (error) {
+    if ((error as any).name === 'AbortError') {
+      console.error('Fetch aborted due to timeout');
+    } else {
+      console.error('Error fetching users:', error);
     }
-
-    try {
-        const response = await fetch(`${baseUrl}/api/users`, {
-            next: { 
-                revalidate: 1800, // Cache for 30 minutes
-                tags: ['admin-users']
-            },
-            cache: 'force-cache',
-            signal: AbortSignal.timeout(10000)
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to fetch users');
-        }
-
-        const data: User[] = await response.json();
-        return data;
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        return [];
-    }
+    return [];
+  }
 }
 
 // Dashboard stats calculation with build-time fallbacks

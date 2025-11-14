@@ -168,10 +168,8 @@ function QuickActions() {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        {actions.map((action, index) => (
-          <a
-            key={index}
-            href={action.href}
+       {actions.map((action) => (
+          <a key={action.title} href={action.href} 
             className={`block p-4 rounded-xl border-2 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 ${action.bgClass}`}
           >
             <div className="flex items-center space-x-3">
@@ -224,9 +222,10 @@ async function DashboardStats() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-      {statsConfig.map((stat, index) => (
-        <StatCard key={index} stat={stat} index={index} />
-      ))}
+     {statsConfig.map((stat) => (
+  <StatCard key={stat.title} stat={stat} index={statsConfig.indexOf(stat)} />
+))}
+
     </div>
   );
 }
@@ -258,7 +257,7 @@ async function RecentActivity() {
         <div className="space-y-3">
           {recentBookings.length > 0 ? (
             recentBookings.map((booking: any) => (
-              <div key={booking._id} className="flex items-center space-x-4 p-4 rounded-xl bg-muted/30 border border-border">
+               <div key={booking.id || `${booking.guest?.email}-${booking.created_at}`} className="flex items-center space-x-4 p-4 rounded-xl bg-muted/30 border border-border">
                 <div className="h-12 w-12 bg-primary rounded-xl flex items-center justify-center shadow-lg">
                   <Package className="h-6 w-6 text-primary-foreground" />
                 </div>

@@ -131,8 +131,8 @@ export default function InboxPage() {
 
     setMessages((prevMessages) => [...prevMessages, bookingFormMessage]);
 
-    if (socketRef.current) {
-      socketRef.current.emit("sendMessage", bookingFormMessage);
+    if (socket) {
+      socket.socket?.emit("sendMessage", bookingFormMessage);
     }
   }, [selectedChat]);
 
@@ -203,16 +203,16 @@ export default function InboxPage() {
         clearInterval(pollingIntervalRef.current);
       }
       if (socketRef.current) {
-        socketRef.current.disconnect();
+        socket.socket?.disconnect();
       }
     };
   }, [socket, loadMessages, handleSendBookingForm]);
 
   useEffect(() => {
-    if (!socketRef.current) return;
+   socketRef.current = socket;
 
     // Listen for new messages from the customer
-    socketRef.current.on("message", (newMessage: ChatMessage) => {
+   socket.socket?.on("message", (newMessage: ChatMessage) => {
       setMessages((prevMessages) => {
         const updatedMessages = [...prevMessages, newMessage];
         return updatedMessages.sort(
@@ -233,8 +233,8 @@ export default function InboxPage() {
     });
 
     return () => {
-      if (socketRef.current) {
-        socketRef.current.off("message");
+      if (socket) {
+        socket.socket?.off("message");
       }
     };
   }, [handleSendBookingForm]);
@@ -265,8 +265,8 @@ export default function InboxPage() {
       );
 
       // Emit the new admin message to all clients (real-time)
-      if (socketRef.current) {
-        socketRef.current.emit('sendMessage', adminMessage);
+      if (socket) {
+        socket.socket?.emit('sendMessage', adminMessage);
       }
 
       setReplyMessage('');
@@ -554,8 +554,8 @@ export default function InboxPage() {
                               (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
                             )
                           );
-                          if (socketRef.current) {
-                            socketRef.current.emit('sendMessage', bookingFormMessage);
+                          if (socket) {
+                            socket.socket?.emit('sendMessage', bookingFormMessage);
                           }
                         } catch (error) {
                           console.error('Failed to send booking form message:', error);

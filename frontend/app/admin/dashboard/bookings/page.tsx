@@ -38,7 +38,7 @@ import { bookingsApi } from "@/lib/backend_api/bookings";
 import { guestApi } from "@/lib/backend_api/guest";
 
 interface Booking {
-  _id: string;
+  id: string;
   user_id: string;
   package_id: string;
   destination: string;
@@ -75,7 +75,7 @@ interface EditBookingFormData {
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -97,39 +97,38 @@ export default function BookingsPage() {
     loadBookings();
   }, []);
 
-  const loadBookings = async () => {
-    try {
-      setLoading(true);
-      const response = await bookingsApi.getAllBookings();
-      console.log('Received bookings data:', response);
+const loadBookings = async () => {
+  try {
+    setLoading(true);
 
-      // Fetch guest data for each booking
-      const bookingsWithGuests = await Promise.all(
-        response.map(async (booking: Booking) => {
-          try {
-            console.log('Fetching guest for user_id:', booking.user_id);
-            const guest = await guestApi.getGuestById(booking.user_id);
-            console.log('Successfully fetched guest:', guest);
-            return { ...booking, guest };
-          } catch (error) {
-            console.error(`Failed to fetch guest for booking ${booking._id} with user_id ${booking.user_id}:`, error);
-            console.error('Error details:', {
-              bookingId: booking._id,
-              userId: booking.user_id,
-              error: error
-            });
-            return { ...booking, guest: undefined };
-          }
-        })
-      );
+    // 1️⃣ Fetch all bookings
+    const bookingsData: Booking[] = await bookingsApi.getAllBookings();
 
-      setBookings(bookingsWithGuests);
-    } catch (error) {
-      console.error("Failed to load bookings:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    // 2️⃣ Render bookings immediately without guests
+    setBookings(bookingsData.map((b: Booking) => ({ ...b, guest: undefined })));
+
+    // ✅ Stop loading now — table can render
+    setLoading(false);
+
+    // 3️⃣ Fetch guests lazily in parallel, update as they arrive
+    bookingsData.forEach(async (booking: Booking) => {
+      try {
+        const guest = await guestApi.getGuestById(booking.user_id);
+        setBookings(prev =>
+          prev.map(b => (b.id === booking.id ? { ...b, guest } : b))
+        );
+      } catch (error) {
+        console.error(`Failed to fetch guest for booking ${booking.id}`, error);
+      }
+    });
+
+  } catch (error) {
+    console.error("Failed to load bookings:", error);
+    setLoading(false); // make sure to stop spinner if error occurs
+  }
+};
+
+
 
   const filteredBookings = bookings.filter((booking) => {
     const matchesSearch =
@@ -277,13 +276,13 @@ export default function BookingsPage() {
   const handleSendEmail = async (booking: Booking) => {
     console.log('Send email for booking:', booking);
     // TODO: Implement email sending functionality
-    alert(`Sending email notification for booking: ${booking._id}\nCustomer: ${booking.guest?.username || booking.user_id}`);
+    alert(`Sending email notification for booking: ${booking.id}\nCustomer: ${booking.guest?.username || booking.user_id}`);
   };
 
   const handleSendSMS = (booking: Booking) => {
     console.log('Send SMS for booking:', booking);
     // TODO: Integrate with SMS service
-    alert(`Sending SMS notification for booking: ${booking._id}\nCustomer: ${booking.guest?.username || booking.user_id}`);
+    alert(`Sending SMS notification for booking: ${booking.id}\nCustomer: ${booking.guest?.username || booking.user_id}`);
   };
 
   const handlePrintReceipt = (booking: Booking) => {
@@ -294,7 +293,7 @@ export default function BookingsPage() {
 
   const handleCancelBooking = async (booking: Booking) => {
     console.log('Cancel booking:', booking);
-    const confirmCancel = confirm(`Are you sure you want to cancel this booking?\n\nBooking ID: ${booking._id}\nCustomer: ${booking.guest?.username || booking.user_id}\nDestination: ${booking.destination}\n\nThis will update the booking status to CANCELLED.`);
+    const confirmCancel = confirm(`Are you sure you want to cancel this booking?\n\nBooking ID: ${booking.id}\nCustomer: ${booking.guest?.username || booking.user_id}\nDestination: ${booking.destination}\n\nThis will update the booking status to CANCELLED.`);
 
     if (confirmCancel) {
       try {
@@ -305,7 +304,7 @@ export default function BookingsPage() {
         console.log('Cancelling booking with data:', updatedData);
 
         // Call API to update booking status
-        const response = await bookingsApi.updateBooking(booking._id, updatedData);
+        const response = await bookingsApi.updateBooking(booking.id, updatedData);
         console.log('Booking cancelled successfully:', response);
 
         alert('Booking cancelled successfully!');
@@ -359,8 +358,8 @@ export default function BookingsPage() {
   const handleSendReceiptEmail = async () => {
     if (!selectedBooking) return;
     try {
-      console.log(`Sending receipt email for booking ID: ${selectedBooking._id}`);
-      const response = await bookingsApi.sendReceiptEmail(selectedBooking._id);
+      console.log(`Sending receipt email for booking ID: ${selectedBooking.id}`);
+      const response = await bookingsApi.sendReceiptEmail(selectedBooking.id);
       if (response && response.message) {
         console.log('Receipt sent successfully!');
         alert(response.message);
@@ -377,7 +376,7 @@ export default function BookingsPage() {
   };
 
   const generateReceiptHTML = (booking: Booking) => {
-    const receiptNumber = booking._id.slice(-8).toUpperCase();
+    const receiptNumber = booking.id.slice(-8).toUpperCase();
     const currentDate = new Date().toLocaleDateString();
     const currentTime = new Date().toLocaleTimeString();
 
@@ -439,7 +438,7 @@ export default function BookingsPage() {
             <div class="section-title">BOOKING DETAILS</div>
             <div class="row">
               <span class="label">Booking ID:</span>
-              <span class="value">${booking._id}</span>
+              <span class="value">${booking.id}</span>
             </div>
             <div class="row">
               <span class="label">Destination:</span>
@@ -528,7 +527,7 @@ export default function BookingsPage() {
 
     // Convert bookings data to CSV format
     const csvData = filteredBookings.map(booking => [
-      booking._id,
+      booking.id,
       booking.guest?.firstname && booking.guest?.lastname
         ? `${booking.guest.firstname} ${booking.guest.middlename ? booking.guest.middlename + ' ' : ''}${booking.guest.lastname}`
         : booking.guest?.username || `Guest ${booking.user_id.slice(-6)}`,
@@ -598,7 +597,7 @@ export default function BookingsPage() {
       console.log('Updating booking with data:', updatedData);
 
       // Call API to update booking
-      const response = await bookingsApi.updateBooking(selectedBooking._id, updatedData);
+      const response = await bookingsApi.updateBooking(selectedBooking.id, updatedData);
       console.log('Booking updated successfully:', response);
 
       alert('Booking updated successfully!');
@@ -715,7 +714,7 @@ export default function BookingsPage() {
                     </TableRow>
                   ) : (
                     filteredBookings.map((booking) => (
-                      <TableRow key={booking._id}>
+                      <TableRow key={booking.id}>
                         <TableCell className="font-medium">
                           {booking.guest?.username || `Guest ${booking.user_id.slice(-6)}`}
                         </TableCell>
@@ -858,7 +857,7 @@ export default function BookingsPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Booking ID</label>
-                    <p className="mt-1 text-sm text-gray-900 font-mono">{selectedBooking._id}</p>
+                    <p className="mt-1 text-sm text-gray-900 font-mono">{selectedBooking.id}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Destination</label>
@@ -1127,7 +1126,7 @@ export default function BookingsPage() {
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
               <div>
                 <h2 className="text-xl font-semibold text-gray-900">Booking Receipt</h2>
-                <p className="text-sm text-gray-600">Receipt #{selectedBooking._id.slice(-8).toUpperCase()}</p>
+                <p className="text-sm text-gray-600">Receipt #{selectedBooking.id.slice(-8).toUpperCase()}</p>
               </div>
               <button
                 onClick={handleCloseReceiptModal}
@@ -1143,7 +1142,7 @@ export default function BookingsPage() {
                 <div className="text-center mb-6">
                   <h1 className="text-2xl font-bold text-gray-900 mb-2">BORAK TRAVEL SERVICES</h1>
                   <h2 className="text-lg font-semibold text-gray-700 mb-1">BOOKING RECEIPT</h2>
-                  <p className="text-sm text-gray-600">Receipt #{selectedBooking._id.slice(-8).toUpperCase()}</p>
+                  <p className="text-sm text-gray-600">Receipt #{selectedBooking.id.slice(-8).toUpperCase()}</p>
                   <p className="text-sm text-gray-600">
                     {new Date().toLocaleDateString()} | {new Date().toLocaleTimeString()}
                   </p>
@@ -1178,7 +1177,7 @@ export default function BookingsPage() {
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-700">Booking ID:</span>
-                        <span className="text-gray-900 font-mono text-sm">{selectedBooking._id}</span>
+                        <span className="text-gray-900 font-mono text-sm">{selectedBooking.id}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="font-medium text-gray-700">Destination:</span>
