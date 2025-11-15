@@ -5,15 +5,15 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { Package, packageApi } from '@/lib/backend_api/package';
 import {
-  LoadingSpinner,
-  NotFoundMessage,
-  PackageHeader,
-  ImageGallery,
-  PackageDescription,
-  BookingCard,
-  ReviewSection,
+    LoadingSpinner,
+    NotFoundMessage,
+    PackageHeader,
+    ImageGallery,
+    PackageDescription,
+    BookingCard,
+    ReviewSection,
 } from './components';
-import  Chatbots  from "@/components/ui/chatbot"; // Import your chatbot
+import Chatbots from "@/components/ui/chatbot"; // Import your chatbot
 
 export default function PackageDetail() {
     const params = useParams();
@@ -72,11 +72,11 @@ export default function PackageDetail() {
             <div className="max-w-7xl mx-auto px-4 py-8 pt-30">
                 {/* Only show header if title exists */}
                 {packageData.title && (
-                    <PackageHeader 
-                        packageData={packageData} 
-                        isWishlisted={isWishlisted} 
-                        toggleWishlist={toggleWishlist} 
-                        handleShare={handleShare} 
+                    <PackageHeader
+                        packageData={packageData}
+                        isWishlisted={isWishlisted}
+                        toggleWishlist={toggleWishlist}
+                        handleShare={handleShare}
                     />
                 )}
 
@@ -101,8 +101,8 @@ export default function PackageDetail() {
                     <div className="lg:col-span-1">
                         {/* Only show booking card if price exists */}
                         {packageData.price && (
-                            <BookingCard 
-                                packageData={packageData} 
+                            <BookingCard
+                                packageData={packageData}
                                 openChatbot={() => setIsChatbotOpen(true)}
                             />
                         )}

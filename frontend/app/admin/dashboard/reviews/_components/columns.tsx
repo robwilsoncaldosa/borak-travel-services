@@ -37,9 +37,8 @@ export const columns: ColumnDef<Review>[] = [
             {[...Array(5)].map((_, i) => (
               <svg
                 key={i}
-                className={`w-4 h-4 ${
-                  i < rating ? 'text-yellow-400' : 'text-gray-300'
-                }`}
+                className={`w-4 h-4 ${i < rating ? 'text-yellow-400' : 'text-gray-300'
+                  }`}
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
@@ -62,15 +61,15 @@ export const columns: ColumnDef<Review>[] = [
             status === 'accepted'
               ? 'default'
               : status === 'rejected'
-              ? 'destructive'
-              : 'secondary'
+                ? 'destructive'
+                : 'secondary'
           }
           className={
             status === 'accepted'
               ? 'bg-green-500 hover:bg-green-600'
               : status === 'rejected'
-              ? 'bg-red-500 hover:bg-red-600'
-              : ''
+                ? 'bg-red-500 hover:bg-red-600'
+                : ''
           }
         >
           {status.charAt(0).toUpperCase() + status.slice(1)}
@@ -99,7 +98,7 @@ export const columns: ColumnDef<Review>[] = [
             size="icon"
             onClick={() => {
               const meta = table.options.meta as { onDelete: (id: string) => void };
-              meta.onDelete(review._id);
+              if (review.id) meta.onDelete(review.id!);
             }}
           >
             <Trash2 className="w-4 h-4" />

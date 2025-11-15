@@ -125,8 +125,8 @@ export default function ReviewsClient({ initialReviews }: ReviewsClientProps) {
 
       <DataTable
         columns={columns}
-        data={reviews}
-        onEdit={handleEdit}
+        data={reviews.map(r => ({ ...r, id: r._id }))}
+        onEdit={(pkg) => handleEdit(pkg as unknown as Review)}
         onDelete={handleDelete}
       />
 

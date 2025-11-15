@@ -246,7 +246,7 @@ export function useUsersCache(initialData?: User[]) {
     });
 
     const deleteUserMutation = useMutation({
-        mutationFn: userApi.deleteUser,
+        mutationFn: (id: string) => userApi.deleteUser(id),
         onSuccess: (_, deletedId) => {
             usersQuery.updateCache((old) =>
                 old?.filter((user) => user.user_id !== deletedId) || []

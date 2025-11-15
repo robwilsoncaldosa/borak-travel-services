@@ -18,7 +18,7 @@ export const columns: ColumnDef<Package>[] = [
     accessorKey: "title",
     header: "Title",
   },
-  
+
   {
     accessorKey: "location",
     header: "Location",
@@ -93,7 +93,7 @@ export const columns: ColumnDef<Package>[] = [
             size="icon"
             onClick={() => {
               const meta = table.options.meta as { onDelete: (id: string) => void };
-              meta.onDelete(pkg._id);
+              meta.onDelete(pkg._id!);
             }}
           >
             <Trash2 className="w-4 h-4" />

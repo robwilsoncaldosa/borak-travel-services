@@ -168,7 +168,7 @@ function PackageDialog({
             };
 
             if (selectedPackage) {
-                await updatePackage({ id: selectedPackage._id, data: packageData });
+                await updatePackage({ id: selectedPackage._id!, data: packageData });
             } else {
                 await createPackage(packageData);
             }
